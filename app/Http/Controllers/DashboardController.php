@@ -7,8 +7,12 @@ use App\Models\BagiHasil;
 use App\Models\Distribusi;
 use App\Models\Notifikasi;
 use App\Models\Peternak;
+use App\Models\HargaSusuHistory;
+use App\Models\Kasbon;
+use App\Models\Pengumuman;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller as BaseController;
+use Carbon\Carbon;
 
 class DashboardController extends BaseController
 {
@@ -21,12 +25,35 @@ class DashboardController extends BaseController
             return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
         }
 
-        // Total pendapatan bulan ini (dari Bagi Hasil)
-        $totalPendapatanBulanan = $peternak->getTotalPendapatanBulanan();
+        // Defined period: 14th of last month to 13th of this month (if today <= 13)
+        // Or 14th of this month to 13th of next month (if today > 13)
+        $now = now();
+        if ($now->day <= 13) {
+            $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
+            $endDate = $now->copy()->day(13)->endOfDay();
+        } else {
+            $startDate = $now->copy()->day(14)->startOfDay();
+            $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
+        }
 
-        // Target bulanan
-        $targetBulanan = 50000000; // 50 juta
-        $progressTarget = $totalPendapatanBulanan / $targetBulanan * 100;
+        // Total Liter in period
+        $totalLiter = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->sum('jumlah_susu_liter');
+
+        // Current Milk Price
+        $currentPrice = HargaSusuHistory::getHargaAktif();
+
+        // Total Kasbon in period
+        $totalKasbon = Kasbon::where('idpeternak', $peternak->idpeternak)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->sum('total_rupiah');
+
+        // Estimasi Gaji Bersih
+        $estimasiGaji = ($totalLiter * $currentPrice) - $totalKasbon;
+
+        // Announcements
+        $pengumuman = Pengumuman::latest()->limit(3)->get();
 
         // Notifikasi (5 terbaru)
         $notifikasi = Notifikasi::where('iduser', $user->iduser)
@@ -34,29 +61,24 @@ class DashboardController extends BaseController
             ->limit(5)
             ->get();
 
-        // Keuangan (10 transaksi terakhir)
-        $keuangan = BagiHasil::whereHas('produksi', function ($q) use ($peternak) {
-            $q->where('idpeternak', $peternak->idpeternak);
-        })->latest()->limit(10)->get();
-
-        // Chart data (4 minggu produksi)
-        $produksiPerMinggu = $this->getProduksiPerMinggu($peternak->idpeternak);
-
-        // Income history (last 6 months) for chart
+        // Income history (last 6 months) for chart - keeping existing logic but maybe refactor later
         $incomeHistory = $this->getIncomeHistory($peternak->idpeternak);
         
         // Average income
         $averageIncome = count($incomeHistory) > 0 ? array_sum(array_column($incomeHistory, 'total')) / count($incomeHistory) : 0;
 
         return view('dashboard.peternak', [
-            'totalPenjualanBulanIni' => $totalPendapatanBulanan,
-            'progressTarget' => $progressTarget,
+            'totalLiter' => $totalLiter,
+            'estimasiGaji' => $estimasiGaji,
+            'totalKasbon' => $totalKasbon,
+            'pengumuman' => $pengumuman,
+            'currentPrice' => $currentPrice,
             'notifikasi' => $notifikasi,
-            'keuangan' => $keuangan,
-            'produksiPerMinggu' => $produksiPerMinggu,
             'incomeHistory' => $incomeHistory,
             'averageIncome' => $averageIncome,
             'peternak' => $peternak,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
         ]);
     }
 
@@ -96,6 +118,15 @@ class DashboardController extends BaseController
         // Monthly Stats for Chart (last 12 months or current year)
         $monthlyStats = $this->getMonthlyComparison();
 
+        // Latest Notifications
+        $notifikasi = Notifikasi::where('iduser', $user->iduser)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Active Milk Price
+        $currentPrice = HargaSusuHistory::getHargaAktif();
+
         return view('dashboard.pengelola', [
             'totalPeternak' => $totalPeternak,
             'totalProduksiBulanIni' => $totalProduksiBulanIni,
@@ -104,6 +135,8 @@ class DashboardController extends BaseController
             'top5Peternak' => $top5Peternak,
             'bagiHasilBreakdown' => $bagiHasilBreakdown,
             'monthlyStats' => $monthlyStats,
+            'notifikasi' => $notifikasi,
+            'currentPrice' => $currentPrice,
         ]);
     }
 
@@ -117,13 +150,10 @@ class DashboardController extends BaseController
             $prodThis = ProduksiHarian::whereYear('tanggal', $thisYear)->whereMonth('tanggal', $m)->sum('jumlah_susu_liter');
             $prodLast = ProduksiHarian::whereYear('tanggal', $lastYear)->whereMonth('tanggal', $m)->sum('jumlah_susu_liter');
             
-            $distThis = Distribusi::whereYear('tanggal_kirim', $thisYear)->whereMonth('tanggal_kirim', $m)->sum('volume');
-            
             $stats[] = [
                 'month' => date('M', mktime(0, 0, 0, $m, 1)),
                 'produksi_this' => (float)$prodThis,
                 'produksi_last' => (float)$prodLast,
-                'distribusi' => (float)$distThis
             ];
         }
         return $stats;

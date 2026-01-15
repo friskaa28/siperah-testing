@@ -28,6 +28,7 @@ class RegisterController extends Controller
             // Peternak specific validation (conditional)
             'jumlah_sapi' => 'required_if:role,peternak|nullable|integer|min:0',
             'lokasi' => 'required_if:role,peternak|nullable|string|max:255',
+            'status_mitra' => 'required_if:role,peternak|nullable|in:peternak,sub_penampung',
         ]);
 
         DB::beginTransaction();
@@ -47,6 +48,7 @@ class RegisterController extends Controller
                     'nama_peternak' => $validated['nama'], // Use user name as default
                     'jumlah_sapi' => $validated['jumlah_sapi'],
                     'lokasi' => $validated['lokasi'],
+                    'status_mitra' => $validated['status_mitra'] ?? 'peternak',
                     'koperasi_id' => 1, // Defaulting to 1 for now, user didn't specify logic
                 ]);
             }

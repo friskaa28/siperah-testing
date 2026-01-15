@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Peternak;
 use App\Models\ProduksiHarian;
 use App\Models\SlipPembayaran;
+use App\Models\HargaSusuHistory;
+use App\Models\Kasbon;
+use App\Models\ActivityLog;
+use App\Exports\ProduksiTemplateExport;
+use App\Imports\ProduksiImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -34,42 +40,40 @@ class GajiController extends Controller
 
     public function downloadTemplate()
     {
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=template_siperah.csv",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
-        $peternaks = Peternak::all();
-        $callback = function() use($peternaks) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Timestamp', 'Nama/No Peternak', 'Tanggal (YYYY-MM-DD)', 'Liter']);
-            foreach ($peternaks as $p) {
-                fputcsv($file, [now()->format('Y-m-d H:i:s'), $p->no_peternak ?: $p->nama_peternak, now()->format('Y-m-d'), '10.5']);
-            }
-            fclose($file);
-        };
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new ProduksiTemplateExport, 'template_siperah.xlsx');
     }
 
     private function generateForMonth($bulan, $tahun)
     {
         $peternaks = Peternak::all();
+        
+        // Defined period: 14th of previous month to 13th of chosen month
+        $endDate = Carbon::createFromDate($tahun, $bulan, 13)->endOfDay();
+        $startDate = $endDate->copy()->subMonth()->day(14)->startOfDay();
+
         foreach ($peternaks as $p) {
             $totalLiters = ProduksiHarian::where('idpeternak', $p->idpeternak)
-                ->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)
+                ->whereBetween('tanggal', [$startDate, $endDate])
                 ->sum('jumlah_susu_liter');
 
             if ($totalLiters <= 0) continue;
 
-            $lastDist = $p->distribusi()->orderBy('iddistribusi', 'desc')->first();
-            $harga = $lastDist ? $lastDist->harga_per_liter : 7000;
+            $harga = HargaSusuHistory::getHargaAktif($endDate);
+            $totalKasbon = Kasbon::where('idpeternak', $p->idpeternak)
+                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->sum('total_rupiah');
+
+            $totalGross = $totalLiters * $harga;
+            $netSalary = $totalGross - $totalKasbon;
 
             SlipPembayaran::updateOrCreate(
                 ['idpeternak' => $p->idpeternak, 'bulan' => $bulan, 'tahun' => $tahun],
-                ['jumlah_susu' => $totalLiters, 'harga_satuan' => $harga, 'total_pembayaran' => $totalLiters * $harga]
+                [
+                    'jumlah_susu' => $totalLiters, 
+                    'harga_satuan' => $harga, 
+                    'potongan_pakan' => $totalKasbon, // Reusing existing column for kasbon total
+                    'total_pembayaran' => $netSalary
+                ]
             );
         }
     }
@@ -99,87 +103,87 @@ class GajiController extends Controller
     public function print($idslip)
     {
         $slip = SlipPembayaran::with('peternak')->findOrFail($idslip);
-        return view('gaji.slip_print', compact('slip'));
+        $peternakId = $slip->peternak->no_peternak ?: 'MTR-' . str_pad($slip->peternak->idpeternak, 3, '0', STR_PAD_LEFT);
+        $qrBase64 = $this->generateQrBase64(url()->full());
+        
+        // Log print activity
+        ActivityLog::log(
+            'PRINT_SALARY_SLIP',
+            'Mencetak slip gaji untuk ' . $slip->peternak->nama_peternak . ' periode ' . date('F Y', mktime(0, 0, 0, $slip->bulan, 1, $slip->tahun)),
+            $slip
+        );
+        
+        return view('gaji.slip_print', compact('slip', 'peternakId', 'qrBase64'));
+    }
+
+    private function generateQrBase64($data)
+    {
+        try {
+            $url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($data);
+            $imageData = file_get_contents($url);
+            if ($imageData === false) return null;
+            return 'data:image/png;base64,' . base64_encode($imageData);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public function import(Request $request)
     {
-        $request->validate(['file' => 'required|mimes:csv,txt']);
-        $file = $request->file('file');
-        $filePath = $file->getRealPath();
+        $request->validate(['file' => 'required|mimes:xlsx,xls']);
         
-        $fileContent = file_get_contents($filePath);
-        // Handle BOM (Byte Order Mark) from Excel CSVs
-        $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
-        file_put_contents($filePath, $fileContent);
+        $import = new ProduksiImport;
+        Excel::import($import, $request->file('file'));
 
-        $firstLine = explode("\n", $fileContent)[0] ?? '';
-        $delimiter = (strpos($firstLine, ';') !== false) ? ';' : ',';
-        
-        $handle = fopen($filePath, "r");
-        fgetcsv($handle, 1000, $delimiter); // Skip header
-        
-        $imported = 0;
-        $failedNames = [];
-        $unrecognizedDates = [];
-        $row = 1;
-        $monthsToRegen = [];
-
-        while (($data = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
-            $row++;
-            if (!array_filter($data) || count($data) < 4) continue;
-            
-            $peternakID = trim($data[1] ?? '');
-            $tanggalLabel = trim($data[2] ?? '');
-            $liter = str_replace(',', '.', trim($data[3] ?? 0));
-
-            if (empty($peternakID) || empty($tanggalLabel)) continue;
-
-            $idTrim = strtolower(trim($peternakID));
-            $peternak = Peternak::where('no_peternak', $peternakID)
-                ->orWhere(DB::raw('LOWER(nama_peternak)'), $idTrim)
-                ->orWhere(DB::raw('LOWER(nama_peternak)'), 'LIKE', '%' . $idTrim . '%')
-                ->first();
-
-            if ($peternak) {
-                try {
-                    $dt = Carbon::parse($tanggalLabel);
-                    ProduksiHarian::updateOrCreate(
-                        ['idpeternak' => $peternak->idpeternak, 'tanggal' => $dt->format('Y-m-d'), 'waktu_setor' => 'pagi'],
-                        ['jumlah_susu_liter' => (float)$liter, 'biaya_pakan' => 0, 'biaya_tenaga' => 0, 'biaya_operasional' => 0]
-                    );
-                    $monthsToRegen[$dt->format('Y-m')] = ['m' => $dt->month, 'y' => $dt->year];
-                    $imported++;
-                } catch (\Exception $e) {
-                    $unrecognizedDates[] = $tanggalLabel . " (Error: " . $e->getMessage() . ")";
-                }
-            } else {
-                $failedNames[] = $peternakID;
-            }
-        }
-        fclose($handle);
-
-        foreach ($monthsToRegen as $info) {
+        foreach ($import->monthsToRegen as $info) {
             $this->generateForMonth($info['m'], $info['y']);
         }
 
-        if ($imported > 0) {
-            $msg = "✅ Berhasil! $imported data masuk.";
-            if (count($failedNames) > 0) {
-                $msg .= " Namun, nama ini gagal: " . implode(', ', array_unique($failedNames));
+        if ($import->imported > 0) {
+            $msg = "✅ Berhasil! {$import->imported} data masuk.";
+            if (count($import->failedNames) > 0) {
+                $msg .= " Namun, nama ini gagal: " . implode(', ', array_unique($import->failedNames));
             }
-            $last = collect($monthsToRegen)->last();
+            $last = collect($import->monthsToRegen)->last();
             return redirect()->route('gaji.index', ['bulan' => $last['m'], 'tahun' => $last['y']])->with('success', $msg);
         }
 
         $error = "❌ Gagal! 0 data yang cocok.";
-        if (count($failedNames) > 0) {
-            $error .= " Nama-nama berikut tidak terdaftar di sistem: " . implode(', ', array_unique($failedNames));
+        if (count($import->failedNames) > 0) {
+            $error .= " Nama-nama berikut tidak terdaftar di sistem: " . implode(', ', array_unique($import->failedNames));
         }
-        if (count($unrecognizedDates) > 0) {
-            $error .= " Tanggal bermasalah: " . implode(', ', array_unique($unrecognizedDates));
+        if (count($import->unrecognizedDates) > 0) {
+            $error .= " Tanggal bermasalah: " . implode(', ', array_unique($import->unrecognizedDates));
         }
         
         return back()->with('error', $error);
+    }
+
+    public function sign($idslip)
+    {
+        $slip = SlipPembayaran::findOrFail($idslip);
+        
+        if ($slip->isSigned()) {
+            return back()->with('error', 'Slip ini sudah ditandatangani.');
+        }
+
+        // Generate a simple unique token for digital signature verification
+        $token = hash('sha256', $slip->idslip . '|' . auth()->id() . '|' . now());
+
+        $slip->update([
+            'signed_by' => auth()->id(),
+            'signed_at' => now(),
+            'signature_token' => $token,
+            'status' => 'dibayar' // Auto mark as paid when signed
+        ]);
+
+        // Audit Logging
+        ActivityLog::log(
+            'SIGN_SALARY_SLIP', 
+            "Admin " . auth()->user()->nama . " menandatangani slip gaji Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
+            $slip
+        );
+
+        return back()->with('success', 'Slip gaji berhasil ditandatangani secara digital.');
     }
 }

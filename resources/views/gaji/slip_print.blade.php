@@ -53,7 +53,7 @@
 
         <div class="info-grid">
             <div>NAMA</div><div>:</div><div>{{ strtoupper($slip->peternak->nama_peternak) }}</div>
-            <div>NO.</div><div>:</div><div>{{ $slip->peternak->no_peternak ?? '-' }}</div>
+            <div>NO.</div><div>:</div><div>{{ $peternakId }}</div>
             <div>KELOMPOK</div><div>:</div><div>{{ strtoupper($slip->peternak->kelompok ?? '-') }}</div>
             <div>PERIODE / BULAN</div><div>:</div><div>{{ strtoupper(date('F Y', mktime(0, 0, 0, $slip->bulan, 1, $slip->tahun))) }}</div>
             <div>TS</div><div>:</div><div>-</div>
@@ -125,6 +125,14 @@
             <div class="signature-box">
                 <div>Diserahkan Oleh,</div>
                 <div class="signature-line">Admin Kantor</div>
+            </div>
+            <div class="signature-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;">
+                @if($qrBase64)
+                    <img src="{{ $qrBase64 }}" alt="QR Verification" style="width: 60px; height: 60px; border: 1px solid #eee; padding: 2px;">
+                @else
+                    <div style="width: 60px; height: 60px; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 6pt;">QR N/A</div>
+                @endif
+                <div style="font-size: 7pt; color: #666;">Scan Verifikasi Digital</div>
             </div>
             <div class="signature-box">
                 <div>Penerima,</div>

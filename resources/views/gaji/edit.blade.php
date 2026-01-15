@@ -6,11 +6,19 @@
 <div class="mb-4">
     <a href="{{ route('gaji.index', ['bulan' => $slip->bulan, 'tahun' => $slip->tahun]) }}" class="text-primary" style="text-decoration: none;">&larr; Kembali ke Daftar</a>
     <h1 class="mt-2">Detail & Potongan Slip ({{ $slip->peternak->nama_peternak }})</h1>
+    @if($slip->isSigned())
+        <div style="background: #EFF6FF; color: #1D4ED8; padding: 1rem; border-radius: 12px; border: 1px solid #BFDBFE; margin-top: 1rem;">
+            <i class="fas fa-lock"></i> <strong>Slip ini telah ditandatangani secara digital.</strong><br>
+            <span class="small">Perubahan tidak diperbolehkan untuk menjaga integritas data audit.</span>
+        </div>
+    @endif
 </div>
 
 <form action="{{ route('gaji.update', $slip->idslip) }}" method="POST">
     @csrf
     @method('PUT')
+    
+    @php $disabled = $slip->isSigned() ? 'disabled' : ''; @endphp
     
     <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
         <!-- INFO DASAR -->
@@ -68,7 +76,7 @@
                 @foreach($potongans as $key => $label)
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label class="form-label" style="font-size: 0.8rem;">{{ $label }}</label>
-                    <input type="number" name="{{ $key }}" class="form-control" style="padding: 0.5rem;" value="{{ (int)$slip->$key }}">
+                    <input type="number" name="{{ $key }}" class="form-control" style="padding: 0.5rem;" value="{{ (int)$slip->$key }}" {{ $disabled }}>
                 </div>
                 @endforeach
             </div>
@@ -87,7 +95,11 @@
     </div>
 
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem;">Simpan Perubahan</button>
+        @if(!$slip->isSigned())
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem;">Simpan Perubahan</button>
+        @else
+            <button type="button" class="btn btn-secondary" style="padding: 1rem 3rem; cursor: not-allowed;" disabled>Laporan Terkunci</button>
+        @endif
         <button type="button" class="btn btn-secondary" onclick="window.print()">Cetak Halaman Ini</button>
     </div>
 </form>

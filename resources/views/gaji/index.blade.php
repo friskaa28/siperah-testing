@@ -25,13 +25,21 @@
                 </ul>
             </div>
         @endif
-        <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="card p-1 d-flex align-center gap-2" style="flex-direction: row; margin-bottom: 0;">
-            @csrf
-            <div style="font-size: 0.8rem; color: #666; margin-right: 5px;">Upload CSV GForm:</div>
-            <input type="file" name="file" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" required>
-            <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Proses Data</button>
-            <a href="{{ route('gaji.template') }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Download format Excel yang benar">📥 Download Template</a>
-        </form>
+        <div class="card shadow-sm border-0" style="border-radius: 12px; margin-bottom: 0;">
+            <div class="card-body p-2">
+                <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-2">
+                    @csrf
+                    <label class="small fw-bold text-muted mb-0 text-nowrap">Upload Excel Produksi:</label>
+                    <input type="file" name="file" class="form-control form-control-sm w-auto" style="border-radius: 20px; min-width: 200px;" required accept=".xlsx, .xls">
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;">
+                        📥 Import Excel
+                    </button>
+                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;">
+                        📊 Download Template
+                    </a>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -80,10 +88,25 @@
                             <div style="font-size: 0.75rem; color: #666;">No: {{ $s->peternak->no_peternak ?: '-' }} | {{ $s->peternak->kelompok ?: '-' }}</div>
                         </td>
                         <td>{{ number_format($s->jumlah_susu, 2) }} L</td>
-                        <td style="font-weight: 600; color: #166534;">Rp {{ number_format($s->sisa_pembayaran, 0, ',', '.') }}</td>
+                        <td style="font-weight: 600; color: #166534;">
+                            Rp {{ number_format($s->sisa_pembayaran, 0, ',', '.') }}
+                            @if($s->isSigned())
+                                <div style="font-size: 0.65rem; color: var(--primary); margin-top: 4px;">
+                                    <i class="fas fa-check-circle"></i> Signed Digitally
+                                </div>
+                            @endif
+                        </td>
                         <td>
                             <div class="d-flex gap-1">
                                 <a href="{{ route('gaji.edit', $s->idslip) }}" class="btn btn-secondary p-1" title="Input Potongan">⚙️ Potongan</a>
+                                
+                                @if(!$s->isSigned())
+                                    <form action="{{ route('gaji.sign', $s->idslip) }}" method="POST" onsubmit="return confirm('Tanda tangani slip ini secara digital? Tindakan ini akan mengunci slip.')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success p-1" title="Tanda Tangani Digital">✍️ Sign</button>
+                                    </form>
+                                @endif
+
                                 <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="btn btn-primary p-1">🖨️ Cetak</a>
                             </div>
                         </td>

@@ -6,6 +6,9 @@ use App\Models\ProduksiHarian;
 use App\Models\BagiHasil;
 use App\Models\Peternak;
 use App\Models\Notifikasi;
+use App\Exports\ProduksiTemplateExport;
+use App\Imports\ProduksiImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,10 +48,8 @@ class ProduksiController extends Controller
             'tanggal' => 'required|date',
             'waktu_setor' => 'required|in:pagi,sore',
             'jumlah_susu_liter' => 'required|numeric|min:1',
-            'biaya_pakan' => 'required|numeric|min:0',
-            'biaya_tenaga' => 'required|numeric|min:0',
-            'biaya_operational' => 'required|numeric|min:0',
-            'photo_bukti' => 'nullable|image|max:2048',
+
+
             'catatan' => 'nullable|string',
         ];
 
@@ -68,16 +69,14 @@ class ProduksiController extends Controller
             $idpeternak = $peternak->idpeternak;
         }
 
-        // Handle file upload
-        if ($request->hasFile('photo_bukti')) {
-            $file = $request->file('photo_bukti');
-            $path = $file->store('produksi', 'public');
-            $validated['photo_bukti'] = $path;
-        }
+
 
         // Create produksi record
         $produksi = ProduksiHarian::create(array_merge($validated, [
             'idpeternak' => $idpeternak,
+            'biaya_pakan' => 0,
+            'biaya_tenaga' => 0,
+            'biaya_operasional' => 0,
         ]));
 
         // Send notification
@@ -97,20 +96,29 @@ class ProduksiController extends Controller
         return redirect('/dashboard-peternak')->with('success', 'Produksi berhasil dicatat!');
     }
 
-    public function listPeternak()
+    public function listPeternak(Request $request)
     {
         $user = Auth::user();
-        $peternak = $user->peternak;
+        $isAdmin = $user->isAdmin() || $user->isPengelola();
 
-        if (!$peternak) {
-            return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
+        if ($isAdmin) {
+            $query = ProduksiHarian::with('peternak')->orderBy('tanggal', 'desc');
+            if ($request->idpeternak) {
+                $query->where('idpeternak', $request->idpeternak);
+            }
+            $produksi = $query->paginate(15);
+            $peternaks = Peternak::all();
+            return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin'));
+        } else {
+            $peternak = $user->peternak;
+            if (!$peternak) {
+                return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
+            }
+            $produksi = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
+                ->orderBy('tanggal', 'desc')
+                ->paginate(15);
+            return view('produksi.list_peternak', compact('produksi'));
         }
-
-        $produksi = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
-            ->orderBy('tanggal', 'desc')
-            ->paginate(15);
-
-        return view('produksi.list_peternak', ['produksi' => $produksi]);
     }
 
     public function detailPerhitungan($idproduksi)
@@ -127,11 +135,47 @@ class ProduksiController extends Controller
             return back()->withErrors(['error' => 'Anda tidak berhak mengakses data ini.']);
         }
 
-        $bagiHasil = $produksi->bagiHasil;
-
         return view('produksi.detail_perhitungan', [
             'produksi' => $produksi,
-            'bagiHasil' => $bagiHasil,
         ]);
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new ProduksiTemplateExport, 'template_produksi_harian.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => 'required|mimes:xlsx,xls']);
+        
+        $import = new ProduksiImport;
+        Excel::import($import, $request->file('file'));
+
+        if ($import->imported > 0) {
+            $msg = "✅ Berhasil! {$import->imported} data produksi berhasil diimport.";
+            
+            if (count($import->failedNames) > 0) {
+                $msg .= " Namun, nama/ID ini tidak ditemukan: " . implode(', ', array_unique($import->failedNames));
+            }
+            if (count($import->unrecognizedDates) > 0) {
+                $msg .= " Tanggal bermasalah: " . implode(', ', array_unique($import->unrecognizedDates));
+            }
+            if (count($import->invalidWaktu) > 0) {
+                $msg .= " Waktu setor tidak valid (default ke pagi): " . implode(', ', array_unique($import->invalidWaktu));
+            }
+            
+            return back()->with('success', $msg);
+        }
+
+        $error = "❌ Gagal! 0 data yang berhasil diimport.";
+        if (count($import->failedNames) > 0) {
+            $error .= " Nama/ID tidak terdaftar: " . implode(', ', array_unique($import->failedNames));
+        }
+        if (count($import->unrecognizedDates) > 0) {
+            $error .= " Tanggal bermasalah: " . implode(', ', array_unique($import->unrecognizedDates));
+        }
+        
+        return back()->with('error', $error);
     }
 }

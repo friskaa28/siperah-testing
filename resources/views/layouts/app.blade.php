@@ -102,6 +102,7 @@
             border-right: 1px solid var(--border);
             padding: 1.5rem 0;
             overflow-y: auto;
+            transition: all 0.3s ease;
         }
 
         .sidebar-item {
@@ -126,6 +127,15 @@
             color: var(--primary);
             border-left: 3px solid var(--primary);
             padding-left: 1.5rem;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -256,9 +266,10 @@
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 16px 12px;
+            background-position: right 0.75rem center;
+            background-size: 14px 10px;
             cursor: pointer;
+            padding-right: 2.5rem !important; /* Added more space for the arrow */
         }
 
         textarea.form-control {
@@ -279,6 +290,48 @@
             color: var(--text-light);
             font-size: 0.9rem;
             letter-spacing: 0.02em;
+        }
+
+        /* ===== INPUT GROUP ===== */
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .input-group > .form-control {
+            position: relative;
+            flex: 1 1 auto;
+            width: 1%;
+            min-width: 0;
+        }
+
+        .input-group-text {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1;
+            color: var(--text-light);
+            text-align: center;
+            white-space: nowrap;
+            background-color: #F3F4F6;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .input-group > .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group > .input-group-text:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left: 0;
         }
 
         /* ===== BUTTON ===== */
@@ -364,97 +417,39 @@
 
         /* ===== RESPONSIVE: MOBILE ===== */
         @media (max-width: 640px) {
+            .mobile-toggle {
+                display: block;
+            }
+
             .layout {
+                position: relative;
                 flex-direction: column;
             }
 
             .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                padding: 1rem 0;
-                display: flex;
-                overflow-x: auto;
-                overflow-y: hidden;
+                position: fixed;
+                left: -250px;
+                top: 60px;
+                bottom: 0;
+                z-index: 99;
+                width: 250px;
+                box-shadow: 10px 0 20px rgba(0,0,0,0.05);
             }
 
-            .sidebar-item {
-                padding: 0.5rem 1rem;
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-
-            .sidebar-item:hover {
-                padding-left: 1rem;
-            }
-
-            .sidebar-item.active {
-                padding-left: 1rem;
+            .sidebar.show {
+                left: 0;
             }
 
             .content {
                 padding: 1rem;
             }
 
-            .content h1 {
-                font-size: 1.25rem;
-                margin-bottom: 1rem;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .navbar .container {
-                padding: 0 0.75rem;
-            }
-
-            .navbar-brand {
-                font-size: 1.25rem;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-                padding: 0.75rem 1rem;
-            }
-
-            .table {
-                font-size: 0.75rem;
-                overflow-x: auto;
-                display: block;
-            }
-
-            .table thead {
+            .navbar-actions .btn {
                 display: none;
             }
 
-            .table tbody,
-            .table tr,
-            .table td {
-                display: block;
-                width: 100%;
-            }
-
-            .table tr {
-                border: 1px solid var(--border);
-                margin-bottom: 1rem;
-                border-radius: 6px;
-                overflow: hidden;
-            }
-
-            .table td {
-                border: none;
-                padding: 0.5rem;
-                text-align: right;
-            }
-
-            .table td::before {
-                content: attr(data-label);
-                float: left;
-                font-weight: 600;
-                color: var(--dark);
+            .table-responsive {
+                border: 0;
             }
         }
 
@@ -477,10 +472,12 @@
 
         .mt-1 { margin-top: 0.5rem; }
         .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
         .mt-4 { margin-top: 2rem; }
 
         .mb-1 { margin-bottom: 0.5rem; }
         .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
         .mb-4 { margin-bottom: 2rem; }
 
         .p-1 { padding: 0.5rem; }
@@ -488,6 +485,13 @@
 
         .gap-1 { gap: 0.5rem; }
         .gap-2 { gap: 1rem; }
+        .gap-3 { gap: 1.5rem; }
+        .gap-4 { gap: 2rem; }
+
+        .w-auto { width: auto !important; }
+        .flex-wrap { flex-wrap: wrap !important; }
+        .align-items-center { align-items: center !important; }
+        .justify-content-between { justify-content: space-between !important; }
 
         .d-flex {
             display: flex;
@@ -629,11 +633,12 @@
     <nav class="navbar">
         <div class="container">
             <a href="/" class="navbar-brand">
-                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 48px; object-fit: contain;">
-                <img src="{{ asset('img/logo-innovillage.png') }}" alt="Innovillage Logo" style="height: 32px; margin-left: 12px; object-fit: contain;">
+                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 55px; object-fit: contain;">
+                <img src="{{ asset('img/logo-innovillage.png') }}" alt="Innovillage Logo" style="height: 30px; margin-left: 12px; object-fit: contain;">
             </a>
             <div class="navbar-actions">
                 @auth
+                    <button class="mobile-toggle" id="sidebarToggle">☰</button>
                     <div class="user-info">
                         <span class="user-name">{{ auth()->user()->nama ?? auth()->user()->email }}</span>
                         <form action="{{ route('logout') }}" method="POST" style="display: inline;">
@@ -665,6 +670,12 @@
                         🔔 Notifikasi
                     </a>
                     @endif
+                    <a href="{{ route('produksi.riwayat') }}" class="sidebar-item @if(request()->is('riwayat-produksi')) active @endif">
+                        📜 Riwayat Produksi
+                    </a>
+                    <a href="{{ route('peternak.laporan.index') }}" class="sidebar-item @if(request()->is('laporan*')) active @endif">
+                        📄 Laporan Pendapatan
+                    </a>
                 @elseif(auth()->user()->role === 'pengelola' || auth()->user()->role === 'admin')
                     <a href="/dashboard-pengelola" class="sidebar-item @if(request()->is('dashboard-pengelola')) active @endif">
                         📊 Dashboard
@@ -674,6 +685,9 @@
                         Input Data
                     </div>
                     @if(\App\Models\Setting::isEnabled('feature_produksi'))
+                    <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
+                        📜 Data Produksi
+                    </a>
                     <a href="/produksi/input" class="sidebar-item @if(request()->is('produksi/input')) active @endif">
                         ➕ Input Setor Susu
                     </a>
@@ -683,13 +697,30 @@
                         💵 Manajemen Gaji
                     </a>
 
-                    @if(auth()->user()->role === 'admin')
-                    @if(\App\Models\Setting::isEnabled('feature_distribusi'))
-                    <a href="/manajemen-distribusi" class="sidebar-item @if(request()->is('manajemen-distribusi*')) active @endif">
-                        🚚 Manajemen Distribusi
+                    <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
+                        Logistik & Kasbon
+                    </div>
+                    <a href="{{ route('logistik.index') }}" class="sidebar-item @if(request()->is('logistik*')) active @endif">
+                        📋 Katalog Barang
                     </a>
-                    @endif
-                    @endif
+                    <a href="{{ route('kasbon.index') }}" class="sidebar-item @if(request()->is('kasbon*')) active @endif">
+                        🛍️ Input Kasbon
+                    </a>
+
+                    <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
+                        Master Data
+                    </div>
+                    <a href="{{ route('harga_susu.index') }}" class="sidebar-item @if(request()->is('harga-susu*')) active @endif">
+                        💰 Harga Susu
+                    </a>
+                    <a href="{{ route('laporan.pusat') }}" class="sidebar-item @if(request()->is('laporan/pusat*')) active @endif">
+                        📑 Laporan Pusat
+                    </a>
+                    <a href="{{ route('laporan.rekap_harian') }}" class="sidebar-item @if(request()->is('laporan/rekap-harian*')) active @endif">
+                        📅 Rekap Harian
+                    </a>
+
+
 
 
 
@@ -703,6 +734,9 @@
                     @endif
 
                     @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('activity-log.index') }}" class="sidebar-item @if(request()->is('activity-log*')) active @endif">
+                        📋 Log Aktivitas
+                    </a>
                     <a href="{{ route('settings.index') }}" class="sidebar-item @if(request()->is('settings')) active @endif">
                         ⚙️ Pengaturan Fitur
                     </a>
@@ -743,5 +777,24 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @yield('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', function(e) {
+                    sidebar.classList.toggle('show');
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!sidebar.contains(e.target) && sidebar.classList.contains('show')) {
+                        sidebar.classList.remove('show');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

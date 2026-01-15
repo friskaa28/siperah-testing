@@ -1,101 +1,101 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Pengelola - SIPERAH')
+@section('title', 'Dashboard Admin - SIPERAH')
 
 @section('content')
-<h1>Dashboard Pengelola</h1>
-
-<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
-    <!-- KPI Card 1: Total Peternak -->
-    <div class="card" style="border-left: 4px solid var(--primary); padding: 0.75rem 1rem;">
-        <h3 style="color: var(--text-light); font-size: 0.75rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Peternak</h3>
-        <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">{{ $totalPeternak }}</h2>
-        <p style="color: var(--text-light); font-size: 0.65rem; margin: 0;">Terdaftar</p>
+<div class="row align-items-center mb-4">
+    <div class="col-md-6">
+        <h1 class="fw-bold mb-0">Dashboard Admin</h1>
+        <p class="text-muted">Pantau operasional harian dan kelola data master.</p>
     </div>
-
-    <!-- KPI Card 2: Total Produksi -->
-    <div class="card" style="border-left: 4px solid var(--success); padding: 0.75rem 1rem;">
-        <h3 style="color: var(--text-light); font-size: 0.75rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Produksi</h3>
-        <h2 style="color: var(--success); margin: 0; font-size: 1.5rem;">{{ number_format($totalProduksiBulanIni, 1) }} L</h2>
-        <p style="color: var(--text-light); font-size: 0.65rem; margin: 0;">Bulan ini</p>
-    </div>
-
-    <!-- KPI Card 3: Total Distribusi -->
-    <div class="card" style="border-left: 4px solid var(--warning); padding: 0.75rem 1rem;">
-        <h3 style="color: var(--text-light); font-size: 0.75rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Distribusi</h3>
-        <h2 style="color: var(--warning); margin: 0; font-size: 1.5rem;">{{ $totalDistribusi }}</h2>
-        <p style="color: var(--text-light); font-size: 0.65rem; margin: 0;">Pengiriman</p>
-    </div>
-
-    <!-- KPI Card 4: Total Pendapatan -->
-    <div class="card" style="border-left: 4px solid var(--danger); padding: 0.75rem 1rem;">
-        <h3 style="color: var(--text-light); font-size: 0.75rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Revenue</h3>
-        <h2 style="color: var(--danger); margin: 0; font-size: 1.5rem;">Rp {{ number_format($totalBagiHasil, 0, ',', '.') }}</h2>
-        <p style="color: var(--text-light); font-size: 0.65rem; margin: 0;">Bagi hasil</p>
-    </div>
-</div>
-
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; margin-top: 1rem;">
-    <!-- Main Chart: Produksi vs Distribusi -->
-    <div class="card" style="padding: 1rem;">
-        <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Statistik Bulanan ({{ date('Y') }})</h3>
-        <div style="height: 240px;">
-            <canvas id="mainChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Secondary Chart: Bagi Hasil Breakdown -->
-    <div class="card" style="padding: 1rem;">
-        <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Status Pembayaran</h3>
-        <div style="height: 240px; display: flex; justify-content: center;">
-            <canvas id="pieChart"></canvas>
+    <div class="col-md-6 text-end">
+        <div class="p-2 px-3 d-inline-block" style="background: #f0f7ff; border-radius: 12px; border: 1px solid #dbeafe;">
+            <p class="mb-0 text-muted small">Harga Susu Aktif</p>
+            <h4 class="fw-bold text-primary mb-0">Rp {{ number_format($currentPrice, 0, ',', '.') }}/L</h4>
         </div>
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-    <!-- Top 5 Peternak -->
-    <div class="card" style="padding: 1rem;">
-        <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">🏆 Top 5 Peternak (Bulan Ini)</h3>
-        <table class="table" style="font-size: 0.8rem; margin-bottom: 0;">
-            <thead>
-                <tr>
-                    <th>Peternak</th>
-                    <th>No. Peternak</th>
-                    <th>Jumlah Distribusi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($top5Peternak as $p)
-                <tr>
-                    <td style="font-weight: 500;">{{ $p->nama_peternak }}</td>
-                    <td>{{ $p->no_peternak ?: '-' }}</td>
-                    <td style="text-align: right; color: var(--primary); font-weight: 600;">{{ $p->distribusi_count }} x</td>
-                </tr>
+<!-- Quick Access Menu -->
+<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <a href="/produksi/input" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--success); transition: transform 0.2s;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🥛</span>
+        <h4 class="fw-bold mb-1" style="color: var(--dark);">Setoran Susu</h4>
+        <p class="text-muted small mb-0">Input Pagi/Sore</p>
+    </a>
+    <a href="{{ route('kasbon.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--danger); transition: transform 0.2s;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛍️</span>
+        <h4 class="fw-bold mb-1" style="color: var(--dark);">Input Kasbon</h4>
+        <p class="text-muted small mb-0">Pakan & Logistik</p>
+    </a>
+    <a href="{{ route('logistik.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--warning); transition: transform 0.2s;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📋</span>
+        <h4 class="fw-bold mb-1" style="color: var(--dark);">Katalog Barang</h4>
+        <p class="text-muted small mb-0">Atur Harga Pakan</p>
+    </a>
+    <a href="{{ route('harga_susu.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--primary); transition: transform 0.2s;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">💰</span>
+        <h4 class="fw-bold mb-1" style="color: var(--dark);">Harga Susu</h4>
+        <p class="text-muted small mb-0">Update Harga Beli</p>
+    </a>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1.2fr; gap: 1.5rem;">
+    <!-- Announcement & Stats -->
+    <div>
+        <!-- Broadcast Form -->
+        <div class="card mb-4" style="padding: 1.5rem;">
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">📢 Siarkan Pengumuman (Broadcast)</h3>
+            <form action="{{ route('pengumuman.broadcast') }}" method="POST">
+                @csrf
+                <div class="form-group">
+                    <textarea name="isi" class="form-control" placeholder="Ketik info untuk peternak di sini (Contoh: Libur hari raya, stok pakan masuk...)" required style="min-height: 100px; border-radius: 12px;"></textarea>
+                </div>
+                <div class="text-end mt-2">
+                    <button type="submit" class="btn btn-primary px-4">Siarkan Info</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Monthly Stats Chart -->
+        <div class="card" style="padding: 1.5rem;">
+            <h3 class="fw-bold mb-4" style="font-size: 1.1rem;">📈 Statistik Produksi (Time Series)</h3>
+            <div style="height: 300px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar: KPI & Activity -->
+    <div>
+        <div class="card mb-4" style="padding: 1.5rem;">
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">📊 Ringkasan Sistem</h3>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted">Total Mitra</span>
+                <span class="fw-bold">{{ $totalPeternak }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted">Produksi Bulan Ini</span>
+                <span class="fw-bold">{{ number_format($totalProduksiBulanIni, 1) }} L</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 mt-2">
+                <a href="/gaji" class="btn btn-secondary w-100 py-2">Rekapitulasi Gaji &raquo;</a>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 1.5rem;">
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">🔔 Aktivitas Terbaru</h3>
+            <div class="notif-list" style="max-height: 400px; overflow-y: auto;">
+                @forelse($notifikasi as $n)
+                    <div class="p-2 border-bottom mb-2">
+                        <p class="fw-bold small mb-1">{{ $n->judul }}</p>
+                        <p class="small text-muted mb-0">{{ $n->pesan }}</p>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ $n->created_at->diffForHumans() }}</small>
+                    </div>
                 @empty
-                <tr><td colspan="3" class="text-center">Belum ada data</td></tr>
+                    <p class="text-center text-muted py-4 small">Tidak ada aktivitas.</p>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="card" style="padding: 1rem;">
-        <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">⚡ Akses Cepat</h3>
-        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <a href="/produksi/input" class="btn btn-success text-center p-3" style="height: auto; flex-direction: column; font-size: 0.85rem;">
-                <span style="font-size: 1.2rem; display: block; margin-bottom: 3px;">➕</span>
-                Input Produksi
-            </a>
-            <a href="/manajemen-distribusi" class="btn btn-warning text-center p-3" style="height: auto; flex-direction: column; font-size: 0.85rem;">
-                <span style="font-size: 1.2rem; display: block; margin-bottom: 3px;">🚚</span>
-                Manajemen Distribusi
-            </a>
-            <a href="/gaji" class="btn btn-primary text-center p-3" style="height: auto; flex-direction: column; font-size: 0.85rem;">
-                <span style="font-size: 1.2rem; display: block; margin-bottom: 3px;">💵</span>
-                Manajemen Gaji
-            </a>
-
+            </div>
         </div>
     </div>
 </div>
@@ -104,7 +104,6 @@
 
 @section('scripts')
 <script>
-    // Bar Chart Configuration
     const ctxMain = document.getElementById('mainChart').getContext('2d');
     const monthlyStats = {!! json_encode($monthlyStats) !!};
     
@@ -117,62 +116,25 @@
                     label: 'Produksi {{ date('Y') }}',
                     data: monthlyStats.map(s => s.produksi_this),
                     backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                    borderColor: '#22C55E',
-                    borderWidth: 1,
-                    borderRadius: 5
+                    borderRadius: 4
                 },
                 {
                     label: 'Produksi {{ date('Y') - 1 }}',
                     data: monthlyStats.map(s => s.produksi_last),
-                    backgroundColor: 'rgba(156, 163, 175, 0.3)',
-                    borderColor: '#9CA3AF',
-                    borderWidth: 1,
-                    borderRadius: 5
-                },
-                {
-                    label: 'Distribusi {{ date('Y') }}',
-                    data: monthlyStats.map(s => s.distribusi),
-                    backgroundColor: 'rgba(33, 128, 211, 0.8)',
-                    borderColor: '#2180D3',
-                    borderWidth: 1,
-                    borderRadius: 5
+                    backgroundColor: 'rgba(100, 116, 139, 0.5)',
+                    borderRadius: 4
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                x: { grid: { display: false } }
+            plugins: {
+                legend: { position: 'bottom' }
             },
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
-            }
-        }
-    });
-
-    // Pie Chart Configuration
-    const ctxPie = document.getElementById('pieChart').getContext('2d');
-    const breakdown = {!! json_encode($bagiHasilBreakdown) !!};
-    
-    new Chart(ctxPie, {
-        type: 'doughnut',
-        data: {
-            labels: breakdown.map(b => b.status === 'dibayar' ? 'Selesai' : 'Pending'),
-            datasets: [{
-                data: breakdown.map(b => b.total),
-                backgroundColor: ['#22C55E', '#F97316', '#EF4444'],
-                hoverOffset: 4,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, usePointStyle: true } }
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
             }
         }
     });

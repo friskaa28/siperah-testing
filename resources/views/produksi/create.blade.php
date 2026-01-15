@@ -3,94 +3,196 @@
 @section('title', 'Input Produksi - SIPERAH')
 
 @section('content')
-<h1>Input Produksi Harian</h1>
-
-<div class="card" style="max-width: 600px; margin: 0 auto;">
-    <form method="POST" action="{{ route('produksi.store') }}" enctype="multipart/form-data" id="produksiForm">
-        @csrf
-
-        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label class="form-label" for="tanggal">Tanggal</label>
-                <input type="date" id="tanggal" name="tanggal" class="form-control" required value="{{ now()->format('Y-m-d') }}">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="waktu_setor">Waktu Setor</label>
-                <select name="waktu_setor" id="waktu_setor" class="form-control" required>
-                    <option value="pagi" {{ old('waktu_setor') == 'pagi' ? 'selected' : '' }}>Pagi</option>
-                    <option value="sore" {{ old('waktu_setor') == 'sore' ? 'selected' : '' }}>Sore</option>
-                </select>
-            </div>
+<div class="container-fluid px-2">
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-0">🥛 Input Produksi Harian</h3>
+            <p class="text-muted small mb-0">Catat hasil produksi susu dan biaya operasional</p>
         </div>
-
-        @if(isset($peternaks) && count($peternaks) > 0)
-        <div class="form-group">
-            <label class="form-label" for="idpeternak">Pilih Peternak</label>
-            <select name="idpeternak" id="idpeternak" class="form-control" required onchange="window.location.href='?idpeternak=' + this.value">
-                <option value="">-- Pilih Peternak --</option>
-                @foreach($peternaks as $p)
-                    <option value="{{ $p->idpeternak }}" {{ (request('idpeternak') == $p->idpeternak) ? 'selected' : '' }}>
-                        {{ $p->nama_peternak }} ({{ $p->lokasi }})
-                    </option>
-                @endforeach
-            </select>
+        <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <a href="{{ auth()->user()->isPeternak() ? '/dashboard-peternak' : '/dashboard-pengelola' }}" class="btn btn-outline-secondary btn-sm px-3">
+                ← Kembali
+            </a>
         </div>
-        @endif
+    </div>
 
-        <div class="form-group" style="background: #F0F9FF; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid #BAE6FD;">
-            <label class="form-label" for="jumlah_susu_liter" style="color: #0369A1; font-size: 1.1rem;">Jumlah Susu (Liter)</label>
-            <input type="number" id="jumlah_susu_liter" name="jumlah_susu_liter" class="form-control" step="0.01" required autofocus style="font-size: 1.5rem; font-weight: 700; height: auto; padding: 1rem;" placeholder="0.00">
-            <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #0369A1; opacity: 0.8;">* Masukkan jumlah susu yang disetorkan hari ini.</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 2rem;">
-            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--dark);">Biaya Operasional (Otomatis dari data terakhir)</h3>
-            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="biaya_pakan">Biaya Pakan (Rp)</label>
-                    <input type="number" id="biaya_pakan" name="biaya_pakan" class="form-control" step="0.01" required value="{{ old('biaya_pakan', $lastProduksi->biaya_pakan ?? 0) }}">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="biaya_tenaga">Biaya Tenaga (Rp)</label>
-                    <input type="number" id="biaya_tenaga" name="biaya_tenaga" class="form-control" step="0.01" required value="{{ old('biaya_tenaga', $lastProduksi->biaya_tenaga ?? 0) }}">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="biaya_operasional">Biaya Operasional (Rp)</label>
-                    <input type="number" id="biaya_operasional" name="biaya_operasional" class="form-control" step="0.01" required value="{{ old('biaya_operasional', $lastProduksi->biaya_operasional ?? 0) }}">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <!-- Import Section -->
+            @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+                <div class="card-body p-3">
+                    <form action="{{ route('produksi.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-3">
+                        @csrf
+                        <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 flex-grow-1">
+                            <label for="file" class="form-label small fw-bold text-muted mb-0 text-nowrap">Upload Excel Produksi:</label>
+                            <input type="file" class="form-control form-control-sm" name="file" id="file" accept=".xlsx, .xls" required style="border-radius: 20px;">
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm" style="border-radius: 8px; white-space: nowrap;">
+                                📥 Import Excel
+                            </button>
+                            <a href="{{ route('produksi.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm" title="Download Template" style="border-radius: 8px; white-space: nowrap; color: #64748b;">
+                                📊 Download Template
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
+            @endif
 
-        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label class="form-label" for="foto_bukti">Foto Bukti (Opsional)</label>
-                <input type="file" id="foto_bukti" name="foto_bukti" class="form-control" accept="image/*">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-body p-3 p-md-4">
+                    <form method="POST" action="{{ route('produksi.store') }}" enctype="multipart/form-data" id="produksiForm">
+                        @csrf
+
+                        <div class="row g-3">
+                            <!-- Left Column: Data Produksi -->
+                            <div class="col-md-7 border-end-md pe-md-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <h5 class="fw-bold mb-0 text-primary">📦 Data Produksi</h5>
+                                </div>
+                                
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label x-small fw-bold" for="tanggal">Tanggal</label>
+                                        <input type="date" id="tanggal" name="tanggal" class="form-control form-control-sm" required value="{{ now()->format('Y-m-d') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label x-small fw-bold" for="waktu_setor">Waktu Setor</label>
+                                        <select name="waktu_setor" id="waktu_setor" class="form-select form-select-sm" required>
+                                            <option value="pagi" {{ old('waktu_setor') == 'pagi' ? 'selected' : '' }}>Pagi</option>
+                                            <option value="sore" {{ old('waktu_setor') == 'sore' ? 'selected' : '' }}>Sore</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                @if(isset($peternaks) && count($peternaks) > 0)
+                                <div class="mb-3">
+                                    <label class="form-label x-small fw-bold" for="idpeternak">Mitra (Peternak / Sub-Penampung)</label>
+                                    <select name="idpeternak" id="idpeternak" class="form-select select2" required>
+                                        <option value="">-- Pilih Mitra --</option>
+                                        @foreach($peternaks as $p)
+                                            <option value="{{ $p->idpeternak }}" data-status="{{ $p->status_mitra }}" {{ (request('idpeternak') == $p->idpeternak) ? 'selected' : '' }}>
+                                                {{ $p->no_peternak ? '['.$p->no_peternak.'] ' : '' }}{{ $p->nama_peternak }} ({{ ucfirst($p->status_mitra) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @endif
+
+                                <div class="mb-3">
+                                    <label class="form-label x-small fw-bold text-primary" for="jumlah_susu_liter">Total Liter</label>
+                                    <div class="input-group">
+                                        <input type="number" id="jumlah_susu_liter" name="jumlah_susu_liter" class="form-control" step="0.01" required autofocus style="font-size: 1.25rem; font-weight: 700; height: 50px;" placeholder="0.00">
+                                        <span class="input-group-text bg-light px-3 fw-bold">LTR</span>
+                                    </div>
+                                </div>
+
+                                <!-- Kalkulator Jurigen (Sub-Penampung) -->
+                                <div id="calculator-section" style="display:none; background: #fffbeb; border: 1px solid #fef08a; padding: 12px; border-radius: 10px; margin-top: -5px;">
+                                    <label class="form-label x-small fw-bold text-warning mb-1">Kalkulator Jurigen</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" id="jurigen_input" class="form-control" placeholder="10.5+15+3">
+                                        <button type="button" class="btn btn-warning btn-sm" onclick="calculateJurigen()">Hitung</button>
+                                    </div>
+                                    <span class="x-small text-muted mt-1 d-block">Gunakan (+) untuk menjumlahkan.</span>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Notes -->
+                            <div class="col-md-5 ps-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label x-small fw-bold" for="catatan">Catatan / Keterangan</label>
+                                    <textarea id="catatan" name="catatan" class="form-control" rows="4" placeholder="Contoh: Susu grade A, atau catatan lainnya..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow" style="border-radius: 10px; min-width: 200px;">
+                                Simpan Data Produksi
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label class="form-label" for="catatan">Catatan</label>
-                <textarea id="catatan" name="catatan" class="form-control" rows="1" style="min-height: 45px;"></textarea>
-            </div>
         </div>
-
-        <div class="flex-between" style="margin-top: 1rem;">
-            <a href="{{ auth()->user()->isPeternak() ? '/dashboard-peternak' : '/dashboard-pengelola' }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1.1rem;">Simpan Data</button>
-        </div>
-    </form>
+    </div>
 </div>
 
+<style>
+    .x-small { font-size: 0.7rem; }
+    .select2-container--default .select2-selection--single {
+        height: 31px !important;
+        padding: 2px 5px !important;
+        font-size: 0.875rem !important;
+        border-radius: 12px !important;
+        border: 1px solid #E5E7EB !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 25px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 31px !important;
+    }
+    @media (min-width: 768px) {
+        .border-end-md { border-right: 1px solid #e2e8f0; }
+    }
+</style>
+@endsection
+
+@section('scripts')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih Mitra --",
+            allowClear: true
+        });
+
+        $('#idpeternak').on('change', function() {
+            const status = $(this).find(':selected').data('status');
+            const calcSection = $('#calculator-section');
+            if (status === 'sub_penampung') {
+                calcSection.show();
+            } else {
+                calcSection.hide();
+            }
+        });
+
+        $('#idpeternak').trigger('change');
+    });
+
+    function calculateJurigen() {
+        const input = document.getElementById('jurigen_input').value;
+        const totalInput = document.getElementById('jumlah_susu_liter');
+        
+        try {
+            const sanitized = input.replace(/[^0-9.+]/g, '');
+            const parts = sanitized.split('+');
+            let total = 0;
+            parts.forEach(p => {
+                if (p.trim() !== '') {
+                    total += parseFloat(p);
+                }
+            });
+            
+            totalInput.value = total.toFixed(2);
+        } catch (e) {
+            alert('Format input tidak valid.');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Auto-detect waktu setor
         const now = new Date();
         const hour = now.getHours();
         const waktuSelect = document.getElementById('waktu_setor');
         
-        // Hanya ganti jika user belum memilih manual (old value check could be added if needed)
         if (!{{ old('waktu_setor') ? 'true' : 'false' }}) {
             if (hour >= 5 && hour < 12) {
                 waktuSelect.value = 'pagi';
@@ -98,15 +200,6 @@
                 waktuSelect.value = 'sore';
             }
         }
-
-        // Shortcut Enter untuk submit jika di Liter (tapi biar lebih safety, manual click is fine or keydown handler)
-        const literInput = document.getElementById('jumlah_susu_liter');
-        literInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                // Biarkan default behavior yaitu submit form
-            }
-        });
     });
 </script>
-
 @endsection

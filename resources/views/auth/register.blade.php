@@ -66,6 +66,14 @@
                     <label class="form-label" for="lokasi">Lokasi Kandang / Alamat</label>
                     <input type="text" id="lokasi" name="lokasi" class="form-control" value="{{ old('lokasi') }}">
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="status_mitra">Status Mitra</label>
+                    <select name="status_mitra" id="status_mitra" class="form-control">
+                        <option value="peternak" {{ old('status_mitra') == 'peternak' ? 'selected' : '' }}>Peternak Biasa</option>
+                        <option value="sub_penampung" {{ old('status_mitra') == 'sub_penampung' ? 'selected' : '' }}>Sub-Penampung</option>
+                    </select>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Daftar Sekarang</button>

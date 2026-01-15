@@ -1,0 +1,146 @@
+@extends('layouts.app')
+
+@section('title', 'Manajemen Kasbon - SIP-SUSU')
+
+@section('content')
+<div class="mb-4">
+    <h1 class="fw-bold mb-0">Input Kasbon / Logistik</h1>
+    <p class="text-muted">Catat pengambilan pakan, vitamin, atau kasbon tunai peternak.</p>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <!-- Form Input Kasbon -->
+    <div class="card" style="height: fit-content;">
+        <h3 class="mb-4">Transaksi Baru</h3>
+        <form action="{{ route('kasbon.store') }}" method="POST">
+            @csrf
+            
+            <div class="form-group">
+                <label class="form-label">Nama Mitra (Peternak)</label>
+                <select name="idpeternak" id="idpeternak" class="form-select select2" required>
+                    <option value="">-- Pilih Mitra --</option>
+                    @foreach($peternaks as $p)
+                        <option value="{{ $p->idpeternak }}">{{ $p->no_peternak ? '['.$p->no_peternak.'] ' : '' }}{{ $p->nama_peternak }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Pilih Barang / Logistik</label>
+                <select name="idlogistik" id="idlogistik" class="form-select" required onchange="updateSubtotal()">
+                    <option value="">-- Pilih Barang --</option>
+                    @foreach($items as $item)
+                        <option value="{{ $item->id }}" data-price="{{ $item->harga_satuan }}">{{ $item->nama_barang }} (Rp {{ number_format($item->harga_satuan, 0, ',', '.') }})</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Jumlah (Qty)</label>
+                <input type="number" step="0.01" name="qty" id="qty" class="form-control" required min="0.01" value="1" oninput="updateSubtotal()">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tanggal Transaksi</label>
+                <input type="date" name="tanggal" class="form-control" required value="{{ date('Y-m-d') }}">
+            </div>
+
+            <div class="p-3 mb-4 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
+                <span class="fw-bold text-muted">Total Hutang</span>
+                <span class="fw-bold text-primary" style="font-size: 1.25rem;" id="subtotalDisplay">Rp 0</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Catat Transaksi</button>
+        </form>
+    </div>
+
+    <!-- Riwayat Kasbon -->
+    <div class="card">
+        <h3 class="mb-4">Riwayat Kasbon Terbaru</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Mitra</th>
+                        <th>Barang</th>
+                        <th>Total</th>
+                        <th class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($kasbons as $k)
+                    <tr>
+                        <td>{{ $k->tanggal->format('d/m/y') }}</td>
+                        <td>
+                            <div class="fw-bold">{{ $k->peternak->nama_peternak }}</div>
+                            <div class="small text-muted">{{ $k->peternak->no_peternak }}</div>
+                        </td>
+                        <td>
+                            <div>{{ $k->nama_item }}</div>
+                            <div class="small text-muted">{{ $k->qty }} x Rp{{ number_format($k->harga_satuan, 0, ',', '.') }}</div>
+                        </td>
+                        <td class="fw-bold text-danger">Rp {{ number_format($k->total_rupiah, 0, ',', '.') }}</td>
+                        <td class="text-end">
+                            <form action="{{ route('kasbon.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus data kasbon ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Belum ada data kasbon.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">
+            {{ $kasbons->links() }}
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+    .select2-container--default .select2-selection--single {
+        border-radius: 12px;
+        height: 48px;
+        padding-top: 10px;
+        border-color: var(--border);
+        background-color: #FAFAFA;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih Mitra --",
+            allowClear: true
+        });
+    });
+
+    function updateSubtotal() {
+        const select = document.getElementById('idlogistik');
+        const qty = document.getElementById('qty').value;
+        const display = document.getElementById('subtotalDisplay');
+        
+        const option = select.options[select.selectedIndex];
+        const price = option.dataset.price || 0;
+        
+        const total = price * qty;
+        display.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+    }
+</script>
+@endsection

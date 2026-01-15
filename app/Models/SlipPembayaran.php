@@ -35,6 +35,9 @@ class SlipPembayaran extends Model
         'sisa_pembayaran',
         'status', // pending, dibayar
         'tanggal_bayar',
+        'signed_by',
+        'signed_at',
+        'signature_token',
     ];
 
     protected $casts = [
@@ -44,11 +47,22 @@ class SlipPembayaran extends Model
         'total_pembayaran' => 'decimal:2',
         'total_potongan' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',
+        'signed_at' => 'datetime',
     ];
 
     public function peternak()
     {
         return $this->belongsTo(Peternak::class, 'idpeternak', 'idpeternak');
+    }
+
+    public function signer()
+    {
+        return $this->belongsTo(User::class, 'signed_by', 'iduser');
+    }
+
+    public function isSigned()
+    {
+        return !empty($this->signature_token);
     }
 
     protected static function booted()

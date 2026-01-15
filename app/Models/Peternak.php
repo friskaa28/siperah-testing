@@ -18,6 +18,7 @@ class Peternak extends Model
         'jumlah_sapi',
         'lokasi',
         'koperasi_id',
+        'status_mitra',
     ];
 
     // Relationships
@@ -34,6 +35,11 @@ class Peternak extends Model
     public function distribusi()
     {
         return $this->hasMany(Distribusi::class, 'idpeternak', 'idpeternak');
+    }
+
+    public function kasbon()
+    {
+        return $this->hasMany(Kasbon::class, 'idpeternak', 'idpeternak');
     }
 
     // Scopes
