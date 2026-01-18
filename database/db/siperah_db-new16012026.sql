@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 14, 2026 at 05:53 PM
+-- Generation Time: Jan 15, 2026 at 06:17 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,33 @@ SET time_zone = "+00:00";
 --
 -- Database: `siperah_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `action` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `ip_address` varchar(255) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `reference_type` varchar(255) DEFAULT NULL,
+  `reference_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `description`, `ip_address`, `user_agent`, `reference_type`, `reference_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 'SIGN_SALARY_SLIP', 'Admin Admin SIPERAH menandatangani slip gaji Mitra: Peternak Satu - Profil (ID: 1)', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'App\\Models\\SlipPembayaran', NULL, '2026-01-14 10:56:02', '2026-01-14 10:56:02'),
+(2, 1, 'PRINT_SALARY_SLIP', 'Mencetak slip gaji untuk Peternak Satu - Profil periode January 2026', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'App\\Models\\SlipPembayaran', NULL, '2026-01-15 09:32:39', '2026-01-15 09:32:39');
 
 -- --------------------------------------------------------
 
@@ -227,6 +254,13 @@ CREATE TABLE `harga_susu_history` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `harga_susu_history`
+--
+
+INSERT INTO `harga_susu_history` (`id`, `harga`, `tanggal_berlaku`, `created_at`, `updated_at`) VALUES
+(1, 7000.00, '2026-01-15', '2026-01-15 09:21:04', '2026-01-15 09:21:04');
+
 -- --------------------------------------------------------
 
 --
@@ -281,6 +315,13 @@ CREATE TABLE `kasbon` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `kasbon`
+--
+
+INSERT INTO `kasbon` (`id`, `idpeternak`, `idlogistik`, `nama_item`, `qty`, `harga_satuan`, `total_rupiah`, `tanggal`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'test', 2.00, 10000.00, 20000.00, '2026-01-15', '2026-01-15 07:57:24', '2026-01-15 07:57:24');
+
 -- --------------------------------------------------------
 
 --
@@ -294,6 +335,13 @@ CREATE TABLE `katalog_logistik` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `katalog_logistik`
+--
+
+INSERT INTO `katalog_logistik` (`id`, `nama_barang`, `harga_satuan`, `created_at`, `updated_at`) VALUES
+(1, 'test', 10000.00, '2026-01-14 10:34:05', '2026-01-14 10:34:05');
 
 -- --------------------------------------------------------
 
@@ -361,7 +409,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (10, '2024_01_01_000003_create_distribusi_table', 1),
 (11, '2024_01_01_000004_create_notifikasi_table', 1),
 (12, '2024_01_01_000005_create_laporan_table', 1),
-(13, '2026_01_15_000000_refactor_sip_susu_tables', 5);
+(13, '2026_01_15_000000_refactor_sip_susu_tables', 5),
+(14, '2026_01_14_174314_create_activity_logs_table', 6),
+(15, '2026_01_14_174513_add_signature_to_slip_pembayaran_table', 6);
 
 -- --------------------------------------------------------
 
@@ -395,7 +445,6 @@ INSERT INTO `notifikasi` (`idnotif`, `iduser`, `judul`, `pesan`, `tipe`, `katego
 (6, 2, 'Bagi Hasil Dihitung', 'Bagi hasil untuk hari ini telah dihitung otomatis', 'success', 'bagi_hasil', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
 (7, 2, 'Status Distribusi Update', 'Ada 5 distribusi yang statusnya berubah menjadi terkirim', 'info', 'jadwal', 'belum_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
 (8, 3, 'Produksi Tercatat', 'Produksi Anda hari ini sebesar 48 liter telah tercatat', 'success', 'jadwal', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
-(9, 3, 'Bagi Hasil Dihitung', 'Bagi hasil Anda dihitung otomatis sebesar Rp 2.400.000', 'success', 'bagi_hasil', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
 (10, 3, 'Distribusi Diterima', 'Susu Anda hari ini telah diterima oleh koperasi', 'success', 'jadwal', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
 (11, 3, 'Reminder Input Produksi', 'Jangan lupa input produksi hari ini!', 'warning', 'jadwal', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 19:43:41'),
 (12, 4, 'Produksi Tercatat', 'Produksi Anda hari ini sebesar 54 liter telah tercatat', 'success', 'jadwal', 'sudah_baca', '2025-12-25 13:00:46', '2025-12-25 13:00:46', '2025-12-25 13:00:46'),
@@ -441,6 +490,13 @@ CREATE TABLE `pengumuman` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `pengumuman`
+--
+
+INSERT INTO `pengumuman` (`id`, `isi`, `id_admin`, `created_at`, `updated_at`) VALUES
+(1, 'test', 1, '2026-01-15 07:44:00', '2026-01-15 07:44:00');
 
 -- --------------------------------------------------------
 
@@ -555,7 +611,12 @@ INSERT INTO `produksi_harian` (`idproduksi`, `idpeternak`, `tanggal`, `waktu_set
 (53, 3, '2026-01-05', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
 (54, 4, '2026-01-05', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
 (55, 5, '2026-01-05', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
-(56, 1, '2026-01-13', 'sore', 2.00, 20000.00, 20000.00, 10000.00, NULL, NULL, '2026-01-13 07:48:22', '2026-01-13 07:48:22');
+(56, 1, '2026-01-13', 'sore', 2.00, 20000.00, 20000.00, 10000.00, NULL, NULL, '2026-01-13 07:48:22', '2026-01-13 07:48:22'),
+(57, 1, '2026-01-15', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-15 09:20:21', '2026-01-15 09:20:21'),
+(58, 2, '2026-01-15', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-15 09:20:21', '2026-01-15 09:20:21'),
+(59, 3, '2026-01-15', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-15 09:20:21', '2026-01-15 09:20:21'),
+(60, 4, '2026-01-15', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-15 09:20:21', '2026-01-15 09:20:21'),
+(61, 5, '2026-01-15', 'pagi', 10.50, 0.00, 0.00, 0.00, NULL, NULL, '2026-01-15 09:20:21', '2026-01-15 09:20:21');
 
 -- --------------------------------------------------------
 
@@ -577,7 +638,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('tVl4UcDeYaRZHxd3agzSuBtlucQ38d9ckIeSyn1a', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRUFZRW9qc2RvTkFWMHdoQ3lZV0J1V2gwNnNyWDZaem1INnRQaEtMQSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1768403570);
+('XlYWsHETA2YI7hsSqkyjQEt6IXM9DEFfisKNm1j2', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQnNJaUUxZTJZd3lVVVd5Y2lWSWtYYWxobXNUYkY2QVVnSEtTaXNRZSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQtcGVuZ2Vsb2xhIjtzOjU6InJvdXRlIjtzOjE5OiJkYXNoYm9hcmQucGVuZ2Vsb2xhIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1768497097);
 
 -- --------------------------------------------------------
 
@@ -634,6 +695,9 @@ CREATE TABLE `slip_pembayaran` (
   `potongan_lain_lain` decimal(15,2) NOT NULL DEFAULT 0.00,
   `total_potongan` decimal(15,2) NOT NULL DEFAULT 0.00,
   `sisa_pembayaran` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `signed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `signed_at` timestamp NULL DEFAULT NULL,
+  `signature_token` varchar(255) DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'pending',
   `tanggal_bayar` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -644,12 +708,12 @@ CREATE TABLE `slip_pembayaran` (
 -- Dumping data for table `slip_pembayaran`
 --
 
-INSERT INTO `slip_pembayaran` (`idslip`, `idpeternak`, `bulan`, `tahun`, `jumlah_susu`, `harga_satuan`, `total_pembayaran`, `potongan_shr`, `potongan_hutang_bl_ll`, `potongan_pakan_a`, `potongan_pakan_b`, `potongan_vitamix`, `potongan_konsentrat`, `potongan_skim`, `potongan_ib_keswan`, `potongan_susu_a`, `potongan_kas_bon`, `potongan_pakan_b_2`, `potongan_sp`, `potongan_karpet`, `potongan_vaksin`, `potongan_lain_lain`, `total_potongan`, `sisa_pembayaran`, `status`, `tanggal_bayar`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 2026, 12.50, 50000.00, 625000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 625000.00, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-13 07:48:52'),
-(2, 2, 1, 2026, 10.50, 50000.00, 525000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 525000.00, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
-(3, 3, 1, 2026, 10.50, 50000.00, 525000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 525000.00, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
-(4, 4, 1, 2026, 10.50, 50000.00, 525000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 525000.00, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07'),
-(5, 5, 1, 2026, 10.50, 50000.00, 525000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 525000.00, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-05 08:13:07');
+INSERT INTO `slip_pembayaran` (`idslip`, `idpeternak`, `bulan`, `tahun`, `jumlah_susu`, `harga_satuan`, `total_pembayaran`, `potongan_shr`, `potongan_hutang_bl_ll`, `potongan_pakan_a`, `potongan_pakan_b`, `potongan_vitamix`, `potongan_konsentrat`, `potongan_skim`, `potongan_ib_keswan`, `potongan_susu_a`, `potongan_kas_bon`, `potongan_pakan_b_2`, `potongan_sp`, `potongan_karpet`, `potongan_vaksin`, `potongan_lain_lain`, `total_potongan`, `sisa_pembayaran`, `signed_by`, `signed_at`, `signature_token`, `status`, `tanggal_bayar`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 2026, 482.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 1, '2026-01-14 10:56:02', '9bdfac882dcc05425a1b971eadfb8ca7a93e4d8c1e796919f748e93b1917e6d9', 'dibayar', NULL, '2026-01-05 08:13:07', '2026-01-15 07:56:51'),
+(2, 2, 1, 2026, 542.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-15 07:56:51'),
+(3, 3, 1, 2026, 406.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-15 07:56:51'),
+(4, 4, 1, 2026, 615.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-15 07:56:51'),
+(5, 5, 1, 2026, 436.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, 'pending', NULL, '2026-01-05 08:13:07', '2026-01-15 07:56:51');
 
 -- --------------------------------------------------------
 
@@ -687,6 +751,13 @@ INSERT INTO `users` (`iduser`, `nama`, `email`, `password`, `pin`, `role`, `nohp
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `activity_logs_user_id_foreign` (`user_id`);
 
 --
 -- Indexes for table `bagi_hasil`
@@ -834,7 +905,9 @@ ALTER TABLE `settings`
 --
 ALTER TABLE `slip_pembayaran`
   ADD PRIMARY KEY (`idslip`),
-  ADD KEY `slip_pembayaran_idpeternak_foreign` (`idpeternak`);
+  ADD UNIQUE KEY `slip_pembayaran_signature_token_unique` (`signature_token`),
+  ADD KEY `slip_pembayaran_idpeternak_foreign` (`idpeternak`),
+  ADD KEY `slip_pembayaran_signed_by_foreign` (`signed_by`);
 
 --
 -- Indexes for table `users`
@@ -848,6 +921,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `bagi_hasil`
@@ -871,7 +950,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `harga_susu_history`
 --
 ALTER TABLE `harga_susu_history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -883,13 +962,13 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `kasbon`
 --
 ALTER TABLE `kasbon`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `katalog_logistik`
 --
 ALTER TABLE `katalog_logistik`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `laporan`
@@ -901,7 +980,7 @@ ALTER TABLE `laporan`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `notifikasi`
@@ -913,7 +992,7 @@ ALTER TABLE `notifikasi`
 -- AUTO_INCREMENT for table `pengumuman`
 --
 ALTER TABLE `pengumuman`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `peternak`
@@ -925,7 +1004,7 @@ ALTER TABLE `peternak`
 -- AUTO_INCREMENT for table `produksi_harian`
 --
 ALTER TABLE `produksi_harian`
-  MODIFY `idproduksi` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `idproduksi` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `settings`
@@ -948,6 +1027,12 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD CONSTRAINT `activity_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`iduser`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `bagi_hasil`
@@ -1002,7 +1087,8 @@ ALTER TABLE `produksi_harian`
 -- Constraints for table `slip_pembayaran`
 --
 ALTER TABLE `slip_pembayaran`
-  ADD CONSTRAINT `slip_pembayaran_idpeternak_foreign` FOREIGN KEY (`idpeternak`) REFERENCES `peternak` (`idpeternak`) ON DELETE CASCADE;
+  ADD CONSTRAINT `slip_pembayaran_idpeternak_foreign` FOREIGN KEY (`idpeternak`) REFERENCES `peternak` (`idpeternak`) ON DELETE CASCADE,
+  ADD CONSTRAINT `slip_pembayaran_signed_by_foreign` FOREIGN KEY (`signed_by`) REFERENCES `users` (`iduser`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
