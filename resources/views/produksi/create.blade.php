@@ -6,12 +6,12 @@
 <div class="container-fluid px-2">
     <div class="row mb-3 align-items-center">
         <div class="col-md-8">
-            <h3 class="fw-bold mb-0">🥛 Input Produksi Harian</h3>
+            <h3 class="fw-bold mb-0"><i class="fas fa-plus-circle"></i> Input Produksi Harian</h3>
             <p class="text-muted small mb-0">Catat hasil produksi susu dan biaya operasional</p>
         </div>
         <div class="col-md-4 text-md-end mt-2 mt-md-0">
             <a href="{{ auth()->user()->isPeternak() ? '/dashboard-peternak' : '/dashboard-pengelola' }}" class="btn btn-outline-secondary btn-sm px-3">
-                ← Kembali
+                <i class="fas fa-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
@@ -30,11 +30,11 @@
                         </div>
                         
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm" style="border-radius: 8px; white-space: nowrap;">
-                                📥 Import Excel
+                            <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm" style="border-radius: 8px; white-space: nowrap;" data-tooltip="Klik untuk mengimport data produksi dari file Excel">
+                                <i class="fas fa-file-import"></i> Import Excel
                             </button>
-                            <a href="{{ route('produksi.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm" title="Download Template" style="border-radius: 8px; white-space: nowrap; color: #64748b;">
-                                📊 Download Template
+                            <a href="{{ route('produksi.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm" title="Download Template" style="border-radius: 8px; white-space: nowrap; color: #64748b;" data-tooltip="Unduh template Excel untuk pengisian data">
+                                <i class="fas fa-download"></i> Download Template
                             </a>
                         </div>
                     </form>
@@ -51,7 +51,7 @@
                             <!-- Left Column: Data Produksi -->
                             <div class="col-md-7 border-end-md pe-md-4">
                                 <div class="d-flex align-items-center mb-3">
-                                    <h5 class="fw-bold mb-0 text-primary">📦 Data Produksi</h5>
+                                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-box"></i> Data Produksi</h5>
                                 </div>
                                 
                                 <div class="row g-2 mb-3">

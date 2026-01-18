@@ -8,6 +8,7 @@ use App\Models\Kasbon;
 use App\Models\Peternak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class PeternakLaporanController extends Controller
 {

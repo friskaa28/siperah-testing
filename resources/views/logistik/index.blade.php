@@ -9,7 +9,7 @@
         <p class="text-muted">Kelola daftar pakan, vitamin, dan obat-obatan.</p>
     </div>
     <button class="btn btn-primary" onclick="showAddModal()">
-        ➕ Tambah Barang
+        <i class="fas fa-plus"></i> Tambah Barang
     </button>
 </div>
 

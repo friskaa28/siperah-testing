@@ -3,15 +3,15 @@
 @section('title', 'Laporan Pendapatan - SIPERAH')
 
 @section('content')
-@section('content')
+
 <div class="row align-items-center mb-4">
     <div class="col-md-6">
-        <h1 class="h3 fw-bold mb-0">💰 Laporan Pendapatan</h1>
+        <h1 class="h3 fw-bold mb-0"><i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan</h1>
         <p class="text-muted mb-0">Rincian setoran susu dan potongan kasbon periode ini</p>
     </div>
     <div class="col-md-6 text-md-end mt-3 mt-md-0">
         <a href="{{ route('peternak.laporan.pdf', request()->all()) }}" class="btn btn-outline-danger btn-sm px-3 shadow-sm">
-            📥 Download PDF
+            <i class="fas fa-file-pdf"></i> Download PDF
         </a>
     </div>
 </div>
@@ -51,7 +51,7 @@
 <div class="grid" style="grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
     <!-- Detail Setoran -->
     <div class="card">
-        <h3 class="fw-bold mb-3" style="font-size: 1rem;">📜 Histori Setoran Susu</h3>
+        <h3 class="fw-bold mb-3" style="font-size: 1rem;"><i class="fas fa-history"></i> Histori Setoran Susu</h3>
         <table class="table small">
             <thead>
                 <tr>
@@ -76,7 +76,7 @@
 
     <!-- Detail Kasbon -->
     <div class="card">
-        <h3 class="fw-bold mb-3" style="font-size: 1rem;">🛍️ Histori Kasbon & Logistik</h3>
+        <h3 class="fw-bold mb-3" style="font-size: 1rem;"><i class="fas fa-shopping-basket"></i> Histori Kasbon & Logistik</h3>
         <table class="table small">
             <thead>
                 <tr>

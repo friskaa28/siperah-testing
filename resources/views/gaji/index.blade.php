@@ -5,12 +5,12 @@
 @section('content')
 @if(session('error'))
     <div style="background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 8px; border: 1px solid #FECACA; margin-bottom: 1.5rem;">
-        ❌ {{ session('error') }}
+        <i class="fas fa-times-circle"></i> {{ session('error') }}
     </div>
 @endif
 @if(session('success'))
     <div style="background: #DCFCE7; color: #166534; padding: 1rem; border-radius: 8px; border: 1px solid #BBF7D0; margin-bottom: 1.5rem;">
-        ✅ {{ session('success') }}
+        <i class="fas fa-check-circle"></i> {{ session('success') }}
     </div>
 @endif
 <div class="flex-between mb-4">
@@ -31,11 +31,11 @@
                     @csrf
                     <label class="small fw-bold text-muted mb-0 text-nowrap">Upload Excel Produksi:</label>
                     <input type="file" name="file" class="form-control form-control-sm w-auto" style="border-radius: 20px; min-width: 200px;" required accept=".xlsx, .xls">
-                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;">
-                        📥 Import Excel
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;" data-tooltip="Klik untuk mengimport data slip gaji dari file Excel">
+                        <i class="fas fa-file-import"></i> Import Excel
                     </button>
-                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;">
-                        📊 Download Template
+                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;" data-tooltip="Unduh template Excel untuk data gaji">
+                        <i class="fas fa-download"></i> Download Template
                     </a>
                 </form>
             </div>
@@ -98,16 +98,16 @@
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="{{ route('gaji.edit', $s->idslip) }}" class="btn btn-secondary p-1" title="Input Potongan">⚙️ Potongan</a>
+                                <a href="{{ route('gaji.edit', $s->idslip) }}" class="btn btn-secondary p-1" title="Input Potongan"><i class="fas fa-cog"></i> Potongan</a>
                                 
                                 @if(!$s->isSigned())
                                     <form action="{{ route('gaji.sign', $s->idslip) }}" method="POST" onsubmit="return confirm('Tanda tangani slip ini secara digital? Tindakan ini akan mengunci slip.')">
                                         @csrf
-                                        <button type="submit" class="btn btn-success p-1" title="Tanda Tangani Digital">✍️ Sign</button>
+                                        <button type="submit" class="btn btn-success p-1" title="Tanda Tangani Digital"><i class="fas fa-pen-nib"></i> Sign</button>
                                     </form>
                                 @endif
 
-                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="btn btn-primary p-1">🖨️ Cetak</a>
+                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="btn btn-primary p-1"><i class="fas fa-print"></i> Cetak</a>
                             </div>
                         </td>
                     </tr>
@@ -129,8 +129,8 @@
         <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5563; line-height: 1.6;">
             <li><strong>Upload CSV GForm</strong>: Pilih file dan klik "Proses Data". Slip gaji akan langsung terbuat otomatis.</li>
             <li><strong>Cek Nama</strong>: Pastikan nama di Excel sama dengan daftar di bawah.</li>
-            <li><strong>Isi Potongan</strong>: Klik tombol ⚙️ untuk memasukkan biaya pakan, kas bon, dll.</li>
-            <li><strong>Cetak</strong>: Klik 🖨️ untuk print slip fisik.</li>
+            <li><strong>Isi Potongan</strong>: Klik tombol <i class="fas fa-cog"></i> untuk memasukkan biaya pakan, kas bon, dll.</li>
+            <li><strong>Cetak</strong>: Klik <i class="fas fa-print"></i> untuk print slip fisik.</li>
         </ol>
 
         <h3 class="mt-4 mb-2">Bulan yang Tersedia:</h3>

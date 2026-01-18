@@ -71,7 +71,7 @@
             text-decoration: none;
             font-weight: 700;
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.8rem;
         }
 
         .btn {
@@ -243,6 +243,7 @@
 
         .opp-content {
             padding: 2rem;
+            text-align: center;
         }
 
         .opp-card h3 {
@@ -544,7 +545,7 @@
     <nav>
         <div class="container nav-container">
             <a href="/" class="logo">
-                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 48px;">
+                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 80px;">
                 SIPERAH
             </a>
             <div class="nav-actions">
@@ -556,8 +557,8 @@
     <header class="hero">
         <div class="container hero-content">
             <div class="hero-text">
-                <h1>Kelola Usaha <span>Lebih Pasti</span>, Pendapatan Lebih Transparan</h1>
-                <p>SIPERAH hadir untuk membantu peternak sapi perah mengelola keuangan dan usaha secara mudah, rapi, dan transparan.</p>
+                <h1>Usaha Ternak <span>Lebih Pasti</span>,Catatan Keuangan <span>Lebih Rapi</span></h1>
+                <p>SIPERAH hadir untuk membantu peternak sapi perah mengelola keuangan dan usaha secara mudah, rapi dan tertata.</p>
                 <div class="hero-actions">
                     <a href="{{ route('login') }}" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Mulai Sekarang</a>
                 </div>
@@ -602,26 +603,35 @@
     <section class="opportunities">
         <div class="container">
             <div class="section-title">
-                <h2>Jangan Bergantung pada Satu Sumber</h2>
-                <p>Susu adalah utama, tapi bukan satu-satunya peluang. Diversifikasi untuk pendapatan berkelanjutan.</p>
+                <h2>Pemanfaatan Sumber Pendapatan Lain untuk Peternak</h2>
+                <p>Susu tetap menjadi penghasilan utama. Namun, ada berbagai peluang lain yang bisa dimanfaatkan peternak dan keluarga untuk menjaga kestabilan ekonomi.</p>
             </div>
             <div class="opp-grid">
                 <div class="opp-card">
                     <div class="opp-content">
                         <h3>🍦 Olahan Susu Bernilai Tambah</h3>
-                        <p>Yogurt, susu pasteurisasi, atau produk sederhana yang bisa dikelola keluarga untuk meningkatkan nilai jual.</p>
+                        <p>Yogurt, susu pasteurisasi, atau produk olahan sederhana yang bisa dikelola keluarga untuk meningkatkan nilai jual hasil ternak.</p>
+                        <a href="https://banyumas.suaramerdeka.com/pendidikan/0915997794/tingkatkan-nilai-jual-dan-variasi-produk-susu-fermentasi-fapet-unsoed-ajak-peternak-tumiyang-buat-yogurt-kefir-hingga-keju-mozarella?" target="_blank" class="btn" style="background: #e0f2fe; color: var(--primary); margin-top: 1.5rem; font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+                            Lihat Selengkapnya
+                        </a>
                     </div>
                 </div>
                 <div class="opp-card">
                     <div class="opp-content">
                         <h3>🌱 Pemanfaatan Limbah Ternak</h3>
-                        <p>Pupuk kandang, biogas, atau pakan fermentasi untuk menekan biaya produksi dan menambah pemasukan.</p>
+                        <p>Limbah kandang dapat diolah menjadi pupuk, biogas, atau pakan fermentasi untuk menekan biaya dan menambah manfaat ekonomi.</p>
+                        <a href="https://voi.id/en/economy/501528?" target="_blank" class="btn" style="background: #e0f2fe; color: var(--primary); margin-top: 1.5rem; font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+                            Lihat Selengkapnya
+                        </a>
                     </div>
                 </div>
                 <div class="opp-card">
                     <div class="opp-content">
                         <h3>🏠 Usaha Pendukung Rumah Tangga</h3>
-                        <p>Warung kecil, usaha musiman, atau jasa lokal untuk menjaga stabilitas ekonomi keluarga di luar sektor utama.</p>
+                        <p>Usaha kecil keluarga seperti warung, usaha musiman, atau jasa lokal dapat membantu menjaga kestabilan pendapatan di luar sektor utama.</p>
+                        <a href="https://www.beritadaerah.co.id/index.php/2025/07/07/industri-sapi-perah-indonesia-masih-punya-harapan/" target="_blank" class="btn" style="background: #e0f2fe; color: var(--primary); margin-top: 1.5rem; font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+                            Lihat Selengkapnya
+                        </a>
                     </div>
                 </div>
             </div>
@@ -681,12 +691,12 @@
                         <!-- Page 4 Left: Report Image -->
                         <div class="page-content" data-idx="3">
                             <div class="step-number">3</div>
-                            <h3 style="margin-bottom: 15px;">Laporan Transparan</h3>
+                            <h3 style="margin-bottom: 15px;">Laporan Terotomatisasi</h3>
                             <img src="{{ asset('img/ai_assistant_vector.png') }}" class="guide-img" alt="Guide Image" style="object-position: top; max-height: 200px;">
                             <p class="small text-muted">Semua data tercatat otomatis.</p>
                         </div>
 
-                        <div class="page-number">Halaman Kiri</div>
+                        <div class="page-number" id="left-page-label">Cover Buku Panduan</div>
                     </div>
                     
                     <!-- RIGHT PAGE -->
@@ -748,7 +758,7 @@
                             </div>
                         </div>
 
-                        <div class="page-number">Halaman Kanan</div>
+                        <div class="page-number" id="right-page-label">Pengantar Aplikasi</div>
                     </div>
                 </div>
 
@@ -822,12 +832,25 @@
             const leftContents = document.querySelectorAll('.left-page .page-content');
             const rightContents = document.querySelectorAll('.right-page .page-content');
             
+            // Define titles for each page
+            const pageTitles = [
+                { left: "Cover Buku Panduan", right: "Pengantar Aplikasi" },
+                { left: "Halaman Login", right: "Panduan Login" },
+                { left: "Input Produksi", right: "Panduan Input Data" },
+                { left: "Laporan Keuangan", right: "Panduan Laporan" }
+            ];
+
             if (isActive) {
                 leftContents.forEach(el => el.classList.remove('active'));
                 rightContents.forEach(el => el.classList.remove('active'));
                 
                 leftContents[idx].classList.add('active');
                 rightContents[idx].classList.add('active');
+
+                // Update page labels
+                document.getElementById('left-page-label').innerText = pageTitles[idx].left;
+                document.getElementById('right-page-label').innerText = pageTitles[idx].right;
+
             } else {
                 leftContents[idx].classList.remove('active');
                 rightContents[idx].classList.remove('active');

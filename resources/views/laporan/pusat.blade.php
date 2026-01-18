@@ -10,10 +10,10 @@
     </div>
     <div class="col-md-6 text-md-end mt-3 mt-md-0">
         <div class="d-flex gap-2 justify-content-md-end">
-            <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-outline-success btn-sm px-3 shadow-sm">
+            <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-outline-success btn-sm px-3 shadow-sm" data-tooltip="Download laporan rekapitulasi dalam format Excel">
                 📊 Export Excel
             </a>
-            <button class="btn btn-outline-primary btn-sm px-3 shadow-sm" onclick="window.print()">
+            <button class="btn btn-outline-primary btn-sm px-3 shadow-sm" onclick="window.print()" data-tooltip="Cetak laporan ini atau simpan sebagai file PDF">
                 🖨️ Cetak / Simpan PDF
             </button>
         </div>

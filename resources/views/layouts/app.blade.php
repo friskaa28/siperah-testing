@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -626,6 +627,41 @@
             color: var(--text-light);
             font-size: 0.9rem;
         }
+
+        /* ===== TOOLTIP ===== */
+        [data-tooltip] {
+            position: relative;
+            cursor: pointer;
+        }
+
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background: white;
+            color: #DC2626; /* Red color as requested */
+            font-size: 0.75rem; /* Smaller font */
+            font-weight: 400; /* Not bold */
+            border: 1px solid #FECACA;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            pointer-events: none;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        [data-tooltip]:hover:before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-5px);
+        }
     </style>
 </head>
 <body>
@@ -633,12 +669,27 @@
     <nav class="navbar">
         <div class="container">
             <a href="/" class="navbar-brand">
-                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 55px; object-fit: contain;">
+                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 80px; object-fit: contain;">
                 <img src="{{ asset('img/logo-innovillage.png') }}" alt="Innovillage Logo" style="height: 30px; margin-left: 12px; object-fit: contain;">
             </a>
             <div class="navbar-actions">
                 @auth
-                    <button class="mobile-toggle" id="sidebarToggle">☰</button>
+                    <button class="mobile-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                    
+                    @if(\App\Models\Setting::isEnabled('feature_notifikasi'))
+                        <a href="/notifikasi" class="btn btn-secondary" style="background: transparent; border: none; padding: 0.5rem; position: relative; margin-right: 0.5rem; color: var(--text-light);">
+                            <i class="fas fa-bell" style="font-size: 1.2rem;"></i>
+                            @php
+                                $unreadCount = auth()->user()->notifikasi()->where('status_baca', 'belum_baca')->count();
+                            @endphp
+                            @if($unreadCount > 0)
+                                <span style="position: absolute; top: 0; right: 0; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                </span>
+                            @endif
+                        </a>
+                    @endif
+
                     <div class="user-info">
                         <span class="user-name">{{ auth()->user()->nama ?? auth()->user()->email }}</span>
                         <form action="{{ route('logout') }}" method="POST" style="display: inline;">
@@ -662,23 +713,19 @@
             <aside class="sidebar">
                 @if(auth()->user()->role === 'peternak')
                     <a href="/dashboard-peternak" class="sidebar-item @if(request()->is('dashboard-peternak')) active @endif">
-                        📊 Dashboard
+                        <i class="fas fa-chart-line"></i> Dashboard
                     </a>
                     
-                    @if(\App\Models\Setting::isEnabled('feature_notifikasi'))
-                    <a href="/notifikasi" class="sidebar-item @if(request()->is('notifikasi')) active @endif">
-                        🔔 Notifikasi
-                    </a>
-                    @endif
+
                     <a href="{{ route('produksi.riwayat') }}" class="sidebar-item @if(request()->is('riwayat-produksi')) active @endif">
-                        📜 Riwayat Produksi
+                        <i class="fas fa-history"></i> Riwayat Produksi
                     </a>
                     <a href="{{ route('peternak.laporan.index') }}" class="sidebar-item @if(request()->is('laporan*')) active @endif">
-                        📄 Laporan Pendapatan
+                        <i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan
                     </a>
                 @elseif(auth()->user()->role === 'pengelola' || auth()->user()->role === 'admin')
                     <a href="/dashboard-pengelola" class="sidebar-item @if(request()->is('dashboard-pengelola')) active @endif">
-                        📊 Dashboard
+                        <i class="fas fa-chart-line"></i> Dashboard
                     </a>
                     
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
@@ -686,38 +733,38 @@
                     </div>
                     @if(\App\Models\Setting::isEnabled('feature_produksi'))
                     <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
-                        📜 Data Produksi
+                        <i class="fas fa-database"></i> Data Produksi
                     </a>
                     <a href="/produksi/input" class="sidebar-item @if(request()->is('produksi/input')) active @endif">
-                        ➕ Input Setor Susu
+                        <i class="fas fa-plus-circle"></i> Input Setor Susu
                     </a>
                     @endif
 
                     <a href="/gaji" class="sidebar-item @if(request()->is('gaji*')) active @endif">
-                        💵 Manajemen Gaji
+                        <i class="fas fa-money-bill-wave"></i> Manajemen Gaji
                     </a>
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
                         Logistik & Kasbon
                     </div>
                     <a href="{{ route('logistik.index') }}" class="sidebar-item @if(request()->is('logistik*')) active @endif">
-                        📋 Katalog Barang
+                        <i class="fas fa-clipboard-list"></i> Katalog Barang
                     </a>
                     <a href="{{ route('kasbon.index') }}" class="sidebar-item @if(request()->is('kasbon*')) active @endif">
-                        🛍️ Input Kasbon
+                        <i class="fas fa-shopping-basket"></i> Input Kasbon
                     </a>
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
                         Master Data
                     </div>
                     <a href="{{ route('harga_susu.index') }}" class="sidebar-item @if(request()->is('harga-susu*')) active @endif">
-                        💰 Harga Susu
+                        <i class="fas fa-tags"></i> Harga Susu
                     </a>
                     <a href="{{ route('laporan.pusat') }}" class="sidebar-item @if(request()->is('laporan/pusat*')) active @endif">
-                        📑 Laporan Pusat
+                        <i class="fas fa-file-alt"></i> Laporan Pusat
                     </a>
                     <a href="{{ route('laporan.rekap_harian') }}" class="sidebar-item @if(request()->is('laporan/rekap-harian*')) active @endif">
-                        📅 Rekap Harian
+                        <i class="fas fa-calendar-alt"></i> Rekap Harian
                     </a>
 
 
@@ -727,18 +774,14 @@
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
                         System
                     </div>
-                    @if(\App\Models\Setting::isEnabled('feature_notifikasi'))
-                    <a href="/notifikasi" class="sidebar-item @if(request()->is('notifikasi')) active @endif">
-                        🔔 Notifikasi
-                    </a>
-                    @endif
+
 
                     @if(auth()->user()->role === 'admin')
                     <a href="{{ route('activity-log.index') }}" class="sidebar-item @if(request()->is('activity-log*')) active @endif">
-                        📋 Log Aktivitas
+                        <i class="fas fa-history"></i> Log Aktivitas
                     </a>
                     <a href="{{ route('settings.index') }}" class="sidebar-item @if(request()->is('settings')) active @endif">
-                        ⚙️ Pengaturan Fitur
+                        <i class="fas fa-cog"></i> Pengaturan Fitur
                     </a>
                     @endif
                 @endif
@@ -749,7 +792,7 @@
         <div class="content">
             @if(session('success'))
                 <div style="background: #DCFCE7; color: #166534; padding: 1rem; border-radius: 8px; border: 1px solid #BBF7D0; margin-bottom: 1.5rem;">
-                    ✅ {{ session('success') }}
+                    <i class="fas fa-check-circle"></i> {{ session('success') }}
                 </div>
             @endif
 

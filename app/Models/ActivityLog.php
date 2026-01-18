@@ -35,7 +35,7 @@ class ActivityLog extends Model
         
         if ($reference) {
             $log->reference_type = get_class($reference);
-            $log->reference_id = $reference->id;
+            $log->reference_id = $reference->getKey();
         }
 
         $log->save();

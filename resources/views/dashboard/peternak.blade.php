@@ -10,14 +10,14 @@
     </div>
     <div class="col-md-6 text-end">
         <a href="{{ route('peternak.laporan.index') }}" class="btn btn-secondary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
-            📄 Slip Gaji & Laporan
+            <i class="fas fa-file-invoice-dollar"></i> Slip Gaji & Laporan
         </a>
     </div>
 </div>
 
 <!-- INFO PERIODE -->
 <div style="background: #E0F2FE; color: #0369A1; padding: 12px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #BAE6FD; font-size: 0.9rem;">
-    📅 Periode Gajian: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
+    <i class="fas fa-calendar-alt"></i> Periode Gajian: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
 </div>
 
 <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
@@ -49,7 +49,7 @@
 <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
     <!-- Announcement Area -->
     <div class="card" style="padding: 2rem;">
-        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;">📢 Pengumuman Terbaru</h3>
+        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;"><i class="fas fa-bullhorn"></i> Pengumuman Terbaru</h3>
         <div class="announcement-list">
             @forelse($pengumuman as $p)
                 <div style="background: #F8FAF9; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #CBD5E1;">
@@ -64,21 +64,7 @@
         </div>
     </div>
 
-    <!-- Quick Stats/Notif -->
-    <div class="card" style="padding: 1.5rem;">
-        <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 700;">🔔 Aktivitas Terbaru</h3>
-        <div class="notif-list">
-            @forelse($notifikasi as $n)
-                <div style="padding: 12px; border-bottom: 1px solid #f1f5f9;">
-                    <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 2px;">{{ $n->judul }}</p>
-                    <p style="font-size: 0.8rem; color: var(--text-light); margin: 0;">{{ $n->pesan }}</p>
-                    <small style="font-size: 0.7rem; color: #94A3B8;">{{ $n->created_at->diffForHumans() }}</small>
-                </div>
-            @empty
-                <p class="text-center text-muted py-4 small">Tidak ada aktivitas.</p>
-            @endforelse
-        </div>
-    </div>
+
 </div>
 
 @endsection

@@ -5,7 +5,7 @@
 @section('content')
 <div class="row mb-4 align-items-center">
     <div class="col-md-6">
-        <h1 class="h3 mb-0">📜 Riwayat Produksi</h1>
+        <h1 class="h3 mb-0"><i class="fas fa-history"></i> Riwayat Produksi</h1>
         <p class="text-muted">Kelola dan pantau data pengumpulan susu harian</p>
     </div>
     @if(isset($isAdmin) && $isAdmin)
@@ -69,7 +69,7 @@
                 @empty
                     <tr>
                         <td colspan="{{ isset($isAdmin) && $isAdmin ? 6 : 5 }}" class="text-center py-5 text-muted">
-                            <div class="mb-2" style="font-size: 2rem;">📭</div>
+                            <div class="mb-2" style="font-size: 2rem;"><i class="fas fa-inbox"></i></div>
                             Belum ada data produksi tercatat.
                         </td>
                     </tr>

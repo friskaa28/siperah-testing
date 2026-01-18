@@ -32,9 +32,9 @@
                             @foreach($settings as $setting)
                                 <tr>
                                     <td style="font-weight: 500;">
-                                        @if($setting->key == 'feature_produksi') 🐄 Input Produksi
-                                        @elseif($setting->key == 'feature_distribusi') 🚚 Input Distribusi
-                                        @elseif($setting->key == 'feature_notifikasi') 🔔 Notifikasi
+                                        @if($setting->key == 'feature_produksi') <i class="fas fa-cow"></i> Input Produksi
+                                        @elseif($setting->key == 'feature_distribusi') <i class="fas fa-truck"></i> Input Distribusi
+                                        @elseif($setting->key == 'feature_notifikasi') <i class="fas fa-bell"></i> Notifikasi
                                         @else {{ $setting->key }}
                                         @endif
                                     </td>

@@ -19,22 +19,22 @@
 <!-- Quick Access Menu -->
 <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
     <a href="/produksi/input" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--success); transition: transform 0.2s;">
-        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🥛</span>
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;"><i class="fas fa-cow"></i></span>
         <h4 class="fw-bold mb-1" style="color: var(--dark);">Setoran Susu</h4>
         <p class="text-muted small mb-0">Input Pagi/Sore</p>
     </a>
     <a href="{{ route('kasbon.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--danger); transition: transform 0.2s;">
-        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">🛍️</span>
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;"><i class="fas fa-shopping-bag"></i></span>
         <h4 class="fw-bold mb-1" style="color: var(--dark);">Input Kasbon</h4>
         <p class="text-muted small mb-0">Pakan & Logistik</p>
     </a>
     <a href="{{ route('logistik.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--warning); transition: transform 0.2s;">
-        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📋</span>
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;"><i class="fas fa-clipboard-list"></i></span>
         <h4 class="fw-bold mb-1" style="color: var(--dark);">Katalog Barang</h4>
         <p class="text-muted small mb-0">Atur Harga Pakan</p>
     </a>
     <a href="{{ route('harga_susu.index') }}" class="card text-center text-decoration-none p-4" style="border-bottom: 4px solid var(--primary); transition: transform 0.2s;">
-        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">💰</span>
+        <span style="font-size: 2rem; display: block; margin-bottom: 10px;"><i class="fas fa-tags"></i></span>
         <h4 class="fw-bold mb-1" style="color: var(--dark);">Harga Susu</h4>
         <p class="text-muted small mb-0">Update Harga Beli</p>
     </a>
@@ -45,7 +45,7 @@
     <div>
         <!-- Broadcast Form -->
         <div class="card mb-4" style="padding: 1.5rem;">
-            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">📢 Siarkan Pengumuman (Broadcast)</h3>
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;"><i class="fas fa-bullhorn"></i> Siarkan Pengumuman (Broadcast)</h3>
             <form action="{{ route('pengumuman.broadcast') }}" method="POST">
                 @csrf
                 <div class="form-group">
@@ -59,7 +59,7 @@
 
         <!-- Monthly Stats Chart -->
         <div class="card" style="padding: 1.5rem;">
-            <h3 class="fw-bold mb-4" style="font-size: 1.1rem;">📈 Statistik Produksi (Time Series)</h3>
+            <h3 class="fw-bold mb-4" style="font-size: 1.1rem;"><i class="fas fa-chart-line"></i> Statistik Produksi (Time Series)</h3>
             <div style="height: 300px;">
                 <canvas id="mainChart"></canvas>
             </div>
@@ -69,7 +69,7 @@
     <!-- Right Sidebar: KPI & Activity -->
     <div>
         <div class="card mb-4" style="padding: 1.5rem;">
-            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">📊 Ringkasan Sistem</h3>
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;"><i class="fas fa-chart-pie"></i> Ringkasan Sistem</h3>
             <div class="d-flex justify-content-between py-2 border-bottom">
                 <span class="text-muted">Total Mitra</span>
                 <span class="fw-bold">{{ $totalPeternak }}</span>
@@ -83,20 +83,7 @@
             </div>
         </div>
 
-        <div class="card" style="padding: 1.5rem;">
-            <h3 class="fw-bold mb-3" style="font-size: 1.1rem;">🔔 Aktivitas Terbaru</h3>
-            <div class="notif-list" style="max-height: 400px; overflow-y: auto;">
-                @forelse($notifikasi as $n)
-                    <div class="p-2 border-bottom mb-2">
-                        <p class="fw-bold small mb-1">{{ $n->judul }}</p>
-                        <p class="small text-muted mb-0">{{ $n->pesan }}</p>
-                        <small class="text-muted" style="font-size: 0.7rem;">{{ $n->created_at->diffForHumans() }}</small>
-                    </div>
-                @empty
-                    <p class="text-center text-muted py-4 small">Tidak ada aktivitas.</p>
-                @endforelse
-            </div>
-        </div>
+
     </div>
 </div>
 
