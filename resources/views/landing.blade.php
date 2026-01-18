@@ -660,7 +660,7 @@
                             <div style="text-align: center; margin-top: 50px;">
                                 <img src="{{ asset('img/logo-siperah.png') }}" alt="Logo" style="width: 100px; margin-bottom: 20px;">
                                 <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;">BUKU PANDUAN</h3>
-                                <p style="font-size: 1.2rem; color: var(--text-muted);">Aplikasi SIPERAH v1.0</p>
+                                <p style="font-size: 1.2rem; color: var(--text-muted);">Aplikasi SIPERAH</p>
                                 <div style="margin-top: 40px; padding: 20px; background: #f0f9ff; border-radius: 10px; display: inline-block;">
                                     <p style="margin-bottom: 5px;"><strong>Daftar Isi:</strong></p>
                                     <ul style="list-style: none; text-align: left;">
@@ -696,7 +696,7 @@
                             <p class="small text-muted">Semua data tercatat otomatis.</p>
                         </div>
 
-                        <div class="page-number" id="left-page-label">Cover Buku Panduan</div>
+                        <div class="page-number" id="left-page-label">1</div>
                     </div>
                     
                     <!-- RIGHT PAGE -->
@@ -758,7 +758,7 @@
                             </div>
                         </div>
 
-                        <div class="page-number" id="right-page-label">Pengantar Aplikasi</div>
+                        <div class="page-number" id="right-page-label">2</div>
                     </div>
                 </div>
 
@@ -832,14 +832,6 @@
             const leftContents = document.querySelectorAll('.left-page .page-content');
             const rightContents = document.querySelectorAll('.right-page .page-content');
             
-            // Define titles for each page
-            const pageTitles = [
-                { left: "Cover Buku Panduan", right: "Pengantar Aplikasi" },
-                { left: "Halaman Login", right: "Panduan Login" },
-                { left: "Input Produksi", right: "Panduan Input Data" },
-                { left: "Laporan Keuangan", right: "Panduan Laporan" }
-            ];
-
             if (isActive) {
                 leftContents.forEach(el => el.classList.remove('active'));
                 rightContents.forEach(el => el.classList.remove('active'));
@@ -848,8 +840,8 @@
                 rightContents[idx].classList.add('active');
 
                 // Update page labels
-                document.getElementById('left-page-label').innerText = pageTitles[idx].left;
-                document.getElementById('right-page-label').innerText = pageTitles[idx].right;
+                document.getElementById('left-page-label').innerText = "" + (idx * 2 + 1);
+                document.getElementById('right-page-label').innerText = "" + (idx * 2 + 2);
 
             } else {
                 leftContents[idx].classList.remove('active');
