@@ -115,6 +115,9 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::get('/laporan/pusat', [LaporanController::class, 'pusatReport'])->name('laporan.pusat');
     Route::get('/laporan/rekap-harian', [LaporanController::class, 'rekapHarian'])->name('laporan.rekap_harian');
 
+    // Monitoring Harian (New Feature)
+    Route::get('/monitoring-harian', [\App\Http\Controllers\RekapController::class, 'index'])->name('monitoring.index');
+
     // Quick Update Peternak No
     Route::put('/peternak/{idpeternak}/update-no', function(\Illuminate\Http\Request $request, $id) {
         $peternak = \App\Models\Peternak::findOrFail($id);

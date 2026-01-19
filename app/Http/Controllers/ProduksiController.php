@@ -19,6 +19,7 @@ class ProduksiController extends Controller
         $user = Auth::user();
         $peternaks = [];
         $lastProduksi = null;
+        $katalog = \App\Models\KatalogLogistik::all();
 
         if ($user->isAdmin() || $user->isPengelola()) {
             $peternaks = Peternak::all();
@@ -36,7 +37,7 @@ class ProduksiController extends Controller
             }
         }
 
-        return view('produksi.create', compact('peternaks', 'lastProduksi'));
+        return view('produksi.create', compact('peternaks', 'lastProduksi', 'katalog'));
     }
 
     public function store(Request $request)
@@ -48,8 +49,6 @@ class ProduksiController extends Controller
             'tanggal' => 'required|date',
             'waktu_setor' => 'required|in:pagi,sore',
             'jumlah_susu_liter' => 'required|numeric|min:1',
-
-
             'catatan' => 'nullable|string',
         ];
 
@@ -69,8 +68,6 @@ class ProduksiController extends Controller
             $idpeternak = $peternak->idpeternak;
         }
 
-
-
         // Create produksi record
         $produksi = ProduksiHarian::create(array_merge($validated, [
             'idpeternak' => $idpeternak,
@@ -82,18 +79,18 @@ class ProduksiController extends Controller
         // Send notification
         Notifikasi::create([
             'iduser' => $user->iduser,
-            'judul' => 'Produksi Tercatat',
-            'pesan' => "Produksi Anda sebesar {$validated['jumlah_susu_liter']} liter telah tercatat.",
+            'judul' => 'Setor Susu Tercatat',
+            'pesan' => "Setor Susu Anda sebesar {$validated['jumlah_susu_liter']} liter telah tercatat.",
             'tipe' => 'success',
             'kategori' => 'jadwal',
             'status_baca' => 'belum_baca',
         ]);
 
         if ($isAdmin) {
-            return redirect('/dashboard-pengelola')->with('success', 'Produksi berhasil dicatat!'); 
+            return redirect()->route('produksi.create')->with('success', 'Setor Susu berhasil dicatat!'); 
         }
 
-        return redirect('/dashboard-peternak')->with('success', 'Produksi berhasil dicatat!');
+        return redirect()->route('produksi.create')->with('success', 'Setor Susu berhasil dicatat!');
     }
 
     public function listPeternak(Request $request)

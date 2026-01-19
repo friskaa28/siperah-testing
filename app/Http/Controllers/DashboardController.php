@@ -82,13 +82,17 @@ class DashboardController extends BaseController
         ]);
     }
 
-    public function pengelolaDashboard()
+    public function pengelolaDashboard(\Illuminate\Http\Request $request)
     {
         $user = Auth::user();
 
         if (!($user->isPengelola() || $user->isAdmin())) {
             return back()->withErrors(['error' => 'Anda tidak berhak mengakses halaman ini.']);
         }
+
+        // Year Filter
+        $selectedYear = $request->input('year', now()->year);
+        $availableYears = range(now()->year, now()->year - 4);
 
         // KPI data
         $totalPeternak = Peternak::count();
@@ -103,10 +107,13 @@ class DashboardController extends BaseController
             ->sum('total_pendapatan');
 
         // Top 5 peternak
-        $top5Peternak = Peternak::withCount('distribusi')
-            ->orderBy('distribusi_count', 'desc')
-            ->limit(5)
-            ->get();
+        // Top 5 Peternak (by Volume Susu in Selected Year)
+        $top5Peternak = Peternak::withSum(['produksi' => function($q) use ($selectedYear) {
+            $q->whereYear('tanggal', $selectedYear);
+        }], 'jumlah_susu_liter')
+        ->orderByDesc('produksi_sum_jumlah_susu_liter')
+        ->take(5)
+        ->get();
 
         // Bagi hasil breakdown (pie chart)
         $bagiHasilBreakdown = BagiHasil::whereMonth('tanggal', now()->month)
@@ -115,8 +122,8 @@ class DashboardController extends BaseController
             ->groupBy('status')
             ->get();
 
-        // Monthly Stats for Chart (last 12 months or current year)
-        $monthlyStats = $this->getMonthlyComparison();
+        // Monthly Stats for Chart (Selected Year)
+        $monthlyStats = $this->getMonthlyStats($selectedYear);
 
         // Latest Notifications
         $notifikasi = Notifikasi::where('iduser', $user->iduser)
@@ -126,6 +133,11 @@ class DashboardController extends BaseController
 
         // Active Milk Price
         $currentPrice = HargaSusuHistory::getHargaAktif();
+
+        // Widget Metrics (Today's Data)
+        $todayLiter = ProduksiHarian::whereDate('tanggal', now())->sum('jumlah_susu_liter');
+        $todayKasbon = Kasbon::whereDate('tanggal', now())->sum('total_rupiah');
+        $totalLogistik = \App\Models\KatalogLogistik::count();
 
         return view('dashboard.pengelola', [
             'totalPeternak' => $totalPeternak,
@@ -137,23 +149,28 @@ class DashboardController extends BaseController
             'monthlyStats' => $monthlyStats,
             'notifikasi' => $notifikasi,
             'currentPrice' => $currentPrice,
+            'selectedYear' => $selectedYear,
+            'availableYears' => $availableYears,
+            'todayLiter' => $todayLiter,
+            'todayKasbon' => $todayKasbon,
+            'totalLogistik' => $totalLogistik,
         ]);
     }
 
-    private function getMonthlyComparison()
+    private function getMonthlyStats($year)
     {
-        $thisYear = now()->year;
-        $lastYear = $thisYear - 1;
         $stats = [];
         
         for ($m = 1; $m <= 12; $m++) {
-            $prodThis = ProduksiHarian::whereYear('tanggal', $thisYear)->whereMonth('tanggal', $m)->sum('jumlah_susu_liter');
-            $prodLast = ProduksiHarian::whereYear('tanggal', $lastYear)->whereMonth('tanggal', $m)->sum('jumlah_susu_liter');
+            $query = ProduksiHarian::whereYear('tanggal', $year)->whereMonth('tanggal', $m);
+            
+            $prodTotal = $query->sum('jumlah_susu_liter');
+            $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
             
             $stats[] = [
                 'month' => date('M', mktime(0, 0, 0, $m, 1)),
-                'produksi_this' => (float)$prodThis,
-                'produksi_last' => (float)$prodLast,
+                'produksi' => (float)$prodTotal,
+                'active_peternak' => $activePeternak,
             ];
         }
         return $stats;

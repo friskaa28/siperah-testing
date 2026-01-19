@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Produksi - SIPERAH')
+@section('title', 'Detail Setor Susu - SIPERAH')
 
 @section('content')
 <div class="container-fluid px-2">
     <div class="row align-items-center mb-4">
         <div class="col">
-            <h3 class="fw-bold mb-0">📦 Detail Produksi</h3>
-            <p class="text-muted small mb-0">Informasi detail pencatatan susu harian</p>
+            <h3 class="fw-bold mb-0">📦 Detail Setor Susu</h3>
+            <p class="text-muted small mb-0">Informasi detail pencatatan setor susu harian</p>
         </div>
         <div class="col-auto">
             <a href="{{ route('produksi.index') }}" class="btn btn-outline-secondary btn-sm">
@@ -20,7 +20,7 @@
         <div class="col-lg-8">
             <div class="card shadow-sm border-0" style="border-radius: 12px;">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold text-primary mb-4 border-bottom pb-2">Data Produksi</h5>
+                    <h5 class="fw-bold text-primary mb-4 border-bottom pb-2">Data Setor Susu</h5>
                     
                     <div class="row mb-3">
                         <div class="col-sm-4 text-muted small uppercase fw-bold">Tanggal</div>
@@ -51,12 +51,9 @@
                         <div class="col-sm-8">
                             <span class="display-6 fw-bold text-dark">{{ number_format($produksi->jumlah_susu_liter, 2) }}</span>
                             <span class="text-muted fs-5">Liter</span>
-                        </div>
-                    </div>
-
-                    <h6 class="fw-bold text-secondary mb-3 mt-4 border-bottom pb-2">Rincian Biaya Operasional</h6>
-                    
-                    <div class="table-responsive bg-light rounded p-3">
+                    @if($produksi->biaya_pakan > 0 || $produksi->biaya_tenaga > 0 || $produksi->biaya_operasional > 0)
+                    <h6 class="fw-bold text-secondary mb-3 mt-4 border-bottom pb-2">Rincian Operasional (Data Lama)</h6>
+                    <div class="table-responsive bg-light rounded p-3 mb-4">
                         <table class="table table-borderless table-sm mb-0">
                             <tr>
                                 <td class="text-muted">Biaya Pakan</td>
@@ -71,11 +68,12 @@
                                 <td class="text-end fw-medium">Rp {{ number_format($produksi->biaya_operasional, 0, ',', '.') }}</td>
                             </tr>
                             <tr class="border-top border-secondary">
-                                <td class="pt-2 fw-bold text-dark">Total Biaya</td>
-                                <td class="pt-2 text-end fw-bold text-danger">Rp {{ number_format($produksi->total_biaya, 0, ',', '.') }}</td>
+                                <td class="pt-2 fw-bold text-dark">Total Potongan Legacy</td>
+                                <td class="pt-2 text-end fw-bold text-secondary">Rp {{ number_format($produksi->biaya_pakan + $produksi->biaya_tenaga + $produksi->biaya_operasional, 0, ',', '.') }}</td>
                             </tr>
                         </table>
                     </div>
+                    @endif
 
                     @if($produksi->catatan)
                     <div class="alert alert-info d-flex align-items-center mt-4 mb-0" role="alert">

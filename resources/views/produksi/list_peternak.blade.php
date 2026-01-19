@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Produksi - SIPERAH')
+@section('title', 'Riwayat Setor Susu - SIPERAH')
 
 @section('content')
 <div class="row mb-4 align-items-center">
     <div class="col-md-6">
-        <h1 class="h3 mb-0"><i class="fas fa-history"></i> Riwayat Produksi</h1>
+        <h1 class="h3 mb-0"><i class="fas fa-history"></i> Riwayat Setor Susu</h1>
         <p class="text-muted">Kelola dan pantau data pengumpulan susu harian</p>
     </div>
     @if(isset($isAdmin) && $isAdmin)
@@ -34,13 +34,15 @@
                         <th class="py-3">Peternak</th>
                     @endif
                     <th class="py-3">Susu (L)</th>
-                    <th class="py-3">Operasional</th>
-                    <th class="py-3">Total Biaya</th>
                     <th class="py-3 text-end px-4">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($produksi as $p)
+                @php
+                    // Legacy total just for checking if we strictly need to show something? 
+                    // But user asked to conform to input which has NO cost now.
+                @endphp
                     <tr>
                         <td class="px-4 py-3">
                             <div class="fw-bold">{{ $p->tanggal->format('d/m/Y') }}</div>
@@ -50,16 +52,6 @@
                             <td class="py-3">{{ $p->peternak->nama_peternak }}</td>
                         @endif
                         <td class="py-3 fw-bold">{{ number_format($p->jumlah_susu_liter, 2) }}</td>
-                        <td class="py-3">
-                            <div class="small">Pakan: Rp {{ number_format($p->biaya_pakan, 0, ',', '.') }}</div>
-                            <div class="small">Tenaga: Rp {{ number_format($p->biaya_tenaga, 0, ',', '.') }}</div>
-                            <div class="small">Ops: Rp {{ number_format($p->biaya_operasional, 0, ',', '.') }}</div>
-                        </td>
-                        <td class="py-3">
-                            <span class="badge bg-primary-subtle text-primary" style="font-size: 0.95rem;">
-                                Rp {{ number_format($p->biaya_pakan + $p->biaya_tenaga + $p->biaya_operasional, 0, ',', '.') }}
-                            </span>
-                        </td>
                         <td class="py-3 text-end px-4">
                             <a href="{{ route('produksi.detail', $p->idproduksi) }}" class="btn btn-sm btn-outline-primary" style="border-radius: 6px;">
                                 Lihat Detail
@@ -68,9 +60,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ isset($isAdmin) && $isAdmin ? 6 : 5 }}" class="text-center py-5 text-muted">
+                        <td colspan="{{ isset($isAdmin) && $isAdmin ? 4 : 3 }}" class="text-center py-5 text-muted">
                             <div class="mb-2" style="font-size: 2rem;"><i class="fas fa-inbox"></i></div>
-                            Belum ada data produksi tercatat.
+                            Belum ada data setor susu tercatat.
                         </td>
                     </tr>
                 @endforelse

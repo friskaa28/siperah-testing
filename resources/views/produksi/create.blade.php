@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Input Produksi - SIPERAH')
+@section('title', 'Input Setor Susu - SIPERAH')
 
 @section('content')
 <div class="container-fluid px-2">
     <div class="row mb-3 align-items-center">
         <div class="col-md-8">
-            <h3 class="fw-bold mb-0"><i class="fas fa-plus-circle"></i> Input Produksi Harian</h3>
-            <p class="text-muted small mb-0">Catat hasil produksi susu dan biaya operasional</p>
+            <h3 class="fw-bold mb-0"><i class="fas fa-plus-circle"></i> Input Setor Susu</h3>
+            <p class="text-muted small mb-0">Catat hasil setor susu dan input kasbon</p>
         </div>
         <div class="col-md-4 text-md-end mt-2 mt-md-0">
             <a href="{{ auth()->user()->isPeternak() ? '/dashboard-peternak' : '/dashboard-pengelola' }}" class="btn btn-outline-secondary btn-sm px-3">
@@ -25,7 +25,7 @@
                     <form action="{{ route('produksi.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-3">
                         @csrf
                         <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 flex-grow-1">
-                            <label for="file" class="form-label small fw-bold text-muted mb-0 text-nowrap">Upload Excel Produksi:</label>
+                            <label for="file" class="form-label small fw-bold text-muted mb-0 text-nowrap">Upload Excel Setor Susu:</label>
                             <input type="file" class="form-control form-control-sm" name="file" id="file" accept=".xlsx, .xls" required style="border-radius: 20px;">
                         </div>
                         
@@ -51,7 +51,7 @@
                             <!-- Left Column: Data Produksi -->
                             <div class="col-md-7 border-end-md pe-md-4">
                                 <div class="d-flex align-items-center mb-3">
-                                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-box"></i> Data Produksi</h5>
+                                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-box"></i> Data Setor Susu</h5>
                                 </div>
                                 
                                 <div class="row g-2 mb-3">
@@ -112,7 +112,7 @@
 
                         <div class="mt-4 text-center">
                             <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow" style="border-radius: 10px; min-width: 200px;">
-                                Simpan Data Produksi
+                                Simpan Data Setor Susu
                             </button>
                         </div>
                     </form>

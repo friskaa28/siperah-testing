@@ -718,7 +718,7 @@
                     
 
                     <a href="{{ route('produksi.riwayat') }}" class="sidebar-item @if(request()->is('riwayat-produksi')) active @endif">
-                        <i class="fas fa-history"></i> Riwayat Produksi
+                        <i class="fas fa-history"></i> Riwayat Setor Susu
                     </a>
                     <a href="{{ route('peternak.laporan.index') }}" class="sidebar-item @if(request()->is('laporan*')) active @endif">
                         <i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan
@@ -733,7 +733,7 @@
                     </div>
                     @if(\App\Models\Setting::isEnabled('feature_produksi'))
                     <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
-                        <i class="fas fa-database"></i> Data Produksi
+                        <i class="fas fa-database"></i> Data Setor Susu
                     </a>
                     <a href="/produksi/input" class="sidebar-item @if(request()->is('produksi/input')) active @endif">
                         <i class="fas fa-plus-circle"></i> Input Setor Susu
@@ -765,6 +765,9 @@
                     </a>
                     <a href="{{ route('laporan.rekap_harian') }}" class="sidebar-item @if(request()->is('laporan/rekap-harian*')) active @endif">
                         <i class="fas fa-calendar-alt"></i> Rekap Harian
+                    </a>
+                    <a href="{{ route('monitoring.index') }}" class="sidebar-item @if(request()->is('monitoring-harian')) active @endif">
+                        <i class="fas fa-desktop"></i> Monitoring Harian
                     </a>
 
 
