@@ -40,12 +40,7 @@
             <p style="text-align: center; margin-bottom: 12px;">
                 Belum punya akun? <a href="{{ route('register') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Daftar disini</a>
             </p>
-            <p style="text-align: center; color: var(--text-light); font-size: 12px;">
-                Contoh Login:<br>
-                admin@siperah.com / password123<br>
-                pengelola@siperah.com / password123<br>
-                peternak1@siperah.com / password123
-            </p>
+  
         </div>
     </div>
 </div>
