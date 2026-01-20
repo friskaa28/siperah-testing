@@ -3,7 +3,7 @@
 @section('title', 'Laporan Pusat - SIP-SUSU')
 
 @section('content')
-<div class="row align-items-center mb-4">
+<div class="row align-items-center mb-4 no-print">
     <div class="col-md-6">
         <h1 class="h3 fw-bold mb-0">Laporan Pusat</h1>
         <p class="text-muted mb-0">Laporan rekapitulasi literase tanpa nama & nominal untuk dikirim ke pusat</p>
@@ -80,25 +80,45 @@
     </div>
 </div>
 
-<div class="row mt-5">
-    <div class="col-md-6 text-center">
+<div class="signature-section" style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 50px;">
+    <div style="text-align: center; width: 250px;">
         <p class="mb-5">Mengetahui,</p>
-        <p class="mt-5 fw-bold">( ____________________ )</p>
+        <div style="margin-top: 70px;">
+            <p class="fw-bold mb-0" contenteditable="true">( ____________________ )</p>
+            <p class="small text-muted mt-1" contenteditable="true">Tim Verifikasi</p>
+        </div>
     </div>
-    <div class="col-md-6 text-center">
+    <div style="text-align: center; width: 250px;">
+        <p class="mb-0" contenteditable="true">.........., .......... 20....</p>
         <p class="mb-5">Pengelola SIPERAH,</p>
-        <p class="mt-5 fw-bold">( ____________________ )</p>
+        <div style="margin-top: 70px;">
+            <p class="fw-bold mb-0" contenteditable="true">( ____________________ )</p>
+            <p class="small text-muted mt-1" contenteditable="true">Nama Pengelola</p>
+        </div>
     </div>
 </div>
 
 <style>
+    [contenteditable="true"]:hover {
+        background-color: rgba(0,0,0,0.05);
+        outline: 1px dashed var(--primary);
+    }
     @media print {
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
         .no-print { display: none !important; }
-        .sidebar { display: none !important; }
-        .navbar { display: none !important; }
+        .sidebar, .navbar, .footer, .btn, form { display: none !important; }
         .content { padding: 0 !important; margin: 0 !important; }
-        .card { border: none !important; box-shadow: none !important; }
-        body { background: white !important; }
+        .layout { display: block !important; }
+        .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        body { background: white !important; font-size: 10pt; }
+        .table { width: 100% !important; border-collapse: collapse !important; }
+        .table th, .table td { border: 1px solid #000 !important; padding: 6px !important; }
+        .table thead { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+        .signature-section { display: flex !important; justify-content: space-between !important; }
+        [contenteditable="true"] { border: none !important; outline: none !important; }
     }
 </style>
 @endsection

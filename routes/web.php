@@ -13,6 +13,7 @@ use App\Http\Controllers\HargaSusuController;
 use App\Http\Controllers\KasbonController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\PanduanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +74,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifikasi/{idnotif}/mark-read', [NotifikasiController::class, 'markAsRead'])->name('notifikasi.markAsRead');
     Route::post('/notifikasi/mark-all-read', [NotifikasiController::class, 'markAllAsRead'])->name('notifikasi.markAllAsRead');
     Route::get('/notifikasi/unread-count', [NotifikasiController::class, 'countUnread'])->name('notifikasi.countUnread');
+    Route::get('/notifikasi/unread-count', [NotifikasiController::class, 'countUnread'])->name('notifikasi.countUnread');
     Route::delete('/notifikasi/{idnotif}', [NotifikasiController::class, 'delete'])->name('notifikasi.delete');
+
+    // Panduan (Shared)
+    Route::get('/panduan', [PanduanController::class, 'index'])->name('panduan.index');
 });
 
 // =====================================================================

@@ -723,6 +723,13 @@
                     <a href="{{ route('peternak.laporan.index') }}" class="sidebar-item @if(request()->is('laporan*')) active @endif">
                         <i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan
                     </a>
+
+                    <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
+                        System
+                    </div>
+                    <a href="{{ route('panduan.index') }}" class="sidebar-item @if(request()->is('panduan*')) active @endif">
+                        <i class="fas fa-book"></i> Panduan Aplikasi
+                    </a>
                 @elseif(auth()->user()->role === 'pengelola' || auth()->user()->role === 'admin')
                     <a href="/dashboard-pengelola" class="sidebar-item @if(request()->is('dashboard-pengelola')) active @endif">
                         <i class="fas fa-chart-line"></i> Dashboard
@@ -777,6 +784,10 @@
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
                         System
                     </div>
+
+                    <a href="{{ route('panduan.index') }}" class="sidebar-item @if(request()->is('panduan*')) active @endif">
+                        <i class="fas fa-book"></i> Panduan Aplikasi
+                    </a>
 
 
                     @if(auth()->user()->role === 'admin')

@@ -3,8 +3,7 @@
 @section('title', 'Rekap Harian Pengiriman Susu - SIPERAH')
 
 @section('content')
-@section('content')
-<div class="row align-items-center mb-4">
+<div class="row align-items-center mb-4 no-print">
     <div class="col-md-6">
         <h1 class="h3 fw-bold mb-0">📅 Rekap Harian</h1>
         <p class="text-muted mb-0">Laporan detail pengiriman susu harian</p>
@@ -17,7 +16,7 @@
 </div>
 
 <!-- Responsive Filter Card -->
-<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #fff;">
+<div class="card shadow-sm border-0 mb-4 no-print" style="border-radius: 12px; background: #fff;">
     <div class="card-body p-4">
         <form action="{{ route('laporan.rekap_harian') }}" method="GET">
             <div class="row align-items-end">
@@ -96,23 +95,49 @@
         </div>
     </div>
 
-    <div class="mt-5 d-flex justify-content-between px-5">
-        <div class="text-center">
-            <p class="mb-5">Pengelola,</p>
-            <p class="mt-5 fw-bold">( ____________________ )</p>
+    <div class="signature-section" style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 50px;">
+        <div style="text-align: center; width: 250px;">
+            <p class="mb-5">Mengetahui,</p>
+            <div style="margin-top: 70px;">
+                <p class="fw-bold mb-0" contenteditable="true">( ____________________ )</p>
+                <p class="small text-muted mt-1" contenteditable="true">Tim Verifikasi</p>
+            </div>
         </div>
-        <div class="text-center">
-            <p class="mb-5">Diketahui Oleh,</p>
-            <p class="mt-5 fw-bold">( ____________________ )</p>
+        <div style="text-align: center; width: 250px;">
+            <p class="mb-0" contenteditable="true">.........., .......... 20....</p>
+            <p class="mb-5">Pengelola SIPERAH,</p>
+            <div style="margin-top: 70px;">
+                <p class="fw-bold mb-0" contenteditable="true">( ____________________ )</p>
+                <p class="small text-muted mt-1" contenteditable="true">Nama Pengelola</p>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
+    [contenteditable="true"]:hover {
+        background-color: rgba(0,0,0,0.05);
+        outline: 1px dashed var(--primary);
+    }
     @media print {
-        .navbar, .sidebar, .btn, form { display: none !important; }
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+        .navbar, .sidebar, .btn, form, .no-print { display: none !important; }
         .content { padding: 0 !important; margin: 0 !important; }
-        .card { border: none !important; box-shadow: none !important; }
+        .layout { display: block !important; }
+        .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        body { background: white !important; font-size: 10pt; }
+        .table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 10px !important; }
+        .table td, .table th {
+            border: 1px solid #000 !important;
+            padding: 4px 8px !important; 
+            font-size: 9pt;
+        }
+        .mt-5 { margin-top: 2rem !important; }
+        .signature-section { display: flex !important; justify-content: space-between !important; }
+        [contenteditable="true"] { border: none !important; outline: none !important; }
     }
     .table-bordered td, .table-bordered th {
         border: 2px solid #000 !important;
