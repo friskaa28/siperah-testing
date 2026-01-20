@@ -45,12 +45,22 @@
 
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Minimal 8 karakter" style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                    <span class="input-group-text" style="background: white; border-left: none; cursor: pointer; border-top-left-radius: 0; border-bottom-left-radius: 0;" onclick="togglePassword('password', 'toggleIconPass')">
+                        <i class="fas fa-eye" id="toggleIconPass" style="color: var(--text-light);"></i>
+                    </span>
+                </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password_confirmation">Konfirmasi Password</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
+                <div class="input-group">
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                    <span class="input-group-text" style="background: white; border-left: none; cursor: pointer; border-top-left-radius: 0; border-bottom-left-radius: 0;" onclick="togglePassword('password_confirmation', 'toggleIconConf')">
+                        <i class="fas fa-eye" id="toggleIconConf" style="color: var(--text-light);"></i>
+                    </span>
+                </div>
             </div>
 
             <!-- Bagian Khusus Peternak -->
@@ -86,6 +96,21 @@
 </div>
 
 <script>
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
     function togglePeternakFields() {
         const role = document.getElementById('role').value;
         const fields = document.getElementById('peternak-fields');
