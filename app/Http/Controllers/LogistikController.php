@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class LogistikController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = KatalogLogistik::all();
-        return view('logistik.index', compact('items'));
+        $perPage = $request->get('per_page', 10);
+        $items = KatalogLogistik::paginate($perPage)->withQueryString();
+        return view('logistik.index', compact('items', 'perPage'));
     }
 
     public function store(Request $request)

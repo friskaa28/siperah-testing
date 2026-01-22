@@ -8,8 +8,8 @@ use App\Models\SlipPembayaran;
 use App\Models\HargaSusuHistory;
 use App\Models\Kasbon;
 use App\Models\ActivityLog;
-use App\Exports\ProduksiTemplateExport;
-use App\Imports\ProduksiImport;
+use App\Exports\GajiTemplateExport;
+use App\Imports\GajiImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,17 +30,19 @@ class GajiController extends Controller
             }
         }
 
+        $perPage = $request->get('per_page', 10);
         $slips = SlipPembayaran::with('peternak')
             ->where('bulan', $bulan)
             ->where('tahun', $tahun)
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return view('gaji.index', compact('slips', 'bulan', 'tahun'));
+        return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage'));
     }
 
     public function downloadTemplate()
     {
-        return Excel::download(new ProduksiTemplateExport, 'template_siperah.xlsx');
+        return Excel::download(new GajiTemplateExport, 'template_manajemen_gaji.xlsx');
     }
 
     private function generateForMonth($bulan, $tahun)
@@ -59,29 +61,85 @@ class GajiController extends Controller
             if ($totalLiters <= 0) continue;
 
             $harga = HargaSusuHistory::getHargaAktif($endDate);
+            
+            // Initial deduction from Kasbon (only total for reference if needed, 
+            // but we'll use syncPotongan for detailed breakdown)
             $totalKasbon = Kasbon::where('idpeternak', $p->idpeternak)
                 ->whereBetween('tanggal', [$startDate, $endDate])
                 ->sum('total_rupiah');
 
             $totalGross = $totalLiters * $harga;
-            $netSalary = $totalGross - $totalKasbon;
 
             SlipPembayaran::updateOrCreate(
                 ['idpeternak' => $p->idpeternak, 'bulan' => $bulan, 'tahun' => $tahun],
                 [
                     'jumlah_susu' => $totalLiters, 
                     'harga_satuan' => $harga, 
-                    'potongan_pakan' => $totalKasbon, // Reusing existing column for kasbon total
-                    'total_pembayaran' => $netSalary
+                    'total_pembayaran' => $totalGross,
+                    // We don't overwrite detailed deductions here if they already exist
                 ]
             );
+
+            // Trigger sync for each generated slip
+            $slip = SlipPembayaran::where(['idpeternak' => $p->idpeternak, 'bulan' => $bulan, 'tahun' => $tahun])->first();
+            if ($slip) $this->syncPotongan($slip->idslip);
         }
+    }
+
+    public function syncPotongan($idslip)
+    {
+        $slip = SlipPembayaran::findOrFail($idslip);
+        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 13)->endOfDay();
+        $startDate = $endDate->copy()->subMonth()->day(14)->startOfDay();
+
+        $kasbons = Kasbon::where('idpeternak', $slip->idpeternak)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get();
+
+        $mapping = [
+            'potongan_shr' => '/shr/i',
+            'potongan_hutang_bl_ll' => '/hut.*bl.*ll/i',
+            'potongan_pakan_a' => '/pakan\s*a/i',
+            'potongan_pakan_b' => '/pakan\s*b(?!\s*\(2\))/i',
+            'potongan_vitamix' => '/vitami/i', // Match Vitamin or Vitamix
+            'potongan_konsentrat' => '/konsentrat/i',
+            'potongan_skim' => '/skim/i',
+            'potongan_ib_keswan' => '/(ib|keswan)/i',
+            'potongan_susu_a' => '/susu\s*a/i',
+            'potongan_kas_bon' => '/kas\s*bon/i',
+            'potongan_pakan_b_2' => '/pakan\s*b\s*\(2\)/i',
+            'potongan_sp' => '/\bsp\b/i',
+            'potongan_karpet' => '/karpet/i',
+            'potongan_vaksin' => '/vaksin/i',
+        ];
+
+        $updates = [];
+        foreach ($mapping as $column => $regex) {
+            $sum = $kasbons->filter(function($k) use ($regex) {
+                return preg_match($regex, $k->nama_item);
+            })->sum('total_rupiah');
+            $updates[$column] = $sum;
+        }
+
+        // Special case for Lain-Lain: everything not matched above
+        $matchedIds = [];
+        foreach ($mapping as $column => $regex) {
+            $ids = $kasbons->filter(function($k) use ($regex) {
+                return preg_match($regex, $k->nama_item);
+            })->pluck('id')->toArray();
+            $matchedIds = array_merge($matchedIds, $ids);
+        }
+        $otherSum = $kasbons->whereNotIn('id', array_unique($matchedIds))->sum('total_rupiah');
+        $updates['potongan_lain_lain'] = $otherSum;
+
+        $slip->update($updates);
+        return $slip;
     }
 
     public function generate(Request $request)
     {
         $this->generateForMonth($request->bulan, $request->tahun);
-        return back()->with('success', "Slip pembayaran berhasil diperbarui.");
+        return back()->with('success', "Slip pembayaran berhasil diperbarui dan potongan disinkronkan.");
     }
 
     public function edit($idslip)
@@ -93,11 +151,14 @@ class GajiController extends Controller
     public function update(Request $request, $idslip)
     {
         $slip = SlipPembayaran::findOrFail($idslip);
-        $data = $request->all();
-        unset($data['total_potongan']);
-        unset($data['sisa_pembayaran']);
+        $data = $request->except(['_token', '_method', 'total_potongan', 'sisa_pembayaran']);
+        
         $slip->update($data);
-        return redirect()->route('gaji.index', ['bulan' => $slip->bulan, 'tahun' => $slip->tahun])->with('success', 'Slip pembayaran berhasil diupdate.');
+
+        // Sync back to Kasbon history (Riwayat Potongan)
+        $this->syncDeductionsToKasbon($slip->idpeternak, $data, $slip->tanggal_bayar ?? now(), $slip->idslip);
+
+        return redirect()->route('gaji.index', ['bulan' => $slip->bulan, 'tahun' => $slip->tahun])->with('success', 'Data slip pembayaran berhasil disimpan dan disinkronkan ke riwayat potongan.');
     }
 
     public function print($idslip)
@@ -132,31 +193,146 @@ class GajiController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls']);
         
-        $import = new ProduksiImport;
+        $import = new GajiImport();
         Excel::import($import, $request->file('file'));
 
-        foreach ($import->monthsToRegen as $info) {
-            $this->generateForMonth($info['m'], $info['y']);
+        if (count($import->data) > 0) {
+            session(['import_preview' => $import->data]);
+            return back()->with('import_preview_ready', true);
         }
 
-        if ($import->imported > 0) {
-            $msg = "✅ Berhasil! {$import->imported} data masuk.";
-            if (count($import->failedNames) > 0) {
-                $msg .= " Namun, nama ini gagal: " . implode(', ', array_unique($import->failedNames));
-            }
-            $last = collect($import->monthsToRegen)->last();
-            return redirect()->route('gaji.index', ['bulan' => $last['m'], 'tahun' => $last['y']])->with('success', $msg);
+        return back()->with('error', "❌ Gagal! Tidak ada data yang valid untuk diimport.");
+    }
+
+    public function confirmImport(Request $request)
+    {
+        if ($request->has('cancel')) {
+            session()->forget('import_preview');
+            return back()->with('success', 'Import dibatalkan.');
         }
 
-        $error = "❌ Gagal! 0 data yang cocok.";
-        if (count($import->failedNames) > 0) {
-            $error .= " Nama-nama berikut tidak terdaftar di sistem: " . implode(', ', array_unique($import->failedNames));
-        }
-        if (count($import->unrecognizedDates) > 0) {
-            $error .= " Tanggal bermasalah: " . implode(', ', array_unique($import->unrecognizedDates));
-        }
+        $selectedIndices = $request->input('selected_rows', []);
+        $allData = session('import_preview', []);
         
-        return back()->with('error', $error);
+        if (empty($selectedIndices)) {
+            return back()->with('error', '❌ Tidak ada data yang dipilih untuk diimport.');
+        }
+
+        if (empty($allData)) {
+            return back()->with('error', '❌ Sesi import telah berakhir atau data tidak ditemukan.');
+        }
+
+        $importedCount = 0;
+        foreach ($selectedIndices as $index) {
+            if (isset($allData[$index])) {
+                $row = $allData[$index];
+                
+                $idPeternak = $row['idpeternak'];
+
+                // 0. Auto-register new Peternak if doesn't exist
+                if (empty($idPeternak)) {
+                    $newPeternak = Peternak::create([
+                        'nama_peternak' => $row['nama_peternak'],
+                        'status_mitra' => $row['status_mitra'] ?? 'peternak',
+                        // other fields will be handled by model booted() or default values
+                    ]);
+                    $idPeternak = $newPeternak->idpeternak;
+                }
+
+                // 1. Update/Create Slip Pembayaran
+                $slip = SlipPembayaran::updateOrCreate(
+                    [
+                        'idpeternak' => $idPeternak,
+                        'bulan' => $row['bulan'],
+                        'tahun' => $row['tahun']
+                    ],
+                    array_merge($row['potongan'], [
+                        'jumlah_susu' => $row['jumlah_susu'],
+                        'harga_satuan' => $row['harga_satuan'],
+                        'total_pembayaran' => $row['total_pembayaran'],
+                        'tanggal_bayar' => $this->parseDate($row['tanggal_input']),
+                    ])
+                );
+
+                // 2. Sync deductions to Kasbon history (Riwayat Potongan)
+                $this->syncDeductionsToKasbon($idPeternak, $row['potongan'], $slip->tanggal_bayar ?? now(), $slip->idslip);
+
+                // 3. Update/Create Produksi Harian (Riwayat Setor)
+                if ($row['jumlah_susu'] > 0 && !empty($row['tanggal_input'])) {
+                    $tanggalProduksi = $this->parseDate($row['tanggal_input']);
+                    if ($tanggalProduksi) {
+                        ProduksiHarian::updateOrCreate(
+                            [
+                                'idpeternak' => $idPeternak,
+                                'tanggal' => $tanggalProduksi,
+                                'waktu_setor' => 'pagi' // Default to pagi for bulk import
+                            ],
+                            [
+                                'jumlah_susu_liter' => $row['jumlah_susu'],
+                                'catatan' => 'Import via Manajemen Gaji'
+                            ]
+                        );
+                    }
+                }
+
+                $importedCount++;
+            }
+        }
+
+        session()->forget('import_preview');
+        return redirect()->route('gaji.index')->with('success', "✅ Berhasil mengimport $importedCount data slip gaji dan mensinkronisasi potongan ke riwayat.");
+    }
+
+    private function syncDeductionsToKasbon($idPeternak, $potongan, $tanggal, $idslip = null)
+    {
+        \Illuminate\Support\Facades\Log::info("Syncing deductions for peternak $idPeternak on date $tanggal. idslip: $idslip", ['potongan' => $potongan]);
+
+        if ($idslip) {
+            // Remove old synced deductions for this specific slip to prevent duplicates
+            \App\Models\Kasbon::where('idslip', $idslip)->delete();
+        }
+
+        $mapping = [
+            'potongan_shr' => 'SHR',
+            'potongan_hutang_bl_ll' => 'Hutang BL/LL',
+            'potongan_pakan_a' => 'Pakan A',
+            'potongan_pakan_b' => 'Pakan B',
+            'potongan_vitamix' => 'Vitamin', // Aligned with DB
+            'potongan_konsentrat' => 'Konsentrat',
+            'potongan_skim' => 'Skim',
+            'potongan_ib_keswan' => 'IB Keswan',
+            'potongan_susu_a' => 'Susu A',
+            'potongan_kas_bon' => 'Kasbon', // Aligned with common naming
+            'potongan_pakan_b_2' => 'Pakan B 2',
+            'potongan_sp' => 'SP',
+            'potongan_karpet' => 'Karpet',
+            'potongan_vaksin' => 'Vaksin',
+            'potongan_lain_lain' => 'Lain-lain',
+        ];
+
+        foreach ($potongan as $key => $value) {
+            if ($value > 0 && isset($mapping[$key])) {
+                $itemName = $mapping[$key];
+                
+                // Find or create logistics item to link
+                $item = \App\Models\KatalogLogistik::firstOrCreate(
+                    ['nama_barang' => $itemName],
+                    ['harga_satuan' => $value] // Default to current value if new
+                );
+
+                // Record to Kasbon
+                \App\Models\Kasbon::create([
+                    'idpeternak' => $idPeternak,
+                    'idslip' => $idslip,
+                    'idlogistik' => $item->id,
+                    'nama_item' => $item->nama_barang,
+                    'qty' => 1,
+                    'harga_satuan' => $value,
+                    'total_rupiah' => $value,
+                    'tanggal' => $tanggal,
+                ]);
+            }
+        }
     }
 
     public function sign($idslip)
@@ -167,17 +343,15 @@ class GajiController extends Controller
             return back()->with('error', 'Slip ini sudah ditandatangani.');
         }
 
-        // Generate a simple unique token for digital signature verification
         $token = hash('sha256', $slip->idslip . '|' . auth()->id() . '|' . now());
 
         $slip->update([
             'signed_by' => auth()->id(),
             'signed_at' => now(),
             'signature_token' => $token,
-            'status' => 'dibayar' // Auto mark as paid when signed
+            'status' => 'dibayar' 
         ]);
 
-        // Audit Logging
         ActivityLog::log(
             'SIGN_SALARY_SLIP', 
             "Admin " . auth()->user()->nama . " menandatangani slip gaji Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
@@ -185,5 +359,55 @@ class GajiController extends Controller
         );
 
         return back()->with('success', 'Slip gaji berhasil ditandatangani secara digital.');
+    }
+
+    public function undoSign($idslip)
+    {
+        $slip = SlipPembayaran::findOrFail($idslip);
+        
+        $updated = $slip->update([
+            'signed_by' => null,
+            'signed_at' => null,
+            'signature_token' => null,
+            'status' => 'pending'
+        ]);
+
+        if ($updated) {
+            ActivityLog::log(
+                'UNDO_SIGN_SALARY_SLIP', 
+                "Admin " . auth()->user()->nama . " MEMBATALKAN tanda tangan slip gaji Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
+                $slip
+            );
+            return true;
+        }
+
+        \Illuminate\Support\Facades\Log::error("Failed to update slip status for ID: $idslip");
+        return false;
+    }
+
+    private function parseDate($date)
+    {
+        if (empty($date)) return null;
+        
+        // If it's already a Y-m-d string (from some Excel processors)
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) return $date;
+
+        try {
+            // Try d/m/Y first (standard Indonesia)
+            return \Carbon\Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            try {
+                // Try d-m-Y
+                return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
+            } catch (\Exception $e2) {
+                try {
+                    // Fallback to generic parsing
+                    return \Carbon\Carbon::parse($date)->format('Y-m-d');
+                } catch (\Exception $e3) {
+                    \Illuminate\Support\Facades\Log::error("Failed to parse date: " . $date);
+                    return null;
+                }
+            }
+        }
     }
 }

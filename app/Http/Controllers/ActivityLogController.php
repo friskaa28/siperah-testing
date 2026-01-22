@@ -35,7 +35,8 @@ class ActivityLogController extends Controller
             $query->where('description', 'like', '%' . $request->search . '%');
         }
 
-        $logs = $query->paginate(50);
+        $perPage = $request->get('per_page', 50);
+        $logs = $query->paginate($perPage)->withQueryString();
         $users = User::orderBy('nama')->get();
         
         // Get unique actions for filter
@@ -62,5 +63,44 @@ class ActivityLogController extends Controller
         );
 
         return back()->with('success', "Berhasil menghapus {$deleted} log aktivitas lama.");
+    }
+
+    public function undoAction($id)
+    {
+        $log = ActivityLog::find($id);
+        if (!$log) {
+            return back()->with('error', 'Log aktivitas tidak ditemukan.');
+        }
+
+        if ($log->action === 'SIGN_SALARY_SLIP') {
+            $idslip = $log->reference_id;
+
+            // Fallback for legacy logs: parse ID from description "(ID: 123)"
+            if (empty($idslip)) {
+                if (preg_match('/\(ID:\s*(\d+)\)/', $log->description, $matches)) {
+                    $idslip = $matches[1];
+                }
+            }
+
+            if (empty($idslip)) {
+                return back()->with('error', 'Data referensi (ID Slip) tidak ditemukan pada log ini. Aksi ini mungkin dibuat sebelum fitur pembatalan diaktifkan.');
+            }
+
+            try {
+                $gajiRepo = app(GajiController::class);
+                $result = $gajiRepo->undoSign($idslip);
+                
+                if ($result) {
+                    return back()->with('success', 'Tanda tangan berhasil dibatalkan dan slip gaji telah dibuka kuncinya.');
+                } else {
+                    return back()->with('error', 'Gagal membatalkan tanda tangan. Data mungkin tidak ditemukan.');
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Undo Action Error: " . $e->getMessage());
+                return back()->with('error', 'Gagal membatalkan tanda tangan: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'Aksi ini tidak dapat dibatalkan.');
     }
 }

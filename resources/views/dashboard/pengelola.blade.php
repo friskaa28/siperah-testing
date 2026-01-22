@@ -245,7 +245,7 @@
                     </div>
                 @endforelse
             </div>
-            <a href="#" class="btn btn-outline-primary w-100 rounded-pill btn-sm fw-bold">Lihat Selengkapnya</a>
+            <a href="{{ route('activity-log.index') }}" class="btn btn-outline-primary w-100 rounded-pill btn-sm fw-bold">Lihat Selengkapnya</a>
         </div>
     </div>
 </div>

@@ -49,6 +49,26 @@ class Peternak extends Model
                      ->whereYear('created_at', now()->year);
     }
 
+    protected static function booted()
+    {
+        // Generate no_peternak automatically if empty
+        static::created(function ($peternak) {
+            if (empty($peternak->no_peternak)) {
+                $prefix = 'MTR-';
+                if ($peternak->status_mitra === 'sub_penampung_tr') {
+                    $prefix = 'TR-';
+                } elseif ($peternak->status_mitra === 'sub_penampung_p') {
+                    $prefix = 'P-';
+                } elseif ($peternak->status_mitra === 'sub_penampung') {
+                    $prefix = 'SUB-';
+                }
+                
+                $peternak->no_peternak = $prefix . str_pad($peternak->idpeternak, 3, '0', STR_PAD_LEFT);
+                $peternak->saveQuietly();
+            }
+        });
+    }
+
     // Methods
     public function getTotalProduksiBulanan()
     {

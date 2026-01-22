@@ -13,8 +13,11 @@
     @endif
 
     <div class="card shadow mb-4">
-        <div class="card-header py-3">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Kontrol Fitur</h6>
+            <a href="{{ route('users.index') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-users-cog"></i> Kelola Pengguna
+            </a>
         </div>
         <div class="card-body">
             <form action="{{ route('settings.update') }}" method="POST">

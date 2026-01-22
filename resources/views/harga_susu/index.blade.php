@@ -43,7 +43,7 @@
                     <tr>
                         <th>Tanggal Berlaku</th>
                         <th>Harga</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,11 +51,13 @@
                     <tr>
                         <td class="fw-bold">{{ $item->tanggal_berlaku->format('d M Y') }}</td>
                         <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
-                        <td class="text-end">
-                            <form action="{{ route('harga_susu.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus riwayat ini?')">
+                        <td class="text-center">
+                            <form action="{{ route('harga_susu.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus riwayat ini?')" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                <button type="submit" class="action-btn delete" title="Hapus Riwayat">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -70,4 +72,27 @@
     </div>
 </div>
 
+<style>
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: none;
+        font-size: 0.85rem;
+    }
+    
+    .action-btn.delete {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    .action-btn.delete:hover {
+        background: #b91c1c;
+        color: white;
+    }
+</style>
 @endsection

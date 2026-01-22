@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
         :root {
@@ -36,6 +37,9 @@
             background-color: #F9FAFB;
             color: var(--dark);
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         /* ===== NAVBAR ===== */
@@ -93,7 +97,7 @@
         /* ===== MAIN LAYOUT ===== */
         .layout {
             display: flex;
-            min-height: calc(100vh - 60px);
+            flex: 1;
         }
 
         /* ===== SIDEBAR ===== */
@@ -143,7 +147,9 @@
         .content {
             flex: 1;
             padding: 2rem;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
         }
 
         .content h1 {
@@ -626,6 +632,7 @@
             text-align: center;
             color: var(--text-light);
             font-size: 0.9rem;
+            width: 100%;
         }
 
         /* ===== TOOLTIP ===== */
@@ -695,7 +702,7 @@
                         <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-                                Logout
+                                Keluar
                             </button>
                         </form>
                     </div>
@@ -739,26 +746,25 @@
                         Input Data
                     </div>
                     @if(\App\Models\Setting::isEnabled('feature_produksi'))
-                    <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
-                        <i class="fas fa-database"></i> Data Setor Susu
-                    </a>
                     <a href="/produksi/input" class="sidebar-item @if(request()->is('produksi/input')) active @endif">
                         <i class="fas fa-plus-circle"></i> Input Setor Susu
                     </a>
                     @endif
-
-                    <a href="/gaji" class="sidebar-item @if(request()->is('gaji*')) active @endif">
-                        <i class="fas fa-money-bill-wave"></i> Manajemen Gaji
+                    <a href="{{ route('kasbon.index') }}" class="sidebar-item @if(request()->is('kasbon*')) active @endif">
+                        <i class="fas fa-minus-circle"></i> Input Potongan
                     </a>
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
-                        Logistik & Kasbon
+                        Laporan
                     </div>
-                    <a href="{{ route('logistik.index') }}" class="sidebar-item @if(request()->is('logistik*')) active @endif">
-                        <i class="fas fa-clipboard-list"></i> Katalog Barang
+                    <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
+                        <i class="fas fa-history"></i> Riwayat Setor Susu
                     </a>
-                    <a href="{{ route('kasbon.index') }}" class="sidebar-item @if(request()->is('kasbon*')) active @endif">
-                        <i class="fas fa-shopping-basket"></i> Input Kasbon
+                    <a href="/gaji" class="sidebar-item @if(request()->is('gaji*')) active @endif">
+                        <i class="fas fa-money-bill-wave"></i> Manajemen Gaji
+                    </a>
+                    <a href="{{ route('laporan.data') }}" class="sidebar-item @if(request()->is('laporan/data*')) active @endif">
+                        <i class="fas fa-file-invoice"></i> Laporan Data
                     </a>
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
@@ -767,14 +773,11 @@
                     <a href="{{ route('harga_susu.index') }}" class="sidebar-item @if(request()->is('harga-susu*')) active @endif">
                         <i class="fas fa-tags"></i> Harga Susu
                     </a>
-                    <a href="{{ route('laporan.pusat') }}" class="sidebar-item @if(request()->is('laporan/pusat*')) active @endif">
-                        <i class="fas fa-file-alt"></i> Laporan Pusat
+                    <a href="{{ route('logistik.index') }}" class="sidebar-item @if(request()->is('logistik*')) active @endif">
+                        <i class="fas fa-boxes"></i> Katalog Barang
                     </a>
-                    <a href="{{ route('laporan.rekap_harian') }}" class="sidebar-item @if(request()->is('laporan/rekap-harian*')) active @endif">
-                        <i class="fas fa-calendar-alt"></i> Rekap Harian
-                    </a>
-                    <a href="{{ route('monitoring.index') }}" class="sidebar-item @if(request()->is('monitoring-harian')) active @endif">
-                        <i class="fas fa-desktop"></i> Monitoring Harian
+                    <a href="{{ route('peternak.index') }}" class="sidebar-item @if(request()->is('peternak*')) active @endif">
+                        <i class="fas fa-user-friends"></i> Data Mitra
                     </a>
 
 
@@ -782,19 +785,19 @@
 
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
-                        System
+                        Sistem
                     </div>
 
-                    <a href="{{ route('panduan.index') }}" class="sidebar-item @if(request()->is('panduan*')) active @endif">
-                        <i class="fas fa-book"></i> Panduan Aplikasi
+                    <a href="{{ route('bantuan.index') }}" class="sidebar-item @if(request()->is('system/bantuan*')) active @endif">
+                        <i class="fas fa-question-circle"></i> Bantuan & Panduan
                     </a>
 
-
                     @if(auth()->user()->role === 'admin')
+                    {{-- Kelola Pengguna moved to Settings --}}
                     <a href="{{ route('activity-log.index') }}" class="sidebar-item @if(request()->is('activity-log*')) active @endif">
                         <i class="fas fa-history"></i> Log Aktivitas
                     </a>
-                    <a href="{{ route('settings.index') }}" class="sidebar-item @if(request()->is('settings')) active @endif">
+                    <a href="{{ route('settings.index') }}" class="sidebar-item @if(request()->is('settings')) @if(!request()->is('settings/users*')) active @endif @endif">
                         <i class="fas fa-cog"></i> Pengaturan Fitur
                     </a>
                     @endif
@@ -821,18 +824,19 @@
             @endif
 
             @yield('content')
+
+            <!-- FOOTER -->
+            <footer class="footer">
+                <div class="container">
+                    &copy; {{ date('Y') }} SIPERAH. <span style="font-weight: 600;">GOGO Team - FRS</span>
+                </div>
+            </footer>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            &copy; {{ date('Y') }} SIPERAH. <span style="font-weight: 600;">GOGO Team - FRS</span>
-        </div>
-    </footer>
-
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @yield('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {

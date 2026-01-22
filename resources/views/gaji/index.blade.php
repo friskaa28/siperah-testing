@@ -14,7 +14,7 @@
     </div>
 @endif
 <div class="flex-between mb-4">
-    <h1>Slip Pembayaran Susu <small style="font-size: 0.5em; opacity: 0.5;">v2.1</small></h1>
+    <h1>Slip Gaji & Pembayaran Susu <small style="font-size: 0.5em; opacity: 0.5;"></small></h1>
     <div class="d-flex gap-2">
         @if($errors->any())
             <div style="background: #FEE2E2; color: #991B1B; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; border: 1px solid #FECACA;">
@@ -29,13 +29,13 @@
             <div class="card-body p-2">
                 <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-2">
                     @csrf
-                    <label class="small fw-bold text-muted mb-0 text-nowrap">Upload Excel Produksi:</label>
+                    <label class="small fw-bold text-muted mb-0 text-nowrap">Unggah Data:</label>
                     <input type="file" name="file" class="form-control form-control-sm w-auto" style="border-radius: 20px; min-width: 200px;" required accept=".xlsx, .xls">
-                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;" data-tooltip="Klik untuk mengimport data slip gaji dari file Excel">
-                        <i class="fas fa-file-import"></i> Import Excel
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;" data-tooltip="Klik untuk mengunggah data slip gaji dan potongan dari file Excel">
+                        <i class="fas fa-file-import"></i> Unggah Excel
                     </button>
-                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;" data-tooltip="Unduh template Excel untuk data gaji">
-                        <i class="fas fa-download"></i> Download Template
+                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;" data-tooltip="Unduh template Excel gabungan (Liter & 15 Potongan)">
+                        <i class="fas fa-download"></i> Unduh Contoh Data Excel
                     </a>
                 </form>
             </div>
@@ -58,6 +58,11 @@
                         <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
                     @endfor
                 </select>
+                <select name="per_page" class="form-control" style="width: 100px;" onchange="this.form.submit()">
+                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 baris</option>
+                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 baris</option>
+                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 baris</option>
+                </select>
                 <button type="submit" class="btn btn-secondary">Lihat</button>
             </form>
             
@@ -65,7 +70,7 @@
                 @csrf
                 <input type="hidden" name="bulan" value="{{ $bulan }}">
                 <input type="hidden" name="tahun" value="{{ $tahun }}">
-                <button type="submit" class="btn btn-success" title="Update data liter dari rekaman harian">Refresh Total Liter</button>
+                <button type="submit" class="btn btn-success" title="Update data liter & sinkron potongan harian">Refresh & Sinkron Data</button>
             </form>
         </div>
 
@@ -74,10 +79,10 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Peternak</th>
-                        <th>Total Susu</th>
-                        <th>Sisa Bayar</th>
-                        <th>Aksi</th>
+                        <th style="width: 30%;">Peternak</th>
+                        <th style="width: 15%; text-align: center;">Total Susu</th>
+                        <th style="width: 40%; text-align: right;">Sisa Bayar (Netto)</th>
+                        <th style="width: 15%; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,29 +90,25 @@
                     <tr>
                         <td>
                             <div style="font-weight: 600;">{{ $s->peternak->nama_peternak }}</div>
-                            <div style="font-size: 0.75rem; color: #666;">No: {{ $s->peternak->no_peternak ?: '-' }} | {{ $s->peternak->kelompok ?: '-' }}</div>
+                            <div style="font-size: 0.75rem; color: #666;">No: {{ $s->peternak->no_peternak ?: '-' }}</div>
                         </td>
-                        <td>{{ number_format($s->jumlah_susu, 2) }} L</td>
-                        <td style="font-weight: 600; color: #166534;">
+                        <td class="text-center">{{ number_format($s->jumlah_susu, 2) }} L</td>
+                        <td style="font-weight: 700; color: #166534; text-align: right; font-size: 1.1rem;">
                             Rp {{ number_format($s->sisa_pembayaran, 0, ',', '.') }}
                             @if($s->isSigned())
                                 <div style="font-size: 0.65rem; color: var(--primary); margin-top: 4px;">
-                                    <i class="fas fa-check-circle"></i> Signed Digitally
+                                    <i class="fas fa-check-circle"></i> Terbayar & Digital Signed
                                 </div>
                             @endif
                         </td>
                         <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ route('gaji.edit', $s->idslip) }}" class="btn btn-secondary p-1" title="Input Potongan"><i class="fas fa-cog"></i> Potongan</a>
-                                
-                                @if(!$s->isSigned())
-                                    <form action="{{ route('gaji.sign', $s->idslip) }}" method="POST" onsubmit="return confirm('Tanda tangani slip ini secara digital? Tindakan ini akan mengunci slip.')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success p-1" title="Tanda Tangani Digital"><i class="fas fa-pen-nib"></i> Sign</button>
-                                    </form>
-                                @endif
-
-                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="btn btn-primary p-1"><i class="fas fa-print"></i> Cetak</a>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('gaji.edit', $s->idslip) }}" class="action-btn detail" title="Pratinjau & Edit Potongan">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="action-btn print" title="Cetak Slip Gaji">
+                                    <i class="fas fa-print"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -115,25 +116,30 @@
                 </tbody>
             </table>
         </div>
+        @if($slips->hasPages())
+        <div class="mt-4 no-print d-flex justify-content-between align-items-center mb-2 px-3">
+            <div class="small text-muted">Menampilkan {{ $slips->firstItem() ?? 0 }} - {{ $slips->lastItem() ?? 0 }} dari {{ $slips->total() }} data</div>
+            <div>{{ $slips->links() }}</div>
+        </div>
+        @endif
         @else
         <div class="text-center p-4">
             <p class="text-light">Belum ada data pembayaran untuk bulan ini.</p>
-            <p style="font-size: 0.85rem; color: #999;">Silakan upload CSV atau klik "Refresh Total Liter" jika data harian sudah ada.</p>
+            <p style="font-size: 0.85rem; color: #999;">Silakan upload Excel atau klik "Refresh & Sinkron Data".</p>
         </div>
         @endif
     </div>
 
     <!-- RIGHT: HELPER -->
     <div class="card" style="background: #F9FAFB;">
-        <h3 class="mb-2">Panduan Cepat</h3>
-        <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5563; line-height: 1.6;">
-            <li><strong>Upload CSV GForm</strong>: Pilih file dan klik "Proses Data". Slip gaji akan langsung terbuat otomatis.</li>
-            <li><strong>Cek Nama</strong>: Pastikan nama di Excel sama dengan daftar di bawah.</li>
-            <li><strong>Isi Potongan</strong>: Klik tombol <i class="fas fa-cog"></i> untuk memasukkan biaya pakan, kas bon, dll.</li>
-            <li><strong>Cetak</strong>: Klik <i class="fas fa-print"></i> untuk print slip fisik.</li>
+        <h3 class="mb-2">Panduan Gaji</h3>
+        <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5553; line-height: 1.6;">
+            <li><strong>Unggah Excel</strong>: Gunakan template untuk mengunggah liter & potongan sekaligus.</li>
+            <li><strong>Segarkan Data</strong>: Mengambil liter dari setoran harian & sinkronisasi otomatis potongan kasbon.</li>
+            <li><strong>Pratinjau</strong>: Cek detail slip, edit manual jika perlu, dan lakukan Tanda Tangan Digital.</li>
         </ol>
 
-        <h3 class="mt-4 mb-2">Bulan yang Tersedia:</h3>
+        <h3 class="mt-4 mb-2">Bulan Tersedia:</h3>
         <div class="d-flex flex-wrap gap-1 mb-4">
             @php
                 $availableMonths = \App\Models\ProduksiHarian::selectRaw('MONTH(tanggal) as m, YEAR(tanggal) as y')
@@ -156,4 +162,194 @@
         </div>
     </div>
 </div>
+<style>
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: none;
+        font-size: 0.85rem;
+    }
+    
+    .action-btn.detail {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+    .action-btn.detail:hover {
+        background: #0369a1;
+        color: white;
+    }
+
+    .action-btn.print {
+        background: #f0fdf4;
+        color: #166534;
+    }
+    .action-btn.print:hover {
+        background: #166534;
+        color: white;
+    }
+</style>
+
+@if(session('import_preview'))
+<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #FFFBEB; border: 1px solid #FEF3C7 !important;">
+    <div class="card-body p-4">
+        <div class="flex-between mb-3">
+            <h2 class="h5 mb-0 text-warning-emphasis"><i class="fas fa-file-check me-2"></i> Konfirmasi Data Import</h2>
+            <div class="d-flex gap-2">
+                <form action="{{ route('gaji.confirm-import') }}" method="POST">
+                    @csrf
+                    <div id="hidden_inputs_container"></div>
+                    <button type="submit" class="btn btn-success fw-bold shadow-sm px-4" id="btn_submit_import">
+                        <i class="fas fa-save me-1"></i> SIMPAN SEMUA DATA TERPILIH
+                    </button>
+                </form>
+                <form action="{{ route('gaji.confirm-import') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="cancel" value="1">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Batal</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info py-2" style="font-size: 0.85rem;">
+            <i class="fas fa-info-circle me-1"></i> Berikut adalah pratinjau data dari file Excel. Silakan periksa kembali sebelum menyimpan.
+        </div>
+
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-sm table-hover mb-0" id="previewTable">
+                <thead class="bg-light sticky-top">
+                    <tr>
+                        <th class="text-center" style="width: 50px;">
+                            <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                        </th>
+                        <th>Mitra</th>
+                        <th>Kategori</th>
+                        <th class="text-center">Periode</th>
+                        <th class="text-end">Liter</th>
+                        <th class="text-end">Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(session('import_preview', []) as $idx => $row)
+                    <tr class="{{ $row['is_new'] ? 'table-warning' : '' }}">
+                        <td class="text-center">
+                            <input class="form-check-input row-checkbox" type="checkbox" name="selected_rows[]" value="{{ $idx }}" checked>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ $row['nama_peternak'] }}</div>
+                            @if($row['is_new'])
+                                <small class="text-warning fw-bold">Baru</small>
+                            @else
+                                <small class="text-muted">{{ $row['no_peternak'] }}</small>
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                $catName = [
+                                    'peternak' => 'Peternak',
+                                    'sub_penampung' => 'Sub Penampung',
+                                    'sub_penampung_tr' => 'Sub-P TR',
+                                    'sub_penampung_p' => 'Sub-P P',
+                                ][$row['status_mitra'] ?? 'peternak'] ?? 'Peternak';
+                            @endphp
+                            <span class="badge bg-white text-dark border">{{ $catName }}</span>
+                        </td>
+                        <td class="text-center">{{ date('M', mktime(0, 0, 0, $row['bulan'], 1)) }} {{ $row['tahun'] }}</td>
+                        <td class="text-end">{{ number_format($row['jumlah_susu'], 2) }}</td>
+                        <td class="text-end fw-bold text-success">Rp {{ number_format($row['total_pembayaran'], 0, ',', '.') }}</td>
+                        <td>
+                            @if($row['is_new'])
+                                <span class="badge bg-warning text-dark">Daftar Baru</span>
+                            @else
+                                <span class="badge bg-success-subtle text-success">Siap</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        const hiddenContainer = document.getElementById('hidden_inputs_container');
+        const btnSubmit = document.getElementById('btn_submit_import');
+
+        function updateHiddenInputs() {
+            if (!hiddenContainer) return;
+            hiddenContainer.innerHTML = '';
+            let count = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_rows[]';
+                    input.value = cb.value;
+                    hiddenContainer.appendChild(input);
+                    count++;
+                }
+            });
+            if (btnSubmit) {
+                btnSubmit.disabled = count === 0;
+                btnSubmit.innerHTML = `<i class="fas fa-save me-1"></i> SIMPAN ${count} DATA TERPILIH`;
+            }
+        }
+        
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+                updateHiddenInputs();
+            });
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const allChecked = Array.from(checkboxes).every(c => c.checked);
+                    const someChecked = Array.from(checkboxes).some(c => c.checked);
+                    selectAll.checked = allChecked;
+                    selectAll.indeterminate = someChecked && !allChecked;
+                    updateHiddenInputs();
+                });
+            });
+            
+            // Initial run
+            updateHiddenInputs();
+
+            // Auto scroll to preview
+            const previewSection = document.querySelector('.card-body.p-4').closest('.card');
+            if (previewSection) {
+                previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    });
+</script>
+<style>
+    .bg-success-subtle { background-color: #dcfce7; }
+    .bg-danger-subtle { background-color: #fee2e2; }
+    #previewTable thead th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    #previewTable tbody td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+</style>

@@ -7,7 +7,7 @@
     <div class="row mb-3 align-items-center">
         <div class="col-md-8">
             <h3 class="fw-bold mb-0"><i class="fas fa-plus-circle"></i> Input Setor Susu</h3>
-            <p class="text-muted small mb-0">Catat hasil setor susu dan input kasbon</p>
+            <p class="text-muted small mb-0">Catat hasil setor susu </p>
         </div>
         <div class="col-md-4 text-md-end mt-2 mt-md-0">
             <a href="{{ auth()->user()->isPeternak() ? '/dashboard-peternak' : '/dashboard-pengelola' }}" class="btn btn-outline-secondary btn-sm px-3">
@@ -18,30 +18,6 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-12">
-            <!-- Import Section -->
-            @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
-            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
-                <div class="card-body p-3">
-                    <form action="{{ route('produksi.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-3">
-                        @csrf
-                        <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 flex-grow-1">
-                            <label for="file" class="form-label small fw-bold text-muted mb-0 text-nowrap">Upload Excel Setor Susu:</label>
-                            <input type="file" class="form-control form-control-sm" name="file" id="file" accept=".xlsx, .xls" required style="border-radius: 20px;">
-                        </div>
-                        
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm" style="border-radius: 8px; white-space: nowrap;" data-tooltip="Klik untuk mengimport data produksi dari file Excel">
-                                <i class="fas fa-file-import"></i> Import Excel
-                            </button>
-                            <a href="{{ route('produksi.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm" title="Download Template" style="border-radius: 8px; white-space: nowrap; color: #64748b;" data-tooltip="Unduh template Excel untuk pengisian data">
-                                <i class="fas fa-download"></i> Download Template
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            @endif
-
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-3 p-md-4">
                     <form method="POST" action="{{ route('produksi.store') }}" enctype="multipart/form-data" id="produksiForm">

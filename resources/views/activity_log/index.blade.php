@@ -44,6 +44,14 @@
                 <label class="form-label small">Sampai Tanggal</label>
                 <input type="date" name="end_date" class="form-control form-control-sm" value="{{ request('end_date') }}">
             </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tampilkan</label>
+                <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="25" {{ $logs->perPage() == 25 ? 'selected' : '' }}>25 baris</option>
+                    <option value="50" {{ $logs->perPage() == 50 ? 'selected' : '' }}>50 baris</option>
+                    <option value="100" {{ $logs->perPage() == 100 ? 'selected' : '' }}>100 baris</option>
+                </select>
+            </div>
             <div class="col-md-2">
                 <label class="form-label small">&nbsp;</label>
                 <div class="d-grid gap-2">
@@ -62,29 +70,29 @@
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 140px;">Waktu</th>
-                        <th style="width: 150px;">Pengguna</th>
-                        <th style="width: 180px;">Aktivitas</th>
-                        <th>Deskripsi</th>
-                        <th style="width: 120px;">IP Address</th>
+                        <th style="width: 140px; text-align: left;">Waktu</th>
+                        <th style="width: 180px; text-align: left;">Pengguna</th>
+                        <th style="width: 180px; text-align: center;">Aktivitas</th>
+                        <th style="text-align: left;">Deskripsi</th>
+                        <th style="width: 120px; text-align: right;">IP Address</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($logs as $log)
                     <tr>
-                        <td>
+                        <td style="text-align: left;">
                             <small class="text-muted">{{ $log->created_at->format('d/m/Y') }}</small><br>
                             <strong>{{ $log->created_at->format('H:i:s') }}</strong>
                         </td>
-                        <td>
+                        <td style="text-align: left;">
                             @if($log->user)
                                 <strong>{{ $log->user->nama }}</strong><br>
                                 <small class="text-muted">{{ $log->user->role }}</small>
                             @else
-                                <span class="text-muted">System</span>
+                                <span class="text-muted">Sistem</span>
                             @endif
                         </td>
-                        <td>
+                        <td class="text-center">
                             @php
                                 $badgeClass = 'bg-secondary';
                                 if(str_contains($log->action, 'PRINT')) $badgeClass = 'bg-info';
@@ -95,8 +103,20 @@
                             @endphp
                             <span class="badge {{ $badgeClass }}">{{ str_replace('_', ' ', $log->action) }}</span>
                         </td>
-                        <td>{{ $log->description }}</td>
-                        <td><small class="text-muted font-monospace">{{ $log->ip_address }}</small></td>
+                        <td style="text-align: left;">
+                            {{ $log->description }}
+                            @if($log->action === 'SIGN_SALARY_SLIP')
+                                <div class="mt-2">
+                                    <form action="{{ route('activity-log.undo', $log->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan tanda tangan ini? Slip gaji terkait akan terbuka kuncinya.')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" style="font-size: 0.7rem; padding: 2px 8px;">
+                                            <i class="fas fa-undo"></i> Buka Kunci / Batalkan
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                        </td>
+                        <td style="text-align: right;"><small class="text-muted font-monospace">{{ $log->ip_address }}</small></td>
                     </tr>
                     @empty
                     <tr>
@@ -135,7 +155,7 @@
         <div class="card bg-light">
             <div class="card-body text-center">
                 <h3 class="mb-0">{{ $logs->where('action', 'PRINT_SALARY_SLIP')->count() }}</h3>
-                <small class="text-muted">Print Slip Gaji (Halaman Ini)</small>
+                <small class="text-muted">Cetak Slip Gaji (Halaman Ini)</small>
             </div>
         </div>
     </div>
@@ -143,7 +163,7 @@
         <div class="card bg-light">
             <div class="card-body text-center">
                 <h3 class="mb-0">{{ $logs->where('action', 'EXPORT_E_STATEMENT')->count() }}</h3>
-                <small class="text-muted">Export E-Statement (Halaman Ini)</small>
+                <small class="text-muted">Ekspor E-Statement (Halaman Ini)</small>
             </div>
         </div>
     </div>

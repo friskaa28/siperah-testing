@@ -88,14 +88,14 @@
         </table>
     </div>
 
-    <div class="mt-4 p-3 border" style="border-width: 2px !important; border-color: #000 !important; max-width: 300px;">
-        <div class="d-flex justify-content-between font-bold" style="font-size: 1.2rem;">
+    <div class="mt-4 p-3 border mb-4" style="border-width: 2px !important; border-color: #000 !important; max-width: 300px; page-break-inside: avoid; margin-left: auto;">
+        <div class="d-flex justify-content-between font-bold fw-bold" style="font-size: 1.2rem;">
             <span>TOTAL:</span>
             <span>{{ number_format($monthlyTotal, 1, ',', '.') }} Ltr</span>
         </div>
     </div>
 
-    <div class="signature-section" style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 50px;">
+    <div class="signature-section" style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 50px; page-break-inside: avoid;">
         <div style="text-align: center; width: 250px;">
             <p class="mb-5">Mengetahui,</p>
             <div style="margin-top: 70px;">
@@ -124,20 +124,21 @@
             size: landscape;
             margin: 1cm;
         }
-        .navbar, .sidebar, .btn, form, .no-print { display: none !important; }
-        .content { padding: 0 !important; margin: 0 !important; }
-        .layout { display: block !important; }
-        .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
-        body { background: white !important; font-size: 10pt; }
-        .table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 10px !important; }
+        .no-print, .navbar, .sidebar, .btn, form, header, .footer { display: none !important; }
+        .content { padding: 0 !important; margin: 0 !important; width: 100% !important; overflow: visible !important; }
+        .layout { display: block !important; min-height: 0 !important; }
+        .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 0 !important; background: transparent !important; }
+        body { background: white !important; font-size: 10pt; color: black; }
+        .table { width: 100% !important; border-collapse: collapse !important; border: 2px solid #000 !important; margin-bottom: 20px !important; }
         .table td, .table th {
-            border: 1px solid #000 !important;
-            padding: 4px 8px !important; 
-            font-size: 9pt;
+            border: 2px solid #000 !important;
+            padding: 6px 10px !important; 
+            font-size: 10pt;
+            color: black !important;
         }
-        .mt-5 { margin-top: 2rem !important; }
-        .signature-section { display: flex !important; justify-content: space-between !important; }
+        .signature-section { display: flex !important; justify-content: space-between !important; margin-top: 50px !important; page-break-inside: avoid !important; }
         [contenteditable="true"] { border: none !important; outline: none !important; }
+        tr { page-break-inside: avoid !important; }
     }
     .table-bordered td, .table-bordered th {
         border: 2px solid #000 !important;

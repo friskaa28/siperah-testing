@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Kasbon - SIP-SUSU')
+@section('title', 'Manajemen Potongan - SIPERAH')
 
 @section('content')
 <div class="mb-4">
-    <h1 class="fw-bold mb-0">Input Kasbon / Logistik</h1>
-    <p class="text-muted">Catat pengambilan pakan, vitamin, atau kasbon tunai peternak.</p>
+    <h1 class="fw-bold mb-0">Input Potongan / Logistik</h1>
+    <p class="text-muted">Catat pengambilan pakan, vitamin, atau potongan tunai peternak.</p>
 </div>
 
 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
@@ -46,7 +46,7 @@
             </div>
 
             <div class="p-3 mb-4 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
-                <span class="fw-bold text-muted">Total Hutang</span>
+                <span class="fw-bold text-muted">Total Potongan</span>
                 <span class="fw-bold text-primary" style="font-size: 1.25rem;" id="subtotalDisplay">Rp 0</span>
             </div>
 
@@ -54,9 +54,19 @@
         </form>
     </div>
 
-    <!-- Riwayat Kasbon -->
+    <!-- Riwayat Potongan -->
     <div class="card">
-        <h3 class="mb-4">Riwayat Kasbon Terbaru</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Riwayat Potongan Terbaru</h3>
+            <form action="{{ route('kasbon.index') }}" method="GET">
+                @if(request('idpeternak')) <input type="hidden" name="idpeternak" value="{{ request('idpeternak') }}"> @endif
+                <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                    <option value="10" {{ $kasbons->perPage() == 10 ? 'selected' : '' }}>10 baris</option>
+                    <option value="25" {{ $kasbons->perPage() == 25 ? 'selected' : '' }}>25 baris</option>
+                    <option value="50" {{ $kasbons->perPage() == 50 ? 'selected' : '' }}>50 baris</option>
+                </select>
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -65,7 +75,7 @@
                         <th>Mitra</th>
                         <th>Barang</th>
                         <th>Total</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,17 +91,19 @@
                             <div class="small text-muted">{{ $k->qty }} x Rp{{ number_format($k->harga_satuan, 0, ',', '.') }}</div>
                         </td>
                         <td class="fw-bold text-danger">Rp {{ number_format($k->total_rupiah, 0, ',', '.') }}</td>
-                        <td class="text-end">
-                            <form action="{{ route('kasbon.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus data kasbon ini?')">
+                        <td class="text-center">
+                            <form action="{{ route('kasbon.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus data kasbon ini?')" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                <button type="submit" class="action-btn delete" title="Hapus Data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">Belum ada data kasbon.</td>
+                        <td colspan="5" class="text-center py-4 text-muted">Belum ada data potongan.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -120,6 +132,28 @@
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 46px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: none;
+        font-size: 0.85rem;
+    }
+    
+    .action-btn.delete {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    .action-btn.delete:hover {
+        background: #b91c1c;
+        color: white;
     }
 </style>
 

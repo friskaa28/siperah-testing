@@ -103,18 +103,21 @@ class ProduksiController extends Controller
             if ($request->idpeternak) {
                 $query->where('idpeternak', $request->idpeternak);
             }
-            $produksi = $query->paginate(15);
+            $perPage = $request->get('per_page', 15);
+            $produksi = $query->paginate($perPage)->withQueryString();
             $peternaks = Peternak::all();
-            return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin'));
+            return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage'));
         } else {
             $peternak = $user->peternak;
             if (!$peternak) {
                 return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
             }
+            $perPage = $request->get('per_page', 15);
             $produksi = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
                 ->orderBy('tanggal', 'desc')
-                ->paginate(15);
-            return view('produksi.list_peternak', compact('produksi'));
+                ->paginate($perPage)
+                ->withQueryString();
+            return view('produksi.list_peternak', compact('produksi', 'perPage'));
         }
     }
 
@@ -135,6 +138,38 @@ class ProduksiController extends Controller
         return view('produksi.detail_perhitungan', [
             'produksi' => $produksi,
         ]);
+    }
+
+    public function edit($idproduksi)
+    {
+        $produksi = ProduksiHarian::findOrFail($idproduksi);
+        $peternaks = Peternak::all();
+        return view('produksi.edit', compact('produksi', 'peternaks'));
+    }
+
+    public function update(Request $request, $idproduksi)
+    {
+        $produksi = ProduksiHarian::findOrFail($idproduksi);
+        
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'waktu_setor' => 'required|in:pagi,sore',
+            'jumlah_susu_liter' => 'required|numeric|min:0.1',
+            'idpeternak' => 'required|exists:peternak,idpeternak',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $produksi->update($validated);
+
+        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil diperbarui.');
+    }
+
+    public function destroy($idproduksi)
+    {
+        $produksi = ProduksiHarian::findOrFail($idproduksi);
+        $produksi->delete();
+
+        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil dihapus.');
     }
 
     public function downloadTemplate()

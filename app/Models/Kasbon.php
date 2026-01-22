@@ -10,6 +10,7 @@ class Kasbon extends Model
 
     protected $fillable = [
         'idpeternak',
+        'idslip',
         'idlogistik',
         'nama_item',
         'qty',

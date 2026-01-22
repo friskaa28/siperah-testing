@@ -14,6 +14,8 @@ use App\Http\Controllers\KasbonController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PanduanController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\BantuanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,6 +97,9 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::get('/produksi/input', [ProduksiController::class, 'create'])->name('produksi.create');
     Route::post('/produksi/store', [ProduksiController::class, 'store'])->name('produksi.store');
     Route::get('/produksi/{idproduksi}', [ProduksiController::class, 'detailPerhitungan'])->name('produksi.detail');
+    Route::get('/produksi/{idproduksi}/edit', [ProduksiController::class, 'edit'])->name('produksi.edit');
+    Route::put('/produksi/{idproduksi}', [ProduksiController::class, 'update'])->name('produksi.update');
+    Route::delete('/produksi/{idproduksi}', [ProduksiController::class, 'destroy'])->name('produksi.destroy');
     Route::get('/produksi/template/download', [ProduksiController::class, 'downloadTemplate'])->name('produksi.template');
     Route::post('/produksi/import', [ProduksiController::class, 'import'])->name('produksi.import');
 
@@ -113,6 +118,7 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::put('/gaji/{idslip}', [GajiController::class, 'update'])->name('gaji.update');
     Route::get('/gaji/{idslip}/print', [GajiController::class, 'print'])->name('gaji.print');
     Route::post('/gaji/import', [GajiController::class, 'import'])->name('gaji.import');
+    Route::post('/gaji/confirm-import', [GajiController::class, 'confirmImport'])->name('gaji.confirm-import');
     Route::get('/gaji/template', [GajiController::class, 'downloadTemplate'])->name('gaji.template');
     Route::post('/gaji/{idslip}/sign', [GajiController::class, 'sign'])->name('gaji.sign');
 
@@ -120,15 +126,11 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::get('/laporan/pusat', [LaporanController::class, 'pusatReport'])->name('laporan.pusat');
     Route::get('/laporan/rekap-harian', [LaporanController::class, 'rekapHarian'])->name('laporan.rekap_harian');
 
-    // Monitoring Harian (New Feature)
-    Route::get('/monitoring-harian', [\App\Http\Controllers\RekapController::class, 'index'])->name('monitoring.index');
-
-    // Quick Update Peternak No
-    Route::put('/peternak/{idpeternak}/update-no', function(\Illuminate\Http\Request $request, $id) {
-        $peternak = \App\Models\Peternak::findOrFail($id);
-        $peternak->update(['no_peternak' => $request->no_peternak]);
-        return back()->with('success', 'Nomor peternak berhasil diatur!');
-    })->name('peternak.update_no');
+    // Peternak Management
+    Route::get('/peternak', [App\Http\Controllers\PeternakController::class, 'index'])->name('peternak.index');
+    Route::post('/peternak', [App\Http\Controllers\PeternakController::class, 'store'])->name('peternak.store');
+    Route::post('/peternak/{id}/update-status', [App\Http\Controllers\PeternakController::class, 'updateStatus'])->name('peternak.update_status');
+    Route::delete('/peternak/{id}', [App\Http\Controllers\PeternakController::class, 'destroy'])->name('peternak.destroy');
 
     // Katalog Logistik CRUD
     Route::get('/logistik', [LogistikController::class, 'index'])->name('logistik.index');
@@ -146,6 +148,15 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::post('/kasbon', [KasbonController::class, 'store'])->name('kasbon.store');
     Route::delete('/kasbon/{id}', [KasbonController::class, 'destroy'])->name('kasbon.destroy');
 
+    // Laporan Data (Konsolidasi)
+    Route::get('/laporan/data', [LaporanController::class, 'laporanData'])->name('laporan.data');
+
+    // Laporan Sub-Penampung
+    Route::get('/laporan/sub-penampung', [LaporanController::class, 'subPenampungReport'])->name('laporan.sub_penampung');
+    
+    // Monitoring Harian (Renamed to Laporan Harian in UI)
+    Route::get('/monitoring-harian', [\App\Http\Controllers\RekapController::class, 'index'])->name('monitoring.index');
+
     // Pengumuman
     Route::post('/pengumuman', [PengumumanController::class, 'broadcast'])->name('pengumuman.broadcast');
 
@@ -153,4 +164,14 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     Route::get('/activity-log', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-log.index');
     Route::get('/activity-log/{id}', [App\Http\Controllers\ActivityLogController::class, 'show'])->name('activity-log.show');
     Route::post('/activity-log/clear', [App\Http\Controllers\ActivityLogController::class, 'clear'])->name('activity-log.clear');
+    Route::post('/activity-log/{id}/undo', [App\Http\Controllers\ActivityLogController::class, 'undoAction'])->name('activity-log.undo');
+
+    // Kelola Pengguna
+    Route::get('/settings/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/settings/users', [UserController::class, 'store'])->name('users.store');
+    Route::put('/settings/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/settings/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Sistem Bantuan
+    Route::get('/system/bantuan', [BantuanController::class, 'index'])->name('bantuan.index');
 });

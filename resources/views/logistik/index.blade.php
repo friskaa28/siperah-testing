@@ -8,9 +8,18 @@
         <h1 class="fw-bold mb-0">Katalog Logistik</h1>
         <p class="text-muted">Kelola daftar pakan, vitamin, dan obat-obatan.</p>
     </div>
-    <button class="btn btn-primary" onclick="showAddModal()">
-        <i class="fas fa-plus"></i> Tambah Barang
-    </button>
+    <div class="d-flex gap-2">
+        <form action="{{ route('logistik.index') }}" method="GET" class="d-flex gap-2 align-items-center">
+            <select name="per_page" class="form-select form-select-sm" style="width: 120px;" onchange="this.form.submit()">
+                <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 baris</option>
+                <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 baris</option>
+                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 baris</option>
+            </select>
+        </form>
+        <button class="btn btn-primary" onclick="showAddModal()">
+            <i class="fas fa-plus"></i> Tambah Barang
+        </button>
+    </div>
 </div>
 
 <div class="card">
@@ -21,7 +30,7 @@
                     <th>Nama Barang</th>
                     <th>Harga Satuan</th>
                     <th>Tanggal Update</th>
-                    <th class="text-end">Aksi</th>
+                    <th class="text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,15 +39,19 @@
                     <td class="fw-bold">{{ $item->nama_barang }}</td>
                     <td>Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                     <td>{{ $item->updated_at->format('d M Y') }}</td>
-                    <td class="text-end">
-                        <button class="btn btn-secondary btn-sm" onclick="showEditModal({{ $item }})">
-                            Edit
-                        </button>
-                        <form action="{{ route('logistik.destroy', $item->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus barang ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                        </form>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="action-btn edit" onclick="showEditModal({{ $item }})" title="Edit Barang">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="{{ route('logistik.destroy', $item->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus barang ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn delete" title="Hapus Barang">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -49,6 +62,12 @@
             </tbody>
         </table>
     </div>
+    @if($items->hasPages())
+    <div class="card-footer bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+        <div class="small text-muted">Menampilkan {{ $items->firstItem() ?? 0 }} - {{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} barang</div>
+        <div>{{ $items->links() }}</div>
+    </div>
+    @endif
 </div>
 
 <!-- Modal Tambah/Edit -->
@@ -110,4 +129,37 @@
         if (event.target == modal) hideModal();
     }
 </script>
+
+<style>
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: none;
+        font-size: 0.85rem;
+    }
+    
+    .action-btn.edit {
+        background: #fef9c3;
+        color: #a16207;
+    }
+    .action-btn.edit:hover {
+        background: #a16207;
+        color: white;
+    }
+
+    .action-btn.delete {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    .action-btn.delete:hover {
+        background: #b91c1c;
+        color: white;
+    }
+</style>
 @endsection

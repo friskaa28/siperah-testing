@@ -17,7 +17,8 @@ class KasbonController extends Controller
             $query->where('idpeternak', $request->idpeternak);
         }
 
-        $kasbons = $query->paginate(20);
+        $perPage = $request->get('per_page', 10);
+        $kasbons = $query->paginate($perPage)->withQueryString();
         $peternaks = Peternak::all();
         $items = KatalogLogistik::all();
 
