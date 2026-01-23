@@ -97,28 +97,65 @@ class ProduksiController extends Controller
     {
         $user = Auth::user();
         $isAdmin = $user->isAdmin() || $user->isPengelola();
+        $now = now();
+
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $idpeternak = $request->get('idpeternak');
+
+        $query = ProduksiHarian::query();
 
         if ($isAdmin) {
-            $query = ProduksiHarian::with('peternak')->orderBy('tanggal', 'desc');
-            if ($request->idpeternak) {
-                $query->where('idpeternak', $request->idpeternak);
-            }
-            $perPage = $request->get('per_page', 15);
-            $produksi = $query->paginate($perPage)->withQueryString();
             $peternaks = Peternak::all();
-            return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage'));
+            if ($idpeternak) {
+                $query->where('idpeternak', $idpeternak);
+            }
         } else {
             $peternak = $user->peternak;
             if (!$peternak) {
                 return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
             }
-            $perPage = $request->get('per_page', 15);
-            $produksi = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
-                ->orderBy('tanggal', 'desc')
-                ->paginate($perPage)
-                ->withQueryString();
-            return view('produksi.list_peternak', compact('produksi', 'perPage'));
+            $query->where('idpeternak', $peternak->idpeternak);
+            $peternaks = collect([$peternak]);
         }
+
+        if ($startDate) {
+            $query->where('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->where('tanggal', '<=', $endDate);
+        }
+
+        $perPage = $request->get('per_page', 15);
+        
+        // Group by date and peternak to show Pagi/Sore/Total
+        $produksi = $query->with('peternak')
+            ->selectRaw('tanggal, idpeternak, 
+                MAX(CASE WHEN waktu_setor = "pagi" THEN idproduksi END) as idpagi,
+                MAX(CASE WHEN waktu_setor = "sore" THEN idproduksi END) as idsore,
+                SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
+                SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
+                SUM(jumlah_susu_liter) as total')
+            ->groupBy('tanggal', 'idpeternak')
+            ->groupBy('tanggal', 'idpeternak')
+            ->orderBy('tanggal', 'desc');
+
+        if ($request->get('status_setor') === 'pagi') {
+            $produksi->havingRaw('pagi > 0 AND sore = 0');
+        } elseif ($request->get('status_setor') === 'sore') {
+            $produksi->havingRaw('sore > 0 AND pagi = 0');
+        } elseif ($request->get('status_setor') === 'lengkap') {
+            $produksi->havingRaw('pagi > 0 AND sore > 0');
+        }
+
+        $produksi = $produksi->paginate($perPage)
+            ->withQueryString();
+
+        if ($request->get('export') === 'excel') {
+            return Excel::download(new SubPenampungReportExport($produksi), 'Riwayat_Setoran_'.now()->format('YmdHis').'.xlsx');
+        }
+
+        return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage', 'startDate', 'endDate', 'idpeternak'));
     }
 
     public function detailPerhitungan($idproduksi)

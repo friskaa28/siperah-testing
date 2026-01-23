@@ -27,7 +27,9 @@ class PusatReportExport implements FromCollection, WithHeadings, WithMapping, Sh
         return [
             'TANGGAL',
             'POS / KATEGORI',
-            'VOLUME (L)'
+            'PAGI (L)',
+            'SORE (L)',
+            'TOTAL (L)'
         ];
     }
 
@@ -36,6 +38,8 @@ class PusatReportExport implements FromCollection, WithHeadings, WithMapping, Sh
         return [
             Carbon::parse($row->tanggal)->format('d/m/Y'),
             strtoupper($row->pos),
+            number_format($row->pagi, 1, ',', '.'),
+            number_format($row->sore, 1, ',', '.'),
             number_format($row->total, 1, ',', '.')
         ];
     }

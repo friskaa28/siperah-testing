@@ -7,6 +7,8 @@ use App\Models\ProduksiHarian;
 use App\Models\HargaSusuHistory;
 use App\Models\Kasbon;
 use App\Exports\PusatReportExport;
+use App\Exports\SubPenampungReportExport;
+use App\Exports\HarianReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -91,25 +93,49 @@ class LaporanController extends Controller
         $now = now();
         
         // Default filters for Pusat & Sub-Penampung
-        $startDate = $request->get('start_date', $now->copy()->subMonth()->day(14)->format('Y-m-d'));
-        $endDate = $request->get('end_date', $now->copy()->day(13)->format('Y-m-d'));
-        $start = Carbon::parse($startDate)->startOfDay();
-        $end = Carbon::parse($endDate)->endOfDay();
+    $startDate = $request->get('start_date');
+    $endDate = $request->get('end_date');
 
-        // Default filters for Harian
-        $tanggal = $request->get('tanggal', $now->format('Y-m-d'));
-        $bulan = $request->get('bulan', $now->month);
-        $tahun = $request->get('tahun', $now->year);
+    // Default filters for Harian
+    $tanggal = $request->get('tanggal', $now->format('Y-m-d'));
+    $bulan = $request->get('bulan', $now->month);
+    $tahun = $request->get('tahun', $now->year);
+
+    if (!$startDate || !$endDate) {
+        $currentMonth = Carbon::createFromDate($tahun, $bulan, 1);
+        $prevMonth = $currentMonth->copy()->subMonth();
+        
+        // Start: 30th of prev month
+        $startDay = min(30, $prevMonth->daysInMonth);
+        $startDate = $prevMonth->copy()->day($startDay)->format('Y-m-d');
+        
+        // End: 30th of current month
+        $endDay = min(30, $currentMonth->daysInMonth);
+        $endDate = $currentMonth->copy()->day($endDay)->format('Y-m-d');
+    }
+
+    $start = Carbon::parse($startDate)->startOfDay();
+    $end = Carbon::parse($endDate)->endOfDay();
 
         $isPrinting = $request->get('print') === 'all';
         
         // 1. Laporan Pusat Data (Split by POS/Location - Inclusive)
-        $pusatQuery = ProduksiHarian::whereBetween('tanggal', [$start, $end])
+        $pusatQuery = ProduksiHarian::where(function($q) use ($startDate, $endDate) {
+            $q->where(function($sq) use ($startDate) {
+                $sq->where('tanggal', $startDate)->where('waktu_setor', 'sore');
+            })->orWhere(function($sq) use ($startDate, $endDate) {
+                $sq->where('tanggal', '>', $startDate)->where('tanggal', '<', $endDate);
+            })->orWhere(function($sq) use ($endDate) {
+                $sq->where('tanggal', $endDate)->where('waktu_setor', 'pagi');
+            });
+        })
             ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
             ->when($search, function($q) use ($search) {
                 return $q->where('peternak.lokasi', 'like', "%$search%");
             })
             ->selectRaw('tanggal, peternak.lokasi as pos, peternak.status_mitra,
+                SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
+                SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
                 SUM(jumlah_susu_liter) as total')
             ->groupBy('tanggal', 'peternak.lokasi', 'peternak.status_mitra')
             ->orderBy('tanggal', 'asc')
@@ -124,9 +150,21 @@ class LaporanController extends Controller
         $data['pusat'] = $isPrinting ? $pusatAll : $pusatQuery->paginate($perPage, ['*'], 'pusat_page')->withQueryString();
 
         // 2. Laporan Sub-Penampung Data
-        $subQuery = ProduksiHarian::whereBetween('tanggal', [$start, $end])
-            ->whereHas('peternak', function($q) use ($search) {
-                $q->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
+        $subQuery = ProduksiHarian::where(function($q) use ($startDate, $endDate) {
+            $q->where(function($sq) use ($startDate) {
+                $sq->where('tanggal', $startDate)->where('waktu_setor', 'sore');
+            })->orWhere(function($sq) use ($startDate, $endDate) {
+                $sq->where('tanggal', '>', $startDate)->where('tanggal', '<', $endDate);
+            })->orWhere(function($sq) use ($endDate) {
+                $sq->where('tanggal', $endDate)->where('waktu_setor', 'pagi');
+            });
+        })
+            ->whereHas('peternak', function($q) use ($search, $request) {
+                if ($request->status_mitra) {
+                    $q->where('status_mitra', $request->status_mitra);
+                } else {
+                    $q->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
+                }
                 if ($search) {
                     $q->where(function($sq) use ($search) {
                         $sq->where('nama_peternak', 'like', "%$search%")
@@ -135,11 +173,12 @@ class LaporanController extends Controller
                 }
             })
             ->with('peternak')
-            ->selectRaw('idpeternak, 
+            ->selectRaw('tanggal, idpeternak,
                 SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
                 SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
                 SUM(jumlah_susu_liter) as total')
-            ->groupBy('idpeternak');
+            ->groupBy('tanggal', 'idpeternak')
+            ->orderBy('tanggal', 'desc');
 
         // Calculate specialized totals from ALL matching records before pagination
         $subAll = $subQuery->get();
@@ -166,9 +205,9 @@ class LaporanController extends Controller
         $peternaks = $isPrinting ? $peternaksQuery->get() : $peternaksQuery->paginate($perPage, ['*'], 'harian_page')->withQueryString();
         
         // Eager load peternak to calculate grand total easily
-        $produksisHarian = ProduksiHarian::with('peternak')->whereDate('tanggal', $tanggal)->get();
-        $produksis = $produksisHarian->keyBy('idpeternak');
-        $kasbons = Kasbon::whereDate('tanggal', $tanggal)->get()->groupBy('idpeternak');
+    $produksisHarian = ProduksiHarian::with('peternak')->whereDate('tanggal', $tanggal)->get();
+    $produksis = $produksisHarian->groupBy('idpeternak');
+    $kasbons = Kasbon::whereDate('tanggal', $tanggal)->get()->groupBy('idpeternak');
         
         $currentPrice = HargaSusuHistory::getHargaAktif($tanggal);
         $gtHarRp = $produksisHarian->sum(function($p) use ($currentPrice) {
@@ -185,13 +224,19 @@ class LaporanController extends Controller
             ->toArray();
         $monthlyTotal = array_sum($dailyTotals);
 
-        if ($request->get('export') === 'excel' && $tab === 'pusat') {
-            return Excel::download(new PusatReportExport($data['pusat']), 'Laporan_Pusat_'.now()->format('YmdHis').'.xlsx');
+        if ($request->get('export') === 'excel') {
+            if ($tab === 'pusat') {
+                return Excel::download(new PusatReportExport($data['pusat']), 'Laporan_Pusat_'.now()->format('YmdHis').'.xlsx');
+            } elseif ($tab === 'sub_penampung') {
+                return Excel::download(new SubPenampungReportExport($data['sub_penampung']), 'Laporan_Sub_Penampung_'.now()->format('YmdHis').'.xlsx');
+            } elseif ($tab === 'harian') {
+                return Excel::download(new HarianReportExport($peternaks, $produksis, $tanggal), 'Monitoring_Harian_'.now()->format('YmdHis').'.xlsx');
+            }
         }
 
         return view('laporan.data', compact(
             'tab', 'data', 'startDate', 'endDate', 'tanggal', 
-            'peternaks', 'produksis', 'kasbons', 'bulan', 'tahun', 
+            'peternaks', 'produksis', 'produksisHarian', 'kasbons', 'bulan', 'tahun', 
             'daysInMonth', 'dailyTotals', 'monthlyTotal', 'tkPusat', 'ttPusat', 'gtPusat',
             'gtSub', 'gtHarRp', 'currentPrice', 'isPrinting', 'totalTR', 'totalP', 'totalSubLain', 'search', 'perPage'
         ));

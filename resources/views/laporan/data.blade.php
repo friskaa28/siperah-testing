@@ -37,6 +37,12 @@
             
             <!-- SEGMENT 1: LAPORAN PUSAT -->
             <div class="tab-pane fade @if($tab == 'pusat') show active @endif" id="pusat" role="tabpanel">
+                <!-- Print Only Header -->
+                <div class="report-header d-none">
+                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold mb-0">Rekapitulasi Produksi Per POS</h5>
                     <div class="d-flex gap-2">
@@ -48,8 +54,11 @@
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'pusat', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
                             <i class="fas fa-print"></i> Cetak Semua
                         </a>
+                        <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'pusat']) }}'">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-file-alt"></i> Cetak Halaman Ini
+                            <i class="fas fa-print"></i> Cetak Halaman
                         </button>
                     </div>
                 </div>
@@ -92,7 +101,9 @@
                                 <tr>
                                     <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
                                     <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">POS / KATEGORI</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">VOLUME (L)</th>
+                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER PAGI</th>
+                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER SORE</th>
+                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,23 +114,25 @@
                                     <td class="py-3 text-center">
                                         <span class="badge bg-light text-dark fw-bold border">{{ strtoupper($row->pos) }}</span>
                                     </td>
+                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->pagi > 0 ? number_format($row->pagi, 1, ',', '.') : '-' }}</td>
+                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->sore > 0 ? number_format($row->sore, 1, ',', '.') : '-' }}</td>
                                     <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ number_format($row->total, 1, ',', '.') }} L</td>
                                 </tr>
                                 <!-- Summing total moved to controller -->
                                 @empty
-                                <tr><td colspan="3" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
+                                <tr><td colspan="5" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
                                 @endforelse
                                 @if(isset($data['pusat']) && count($data['pusat']) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
-                                    <td colspan="2" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="text-primary px-4" style="font-size: 1.1rem; text-align: right;">{{ number_format($data['pusat']->sum('total'), 1, ',', '.') }} L</td>
+                                    <td colspan="4" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right; color: #0d6efd !important;">{{ number_format($data['pusat']->sum('total'), 1, ',', '.') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
                             <tfoot class="bg-light fw-bold">
                                 <tr>
-                                    <td colspan="2" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="text-primary px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtPusat, 1, ',', '.') }} L</td>
+                                    <td colspan="4" class="text-end py-3 px-4">GRAND TOTAL</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">{{ number_format($gtPusat, 1, ',', '.') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -153,7 +166,7 @@
                 @endif
 
                 <!-- RINGKASAN AKHIR (Final Calculation) -->
-                <div class="mt-5 p-4 bg-white border shadow-sm" style="border-radius: 12px; border: 2px solid var(--primary) !important;">
+                <div class="mt-5 p-4 bg-white border shadow-sm no-print" style="border-radius: 12px; border: 2px solid var(--primary) !important;">
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-calculator"></i> RINGKASAN AKHIR (PER POS)</h6>
                     <div class="row align-items-center">
                         <div class="col-md-8">
@@ -193,6 +206,12 @@
 
             <!-- SEGMENT 2: LAPORAN SUB-PENAMPUNG -->
             <div class="tab-pane fade @if($tab == 'sub_penampung') show active @endif" id="sub_penampung" role="tabpanel">
+                <!-- Print Only Header -->
+                <div class="report-header d-none">
+                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold mb-0">Rekapitulasi Produksi Per Sub-Penampung</h5>
                     <div class="d-flex gap-2">
@@ -201,11 +220,14 @@
                             <i class="fas fa-times"></i> Tutup Halaman
                         </button>
                         @endif
+                        <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'sub_penampung']) }}'">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'sub_penampung', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
                             <i class="fas fa-print"></i> Cetak Semua
                         </a>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-file-alt"></i> Cetak Halaman Ini
+                            <i class="fas fa-print"></i> Cetak Halaman
                         </button>
                     </div>
                 </div>
@@ -223,6 +245,14 @@
                     <div class="col-md-3">
                         <label class="small fw-bold text-muted mb-1">Cari Nama / ID Mitra</label>
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Contoh: Budi" value="{{ $search }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted mb-1">Kategori</label>
+                        <select name="status_mitra" class="form-select form-select-sm">
+                            <option value="">-- Semua --</option>
+                            <option value="sub_penampung_tr" {{ request('status_mitra') == 'sub_penampung_tr' ? 'selected' : '' }}>Sub-TR</option>
+                            <option value="sub_penampung_p" {{ request('status_mitra') == 'sub_penampung_p' ? 'selected' : '' }}>Sub-P</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="small fw-bold text-muted mb-1">Tampilkan</label>
@@ -291,42 +321,37 @@
                         <table class="table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">ID MITRA</th>
+                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
                                     <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">NAMA</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">KATEGORI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">PAGI (L)</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">SORE (L)</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">TOTAL (L)</th>
+                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER PAGI</th>
+                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER SORE</th>
+                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data['sub_penampung'] as $row)
                                 <tr style="page-break-inside: avoid;">
-                                    <td class="py-3 px-4" style="text-align: left;">{{ $row->peternak->no_peternak }}</td>
+                                    <td class="py-3 px-4" style="text-align: left;">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
                                     <td class="py-3 px-4 fw-bold" style="text-align: left;">{{ $row->peternak->nama_peternak }}</td>
-                                    <td class="py-3 text-center">
-                                        <span class="badge bg-light text-dark border">
-                                            {{ $row->peternak->status_mitra == 'sub_penampung_tr' ? 'Sub-TR' : ($row->peternak->status_mitra == 'sub_penampung_p' ? 'Sub-P' : 'Sub-Penampung') }}
-                                        </span>
-                                    </td>
                                     <td class="py-3 text-center">{{ number_format($row->pagi, 1, ',', '.') }}</td>
                                     <td class="py-3 text-center">{{ number_format($row->sore, 1, ',', '.') }}</td>
                                     <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ number_format($row->total, 1, ',', '.') }} L</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="5" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
+                                <tr><td colspan="7" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
                                 @endforelse
                                 @if(isset($data['sub_penampung']) && count($data['sub_penampung']) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
-                                    <td colspan="5" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="text-primary px-4" style="font-size: 1.1rem; text-align: right;">{{ number_format($data['sub_penampung']->sum('total'), 1, ',', '.') }} L</td>
+                                    <td colspan="4" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right; color: #0d6efd !important;">{{ number_format($data['sub_penampung']->sum('total'), 1, ',', '.') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
                             <tfoot class="bg-light fw-bold">
                                 <tr>
-                                    <td colspan="5" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="text-primary px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtSub, 1, ',', '.') }} L</td>
+                                <tr>
+                                    <td colspan="4" class="text-end py-3 px-4">GRAND TOTAL</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">{{ number_format($gtSub, 1, ',', '.') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -351,7 +376,7 @@
                     </div>
                 </div>
                 <!-- Summary Per POS for Sub-Penampung -->
-                <div class="mt-5 p-4 bg-white border shadow-sm" style="border-radius: 12px; border: 2px solid #16a34a !important;">
+                <div class="mt-5 p-4 bg-white border shadow-sm no-print" style="border-radius: 12px; border: 2px solid #16a34a !important;">
                     <h6 class="fw-bold mb-3 text-success"><i class="fas fa-calculator"></i> RINGKASAN SUB-PENAMPUNG PER POS</h6>
                     <div class="row align-items-center">
                         <div class="col-md-6">
@@ -397,6 +422,12 @@
 
             <!-- SEGMENT 3: LAPORAN HARIAN -->
             <div class="tab-pane fade @if($tab == 'harian') show active @endif" id="harian" role="tabpanel">
+                <!-- Print Only Header -->
+                <div class="report-header d-none">
+                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;">Tanggal: {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}</p>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold mb-0">Monitoring Real-time Setoran & Potongan</h5>
                     <div class="d-flex gap-2">
@@ -408,8 +439,14 @@
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'harian', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
                             <i class="fas fa-print"></i> Cetak Semua
                         </a>
+                        <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'pusat']) }}'">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-file-alt"></i> Cetak Halaman Ini
+                            <i class="fas fa-print"></i> Cetak Halaman
+                        </button>
+                        <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'harian']) }}'">
+                            <i class="fas fa-file-excel"></i> Export Excel
                         </button>
                         <button class="btn btn-sm btn-outline-info no-print" onclick="showRekapModal()">
                             <i class="fas fa-calendar-alt"></i> Rekap Bulanan
@@ -454,63 +491,70 @@
                         <table class="table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">ID MITRA</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">NAMA</th>
+                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
+                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">NAMA PETERNAK</th>
                                     <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">KATEGORI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">SETOR</th>
                                     <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">VOLUME (L)</th>
                                     <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">POTONGAN</th>
                                     <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">TOTAL RUPIAH</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $pageTotalRupiah = 0; @endphp
                                 @forelse($peternaks as $p)
                                 @php 
-                                    $prod = $produksis->get($p->idpeternak);
-                                    $kasList = $kasbons->get($p->idpeternak);
-                                    $hasKas = $kasList && $kasList->count() > 0;
-                                    $totKas = $hasKas ? $kasList->sum('total_rupiah') : 0;
-                                    $liters = $prod ? $prod->jumlah_susu_liter : 0;
-                                    $totRp = ($liters * $currentPrice) - $totKas;
+                                    $prodGroup = $produksis->get($p->idpeternak, collect());
+                                    $totalLiters = $prodGroup->sum('jumlah_susu_liter');
+                                    
+                                    // Calculate financials
+                                    $grossIncome = $totalLiters * $currentPrice;
+                                    
+                                    // Get kasbon/potongan for this specific date
+                                    $dailyKasbon = $kasbons->get($p->idpeternak, collect())->sum('total_rupiah');
+                                    
+                                    $netIncome = $grossIncome - $dailyKasbon;
+                                    $pageTotalRupiah += $netIncome;
                                 @endphp
                                 <tr style="page-break-inside: avoid;">
-                                    <td class="py-3 px-4" style="text-align: left;">{{ $p->no_peternak }}</td>
+                                    <td class="py-3 px-4" style="text-align: left;">{{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}</td>
                                     <td class="py-3 px-4 fw-bold" style="text-align: left;">{{ $p->nama_peternak }}</td>
                                     <td class="py-3 text-center">
-                                        @php
-                                            $kategori = [
-                                                'peternak' => 'Peternak',
-                                                'sub_penampung_tr' => 'Sub-TR',
-                                                'sub_penampung_p' => 'Sub-P'
-                                            ];
-                                        @endphp
                                         <span class="badge bg-light text-dark border">
+                                            @php
+                                                $kategori = [
+                                                    'peternak' => 'Peternak',
+                                                    'sub_penampung_tr' => 'Sub-TR',
+                                                    'sub_penampung_p' => 'Sub-P',
+                                                    'sub_penampung' => 'Sub-Penampung'
+                                                ];
+                                            @endphp
                                             {{ $kategori[$p->status_mitra] ?? ucfirst($p->status_mitra) }}
                                         </span>
                                     </td>
-                                    <td class="py-3 text-center">
-                                        @if($prod) <span class="badge bg-success">Sudah</span> @else <span class="badge bg-secondary opacity-50">Belum</span> @endif
+                                    <td class="py-3 text-center fw-bold">{{ number_format($totalLiters, 1, ',', '.') }} L</td>
+                                    <td class="py-3 text-center text-danger">
+                                        @if($dailyKasbon > 0)
+                                            - Rp {{ number_format($dailyKasbon, 0, ',', '.') }}
+                                        @else
+                                            <span class="text-muted small">Tidak</span>
+                                        @endif
                                     </td>
-                                    <td class="py-3 text-center">{{ number_format($liters, 1, ',', '.') }} L</td>
-                                    <td class="py-3 text-center">
-                                        @if($hasKas) <span class="badge bg-danger">Ada</span> @else <span class="badge bg-light text-muted border">Tidak</span> @endif
-                                    </td>
-                                    <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">Rp {{ number_format($totRp, 0, ',', '.') }}</td>
+                                    <td class="py-3 fw-bold px-4 text-success" style="text-align: right;">Rp {{ number_format($netIncome, 0, ',', '.') }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="7" class="py-5 text-muted text-center">Data peternak tidak ditemukan.</td></tr>
-                                @endempty
+                                <tr><td colspan="6" class="py-5 text-muted text-center">Data peternak tidak ditemukan.</td></tr>
+                                @endforelse
                                 @if(isset($peternaks) && count($peternaks) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
-                                    <td colspan="6" class="text-end py-3 px-4">TOTAL (HALAMAN INI)</td>
-                                    <td class="text-primary px-4" style="font-size: 1.1rem; text-align: right;">Rp {{ number_format($gtHarRp, 0, ',', '.') }}</td>
+                                    <td colspan="5" class="text-end py-3 px-4">TOTAL (HALAMAN INI)</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right; color: #0d6efd !important;">Rp {{ number_format($pageTotalRupiah, 0, ',', '.') }}</td>
                                 </tr>
                                 @endif
                             </tbody>
                             <tfoot class="bg-light fw-bold">
                                 <tr>
-                                    <td colspan="6" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="text-primary px-4" style="font-size: 1.2rem; text-align: right;">Rp {{ number_format($gtHarRp, 0, ',', '.') }}</td>
+                                    <td colspan="5" class="text-end py-3 px-4">GRAND TOTAL</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">Rp {{ number_format($gtHarRp, 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -640,60 +684,38 @@
     @media print {
         @page {
             size: portrait;
-            margin: 1cm;
+            margin: 1.5cm;
         }
-        .no-print, .sidebar, .navbar, .footer, .btn, form, .nav-tabs, .card-header .row, #rekapModal { display: none !important; }
+        .no-print, .sidebar, .navbar, .footer, .btn, form, .nav-pills, .nav-tabs, .card-header .row, #rekapModal .modal-header, #rekapModal .modal-footer { display: none !important; }
         .content { padding: 0 !important; margin: 0 !important; width: 100% !important; overflow: visible !important; }
         .layout { display: block !important; min-height: 0 !important; }
-        .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important; background: transparent !important; }
-        body { background: white !important; font-size: 10pt; color: black !important; }
-        .table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; border: 1px solid #000 !important; }
+        .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 0 !important; background: transparent !important; border-radius: 0 !important; }
+        .card-body { padding: 0 !important; }
+        body { background: white !important; font-size: 11pt; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; border: 1.5px solid #000 !important; }
         .table th, .table td { border: 1px solid #000 !important; padding: 8px !important; color: black !important; vertical-align: middle; }
-        .table thead { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
-        .table thead th { color: black !important; font-weight: bold !important; text-align: center; }
+        .table thead th { background-color: #f8fafc !important; color: black !important; font-weight: bold !important; text-align: center; text-transform: uppercase; font-size: 10pt; }
         .signature-section { display: flex !important; justify-content: space-between !important; margin-top: 50px !important; page-break-inside: avoid !important; }
-        [contenteditable="true"] { border: none !important; outline: none !important; }
+        .signature-box { text-align: center; width: 200px; }
         tr { page-break-inside: avoid !important; }
-        tfoot { display: table-footer-group; }
-        .badge { border: 1px solid #ccc !important; color: black !important; background: transparent !important; }
-        .text-primary, .text-success, .text-danger { color: black !important; }
-        .bg-primary, .bg-success, .bg-danger { background-color: #f1f5f9 !important; color: black !important; }
-
-        /* Handle Modal Printing */
-        body.printing-rekap { visibility: hidden; }
-        body.printing-rekap #rekapModal { 
-            visibility: visible !important;
-            display: block !important; 
-            position: absolute !important; 
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            background: white !important; 
-        }
-        body.printing-rekap #rekapModal .card { border: none !important; box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
-        body.printing-rekap #rekapModal .no-print { display: none !important; }
-
-        /* Print Header Styling */
-        .tab-pane { display: none !important; visibility: hidden !important; }
-        .tab-pane.active { display: block !important; visibility: visible !important; }
+        .badge { border: 1px solid #000 !important; color: black !important; background: transparent !important; padding: 2px 5px !important; font-size: 9pt !important; border-radius: 4px !important; }
+        .text-primary, .text-success, .text-danger, .fw-bold { color: black !important; }
         
-        .tab-pane.active::before {
-            content: "LAPORAN DATA SIPERAH - @yield('title')";
-            display: block;
+        /* Professional Report Header */
+        .report-header {
+            display: block !important;
             text-align: center;
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
+            margin-bottom: 40px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #000;
         }
-        
-        #pusat.active::before { content: "LAPORAN REKAPITULASI PUSAT PER POS"; }
-        #sub_penampung.active::before { content: "LAPORAN REKAPITULASI PRODUKSI SUB-PENAMPUNG"; }
-        #harian.active::before { content: "LAPORAN MONITORING HARIAN SETORAN & POTONGAN"; }
+        .report-header h2 { margin: 0; font-size: 24pt; font-weight: 800; color: #0d6efd !important; -webkit-print-color-adjust: exact; }
+        .report-header p { margin: 10px 0 0; font-size: 12pt; color: #333; font-weight: bold; }
+        .report-date { display: none; }
 
-        /* Summary Sections */
-        .bg-light { background: #eee !important; }
-        .border-2 { border-width: 2px !important; }
+        .tab-pane { display: none !important; }
+        .tab-pane.active { display: block !important; }
+    }
     }
 </style>
 
