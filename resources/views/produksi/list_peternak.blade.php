@@ -61,9 +61,9 @@
             <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel']) }}'">
                 <i class="fas fa-file-excel"></i> Export
             </button>
-            <button type="button" class="btn btn-info btn-sm fw-bold px-3" onclick="window.print()">
+            <a href="{{ route('produksi.print', request()->query()) }}" target="_blank" class="btn btn-info btn-sm fw-bold px-3">
                 <i class="fas fa-print"></i> Cetak
-            </button>
+            </a>
         </form>
     </div>
     @endif

@@ -158,6 +158,73 @@ class ProduksiController extends Controller
         return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage', 'startDate', 'endDate', 'idpeternak'));
     }
 
+    public function printRiwayat(Request $request)
+    {
+        $user = Auth::user();
+        $isAdmin = $user->isAdmin() || $user->isPengelola();
+        
+        // --- 1. Filter Logic (Same as listPeternak) ---
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $idpeternak = $request->get('idpeternak');
+
+        $query = ProduksiHarian::query();
+
+        if ($isAdmin) {
+            $peternaks = Peternak::all(); // Need this if we want to show filter info or name lookup
+            if ($idpeternak) {
+                $query->where('idpeternak', $idpeternak);
+            }
+        } else {
+            $peternak = $user->peternak;
+            if (!$peternak) {
+                return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
+            }
+            $query->where('idpeternak', $peternak->idpeternak);
+            // $peternaks variable not strictly needed for print unless for header
+        }
+
+        if ($startDate) {
+            $query->where('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->where('tanggal', '<=', $endDate);
+        }
+
+        // --- 2. Data Fetching (No Pagination) ---
+        // Group by date and peternak to show Pagi/Sore/Total
+        $data = $query->with('peternak')
+            ->selectRaw('tanggal, idpeternak, 
+                SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
+                SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
+                SUM(jumlah_susu_liter) as total')
+            ->groupBy('tanggal', 'idpeternak')
+            ->orderBy('tanggal', 'asc') // Chronological order for report
+            ->get();
+
+        // --- 3. Grouping by Month & Peternak ---
+        // We want a report style: 
+        // Header: Peternak A
+        //   Sub-Header: Januari 2026
+        //     Table Rows...
+        //     Total Januari
+        // But if multiple peternaks are mixed (no filter), maybe group by Peternak first?
+        // User asked: "filter peternak A yang diterapkan otomatis pas cetak juga peternak itu aja"
+        // So if specific peternak is selected, we just show that.
+        // If ALL peternaks are selected, we should probably group by Peternak then Month, or just Month if it's a global report.
+        // Let's assume Group by Peternak -> Group by Month.
+
+        $groupedData = $data->groupBy(function($item) {
+            return $item->peternak->nama_peternak;
+        })->map(function($peternakGroup) {
+            return $peternakGroup->groupBy(function($item) {
+                return \Carbon\Carbon::parse($item->tanggal)->format('F Y');
+            });
+        });
+
+        return view('produksi.print_riwayat', compact('groupedData', 'startDate', 'endDate', 'isAdmin', 'idpeternak'));
+    }
+
     public function detailPerhitungan($idproduksi)
     {
         $produksi = ProduksiHarian::find($idproduksi);

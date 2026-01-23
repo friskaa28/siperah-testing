@@ -93,6 +93,7 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
 
 
     // Produksi Routes (Input) - Admin/Pengelola
+    Route::get('/produksi/print', [ProduksiController::class, 'printRiwayat'])->name('produksi.print');
     Route::get('/produksi', [ProduksiController::class, 'listPeternak'])->name('produksi.index');
     Route::get('/produksi/input', [ProduksiController::class, 'create'])->name('produksi.create');
     Route::post('/produksi/store', [ProduksiController::class, 'store'])->name('produksi.store');
