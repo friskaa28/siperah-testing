@@ -119,7 +119,7 @@
         body { background: white !important; font-size: 10pt; color: black; }
         .table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; }
         .table th, .table td { border: 1px solid #000 !important; padding: 8px !important; color: black !important; }
-        .table thead { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+        .table thead { background: white !important; color: black !important; font-weight: bold; }
         .signature-section { display: flex !important; justify-content: space-between !important; margin-top: 50px !important; page-break-inside: avoid !important; }
         [contenteditable="true"] { border: none !important; outline: none !important; }
         tr { page-break-inside: avoid !important; }

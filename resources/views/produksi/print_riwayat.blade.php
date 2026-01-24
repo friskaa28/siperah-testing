@@ -15,7 +15,7 @@
         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; page-break-inside: auto; }
         tr { page-break-inside: avoid; page-break-after: auto; }
         th, td { border: 1px solid #000; padding: 5px 8px; font-size: 10pt; }
-        th { background-color: #f0f0f0; text-align: center; font-weight: bold; }
+        th { background-color: #fff; text-align: center; font-weight: bold; }
         td.num { text-align: right; }
         td.center { text-align: center; }
         

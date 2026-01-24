@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="row mb-4 align-items-center">
-    <div class="col-md-12">
+    <div class="col-md-12 d-print-none">
         <h1 class="h3 mb-0 fw-bold"><i class="fas fa-file-invoice"></i> Laporan Data SIPERAH</h1>
         <p class="text-muted">Pusat laporan terpadu: Pusat, Sub-Penampung, dan Harian</p>
     </div>
@@ -39,12 +39,12 @@
             <div class="tab-pane fade @if($tab == 'pusat') show active @endif" id="pusat" role="tabpanel">
                 <!-- Print Only Header -->
                 <div class="report-header d-none">
-                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
-                    <p style="font-size: 12pt; margin-top: 5px;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+                    <h2 class="text-primary d-print-none" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold mb-0">Rekapitulasi Produksi Per POS</h5>
+                    <h5 class="fw-bold mb-0">REKAPITULASI PUSAT</h5>
                     <div class="d-flex gap-2">
                         @if($isPrinting)
                         <button class="btn btn-sm btn-danger no-print" onclick="window.close()">
@@ -99,11 +99,10 @@
                         <table class="table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">POS / KATEGORI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER PAGI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER SORE</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
+                                    <th class="py-3 px-4 print-header-white" style="background: #0d6efd; color: white; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
+                                    <th class="py-3 text-center print-header-white" style="background: #0d6efd; color: white; font-weight: bold; border: none;">LITER PAGI</th>
+                                    <th class="py-3 text-center print-header-white" style="background: #0d6efd; color: white; font-weight: bold; border: none;">LITER SORE</th>
+                                    <th class="py-3 px-4 print-header-white" style="background: #0d6efd; color: white; font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,9 +110,6 @@
                                 @forelse($data['pusat'] as $row)
                                 <tr style="page-break-inside: avoid;">
                                     <td class="py-3 fw-bold px-4" style="text-align: left;">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
-                                    <td class="py-3 text-center">
-                                        <span class="badge bg-light text-dark fw-bold border">{{ strtoupper($row->pos) }}</span>
-                                    </td>
                                     <td class="py-3 text-center text-primary fw-bold">{{ $row->pagi > 0 ? number_format($row->pagi, 1, ',', '.') : '-' }}</td>
                                     <td class="py-3 text-center text-primary fw-bold">{{ $row->sore > 0 ? number_format($row->sore, 1, ',', '.') : '-' }}</td>
                                     <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ number_format($row->total, 1, ',', '.') }} L</td>
@@ -124,15 +120,15 @@
                                 @endforelse
                                 @if(isset($data['pusat']) && count($data['pusat']) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
-                                    <td colspan="4" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="px-4" style="font-size: 1.1rem; text-align: right; color: #0d6efd !important;">{{ number_format($data['pusat']->sum('total'), 1, ',', '.') }} L</td>
+                                    <td colspan="3" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right;">{{ number_format($data['pusat']->sum('total'), 1, ',', '.') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
-                            <tfoot class="bg-light fw-bold">
+                            <tfoot class="fw-bold">
                                 <tr>
-                                    <td colspan="4" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">{{ number_format($gtPusat, 1, ',', '.') }} L</td>
+                                    <td colspan="3" class="text-end py-3 px-4">GRAND TOTAL</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtPusat, 1, ',', '.') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -187,7 +183,7 @@
                                         <td class="text-end fw-bold">{{ number_format($ttPusat, 1, ',', '.') }} L</td>
                                     </tr>
                                 </tbody>
-                                <tfoot class="bg-primary text-white">
+                                <tfoot class="fw-bold">
                                     <tr>
                                         <th class="py-2">GRAND TOTAL KESELURUHAN</th>
                                         <th class="text-end py-2" style="font-size: 1.1rem;">{{ number_format($gtPusat, 1, ',', '.') }} L</th>
@@ -208,12 +204,12 @@
             <div class="tab-pane fade @if($tab == 'sub_penampung') show active @endif" id="sub_penampung" role="tabpanel">
                 <!-- Print Only Header -->
                 <div class="report-header d-none">
-                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
-                    <p style="font-size: 12pt; margin-top: 5px;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+                    <h2 class="text-primary d-print-none" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold mb-0">Rekapitulasi Produksi Per Sub-Penampung</h5>
+                    <h5 class="fw-bold mb-0">REKAPITULASI SUB-PENAMPUNG</h5>
                     <div class="d-flex gap-2">
                         @if($isPrinting)
                         <button class="btn btn-sm btn-danger no-print" onclick="window.close()">
@@ -321,11 +317,11 @@
                         <table class="table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">NAMA</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER PAGI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">LITER SORE</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: left; border: none;">TANGGAL</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: left; border: none;">NAMA</th>
+                                    <th class="py-3 text-center print-header-white" style="font-weight: bold; border: none;">LITER PAGI</th>
+                                    <th class="py-3 text-center print-header-white" style="font-weight: bold; border: none;">LITER SORE</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: right; border: none;">GRAND TOTAL (L)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -343,15 +339,15 @@
                                 @if(isset($data['sub_penampung']) && count($data['sub_penampung']) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
                                     <td colspan="4" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="px-4" style="font-size: 1.1rem; text-align: right; color: #0d6efd !important;">{{ number_format($data['sub_penampung']->sum('total'), 1, ',', '.') }} L</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right;">{{ number_format($data['sub_penampung']->sum('total'), 1, ',', '.') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
-                            <tfoot class="bg-light fw-bold">
+                            <tfoot class="fw-bold">
                                 <tr>
                                 <tr>
                                     <td colspan="4" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">{{ number_format($gtSub, 1, ',', '.') }} L</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtSub, 1, ',', '.') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -403,7 +399,7 @@
                                     </tr>
                                     @endif
                                 </tbody>
-                                <tfoot class="bg-success text-white">
+                                <tfoot class="fw-bold">
                                     <tr>
                                         <th class="py-2">TOTAL SUB-PENAMPUNG</th>
                                         <th class="text-end py-2" style="font-size: 1.1rem;">{{ number_format($totalTR + $totalP + $totalSubLain, 1, ',', '.') }} L</th>
@@ -424,8 +420,8 @@
             <div class="tab-pane fade @if($tab == 'harian') show active @endif" id="harian" role="tabpanel">
                 <!-- Print Only Header -->
                 <div class="report-header d-none">
-                    <h2 class="text-primary" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
-                    <p style="font-size: 12pt; margin-top: 5px;">Tanggal: {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}</p>
+                    <h2 class="text-primary d-print-none" style="font-weight: 800; font-size: 24pt;">REKAPITULASI SETORAN SUSU</h2>
+                    <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Tanggal: {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}</p>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -491,12 +487,12 @@
                         <table class="table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">TANGGAL</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: left; border: none;">NAMA PETERNAK</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">KATEGORI</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">VOLUME (L)</th>
-                                    <th class="py-3 text-center" style="background: #0d6efd !important; color: white !important; font-weight: bold; border: none;">POTONGAN</th>
-                                    <th class="py-3 px-4" style="background: #0d6efd !important; color: white !important; font-weight: bold; text-align: right; border: none;">TOTAL RUPIAH</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: left; border: none;">TANGGAL</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: left; border: none;">NAMA PETERNAK</th>
+                                    <th class="py-3 text-center print-header-white" style="font-weight: bold; border: none;">KATEGORI</th>
+                                    <th class="py-3 text-center print-header-white" style="font-weight: bold; border: none;">VOLUME (L)</th>
+                                    <th class="py-3 text-center print-header-white" style="font-weight: bold; border: none;">POTONGAN</th>
+                                    <th class="py-3 px-4 print-header-white" style="font-weight: bold; text-align: right; border: none;">TOTAL RUPIAH</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -551,10 +547,10 @@
                                 </tr>
                                 @endif
                             </tbody>
-                            <tfoot class="bg-light fw-bold">
+                            <tfoot class="fw-bold">
                                 <tr>
                                     <td colspan="5" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right; color: #0d6efd !important;">Rp {{ number_format($gtHarRp, 0, ',', '.') }}</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">Rp {{ number_format($gtHarRp, 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -711,6 +707,20 @@
         }
         .report-header h2 { margin: 0; font-size: 24pt; font-weight: 800; color: #0d6efd !important; -webkit-print-color-adjust: exact; }
         .report-header p { margin: 10px 0 0; font-size: 12pt; color: #333; font-weight: bold; }
+        
+        /* Overwrite backgrounds for print */
+        /* Overwrite backgrounds for print */
+        .print-header-white {
+            background: white !important;
+            color: black !important;
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+        }
+        
+        /* Ensure all badges and text colors are black in print */
+        .badge { border: 1px solid #000 !important; color: black !important; background: transparent !important; }
+        .text-primary, .text-success, .text-danger, .fw-bold, td, th { color: black !important; background: white !important; }
+
         .report-date { display: none; }
 
         .tab-pane { display: none !important; }
