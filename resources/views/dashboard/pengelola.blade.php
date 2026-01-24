@@ -162,9 +162,19 @@
     /* Ensure icon colors work on all backgrounds */
     .bg-warning-custom .icon { color: rgba(255,255,255,0.25) !important; }
     .bg-warning-custom .small-box-footer { color: rgba(255,255,255,0.9) !important; }
+
+    .dashboard-grid-pengelola {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+    @media (min-width: 992px) {
+        .dashboard-grid-pengelola {
+            grid-template-columns: 2fr 1.2fr;
+        }
+    }
 </style>
 
-<div class="grid" style="grid-template-columns: 2fr 1.2fr; gap: 1.5rem;">
+<div class="dashboard-grid-pengelola" style="gap: 1.5rem;">
     <!-- Announcement & Stats -->
     <div>
         <!-- Broadcast Form -->

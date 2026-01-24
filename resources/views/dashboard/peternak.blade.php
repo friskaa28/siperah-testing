@@ -20,7 +20,7 @@
     <i class="fas fa-calendar-alt"></i> Periode Gajian: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
 </div>
 
-<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+<div class="dashboard-grid mb-4">
     <!-- Card 1: Setoran Susu -->
     <div class="card" style="border-left: 4px solid var(--primary); padding: 1.5rem;">
         <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Total Setoran Susu</h3>
@@ -35,7 +35,6 @@
         <p class="mb-0 mt-2">Total hutang barang/pakan saat ini.</p>
     </div>
 
-    <!-- Card 3: Estimasi Gaji -->
     <div class="card" style="border-left: 4px solid var(--success); padding: 1.5rem; background: #F0FDF4;">
         <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Estimasi Gaji Bersih</h3>
         <h2 style="color: var(--success); font-size: 2.25rem;">Rp {{ number_format($estimasiGaji, 0, ',', '.') }}</h2>
@@ -45,6 +44,68 @@
         </div>
     </div>
 </div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card p-3 h-100">
+            <h4 class="mb-3">Grafik Produksi Harian ({{ $startDate->format('d M') }} - {{ $endDate->format('d M') }})</h4>
+            <canvas id="dailyChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 h-100">
+            <h4 class="mb-3">Performa Bulanan</h4>
+            <canvas id="monthlyChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Daily Chart
+    const ctxDaily = document.getElementById('dailyChart').getContext('2d');
+    new Chart(ctxDaily, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($dailyProduction['labels'] ?? []) !!},
+            datasets: [{
+                label: 'Produksi (Liter)',
+                data: {!! json_encode($dailyProduction['data'] ?? []) !!},
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Monthly Chart
+    const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctxMonthly, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($monthlyProduction['labels'] ?? []) !!},
+            datasets: [{
+                label: 'Total Liter',
+                data: {!! json_encode($monthlyProduction['data'] ?? []) !!},
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
 
 <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
     <!-- Announcement Area -->
@@ -67,4 +128,18 @@
 
 </div>
 
+@section('styles')
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    @media (min-width: 992px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+</style>
+@endsection
 @endsection

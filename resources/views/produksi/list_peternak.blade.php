@@ -82,7 +82,9 @@
                     <th class="py-3 text-center">Pagi (L)</th>
                     <th class="py-3 text-center">Sore (L)</th>
                     <th class="py-3 text-end">Total (L)</th>
+                    @if(isset($isAdmin) && $isAdmin)
                     <th class="py-3 text-center px-4">Aksi</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -110,6 +112,7 @@
                         <td class="py-3 text-center text-primary fw-bold">{{ $p->pagi > 0 ? number_format($p->pagi, 1, ',', '.') : '-' }}</td>
                         <td class="py-3 text-center text-primary fw-bold">{{ $p->sore > 0 ? number_format($p->sore, 1, ',', '.') : '-' }}</td>
                         <td class="py-3 text-end fw-bold">{{ number_format($p->total, 1, ',', '.') }} L</td>
+                        @if(isset($isAdmin) && $isAdmin)
                         <td class="py-3 px-4">
                             <div class="d-flex justify-content-center gap-3">
                                 @php
@@ -139,6 +142,7 @@
                                 @endforeach
                             </div>
                         </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>

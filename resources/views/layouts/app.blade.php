@@ -802,6 +802,20 @@
                     </a>
                     @endif
                 @endif
+
+                <!-- Mobile Logout Button -->
+                <div class="mobile-logout d-md-none mt-4 border-top pt-4 px-3">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger w-100 py-2 fw-bold">
+                            <i class="fas fa-sign-out-alt"></i> KELUAR APLIKASI
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="px-3 mt-4 text-center d-md-none">
+                     <small class="text-muted" style="font-size: 0.7rem;">&copy; {{ date('Y') }} SIPERAH</small>
+                </div>
             </aside>
         @endauth
 

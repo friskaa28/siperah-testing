@@ -387,20 +387,55 @@
             .hero-content, .ai-content {
                 grid-template-columns: 1fr;
                 text-align: center;
-                gap: 2rem;
+                gap: 3rem;
             }
             .tips-grid, .opp-grid {
                 grid-template-columns: 1fr;
+                gap: 2rem;
             }
-            .hero-text h1 { font-size: 2.2rem; }
-            .hero-image { order: -1; }
-            .hero-image img { max-width: 80%; margin: 0 auto; display: block; }
+            .hero-text h1 { 
+                font-size: 2.2rem; 
+                margin-bottom: 1rem;
+            }
+            .hero-text p {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+            .hero-image { order: -1; margin-bottom: 1rem; }
+            .hero-image img { max-width: 90%; margin: 0 auto; display: block; box-shadow: var(--shadow-md); }
+            
             .ai-features { grid-template-columns: 1fr; text-align: left; }
-            .cta-buttons { flex-direction: column; }
-            .nav-actions .btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
-            .logo { font-size: 1.2rem; }
-            .ai-section { margin: 0 1rem; padding: 40px 20px; }
-            .cta-card h2 { font-size: 2rem; }
+            
+            .cta-buttons { flex-direction: column; width: 100%; gap: 1rem; }
+            .cta-buttons .btn { width: 100%; justify-content: center; }
+            
+            /* Navbar adjustments */
+            .nav-container { padding: 0 1rem; }
+            .logo { font-size: 1.4rem; }
+            .nav-actions .btn { 
+                padding: 0.6rem 1.2rem; 
+                font-size: 0.95rem; 
+            }
+            
+            .ai-section { margin: 0 1rem; padding: 40px 20px; text-align: center; }
+            .cta-card { padding: 3rem 1.5rem; }
+            .cta-card h2 { font-size: 1.8rem; }
+            
+            section { padding: 60px 0; }
+        }
+
+        /* Mobile specific adjustments for "Village Friendly" */
+        @media (max-width: 480px) {
+            .nav-actions .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            .hero-text h1 { font-size: 1.8rem; }
+            .section-title h2 { font-size: 1.8rem; }
+            
+            /* Make tips cards easier to read */
+            .tip-card { padding: 1.5rem; text-align: center; }
+            .tip-icon { margin-bottom: 0.5rem; }
         }
 /* ... existing css ... */ 
         /* BOOK SECTION */

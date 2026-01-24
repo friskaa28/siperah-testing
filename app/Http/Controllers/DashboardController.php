@@ -67,6 +67,51 @@ class DashboardController extends BaseController
         // Average income
         $averageIncome = count($incomeHistory) > 0 ? array_sum(array_column($incomeHistory, 'total')) / count($incomeHistory) : 0;
 
+        // --- NEW: Data for Dashboard Charts ---
+
+        // 1. Daily Production (Day by Day) in current period
+        $dailyProduction = [];
+        $periodRange = \Carbon\CarbonPeriod::create($startDate, $endDate);
+        
+        // Pre-fetch production data to avoid N+1
+        $productionData = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get()
+            ->groupBy(function($date) {
+                return \Carbon\Carbon::parse($date->tanggal)->format('Y-m-d');
+            });
+
+        foreach ($periodRange as $date) {
+            $dateKey = $date->format('Y-m-d');
+            $dayLabel = $date->format('d M');
+            
+            $totalDay = 0;
+            if (isset($productionData[$dateKey])) {
+                $totalDay = $productionData[$dateKey]->sum('jumlah_susu_liter');
+            }
+
+            $dailyProduction['labels'][] = $dayLabel;
+            $dailyProduction['data'][] = $totalDay;
+        }
+
+        // 2. Monthly Production (Month to Month) in current year
+        $monthlyProduction = [];
+        $currentYear = now()->year;
+        
+        for ($m = 1; $m <= 12; $m++) {
+            $monthStart = Carbon::create($currentYear, $m, 1)->startOfMonth();
+            $monthEnd = Carbon::create($currentYear, $m, 1)->endOfMonth();
+            
+            // Adjust query logic to match how 'monthly' is defined (simple sum per calendar month)
+            $monthTotal = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
+                ->whereMonth('tanggal', $m)
+                ->whereYear('tanggal', $currentYear)
+                ->sum('jumlah_susu_liter');
+
+            $monthlyProduction['labels'][] = $monthStart->translatedFormat('M');
+            $monthlyProduction['data'][] = (float)$monthTotal;
+        }
+
         return view('dashboard.peternak', [
             'totalLiter' => $totalLiter,
             'estimasiGaji' => $estimasiGaji,
@@ -79,6 +124,8 @@ class DashboardController extends BaseController
             'peternak' => $peternak,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'dailyProduction' => $dailyProduction,
+            'monthlyProduction' => $monthlyProduction,
         ]);
     }
 

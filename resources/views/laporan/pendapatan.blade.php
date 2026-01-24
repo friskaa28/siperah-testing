@@ -101,6 +101,29 @@
     </div>
 </div>
 
+<!-- Summary Footer -->
+<div class="card mt-4 border-0 shadow-sm" style="background: linear-gradient(to right, #f8fafc, #edf2f7); border-radius: 12px; padding: 1.5rem;">
+    <h5 class="fw-bold mb-3 border-bottom pb-2">Ringkasan Periode Ini</h5>
+    <div class="row text-center">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Liter</small>
+            <span class="fs-4 fw-bold text-primary">{{ number_format($totalLiter, 1, ',', '.') }} L</span>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Pendapatan Kotor</small>
+            <span class="fs-5 fw-bold text-dark">Rp {{ number_format($totalGross, 0, ',', '.') }}</span>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Potongan</small>
+            <span class="fs-5 fw-bold text-danger">- Rp {{ number_format($totalKasbon, 0, ',', '.') }}</span>
+        </div>
+        <div class="col-md-3">
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Gaji Bersih Diterima</small>
+            <span class="fs-4 fw-bold text-success">Rp {{ number_format($netSalary, 0, ',', '.') }}</span>
+        </div>
+    </div>
+</div>
+
 <div class="card mt-4 border-0 shadow-sm" style="background: #f8fafc; border-radius: 15px; padding: 1.5rem;">
     <div class="d-flex align-items-center gap-4">
         <div class="bg-white p-2 shadow-sm" style="border-radius: 12px;">
