@@ -107,7 +107,7 @@
     });
 </script>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+<div class="dashboard-grid-bottom mb-4">
     <!-- Announcement Area -->
     <div class="card" style="padding: 2rem;">
         <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;"><i class="fas fa-bullhorn"></i> Pengumuman Terbaru</h3>
@@ -125,7 +125,31 @@
         </div>
     </div>
 
-
+    <!-- Notification / Activity Widget -->
+    <div class="card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1.5rem; font-weight: 700;"><i class="fas fa-bell text-warning"></i> Notifikasi Terkini</h3>
+        <div class="list-group list-group-flush">
+            @forelse($notifikasi as $notif)
+                <div class="list-group-item px-0 py-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.9rem;">{{ $notif->judul }}</h6>
+                            <p class="mb-0 text-muted small" style="line-height: 1.3;">{{ Str::limit($notif->pesan, 40) }}</p>
+                        </div>
+                        <small class="text-secondary text-nowrap ms-2" style="font-size: 0.7rem;">
+                            {{ $notif->created_at->diffForHumans() }}
+                        </small>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                    <p class="text-muted small mb-0">Tidak ada notifikasi baru</p>
+                </div>
+            @endforelse
+        </div>
+        <a href="{{ route('notifikasi.index') }}" class="btn btn-light w-100 mt-3 text-primary fw-bold" style="font-size: 0.85rem;">Lihat Semua</a>
+    </div>
 </div>
 
 @section('styles')
@@ -135,9 +159,17 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
+    .dashboard-grid-bottom {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
     @media (min-width: 992px) {
         .dashboard-grid {
             grid-template-columns: repeat(3, 1fr);
+        }
+        .dashboard-grid-bottom {
+            grid-template-columns: 2fr 1fr;
         }
     }
 </style>

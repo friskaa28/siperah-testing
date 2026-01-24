@@ -76,11 +76,15 @@ class ProduksiController extends Controller
             'biaya_operasional' => 0,
         ]));
 
+        // Get target user for notification
+        $targetPeternak = Peternak::find($idpeternak);
+        $targetUser = $targetPeternak ? $targetPeternak->iduser : $user->iduser;
+
         // Send notification
         Notifikasi::create([
-            'iduser' => $user->iduser,
+            'iduser' => $targetUser,
             'judul' => 'Setor Susu Tercatat',
-            'pesan' => "Setor Susu Anda sebesar {$validated['jumlah_susu_liter']} liter telah tercatat.",
+            'pesan' => "Setor Susu Anda sebesar {$validated['jumlah_susu_liter']} liter ({$validated['waktu_setor']}) telah tercatat.",
             'tipe' => 'success',
             'kategori' => 'jadwal',
             'status_baca' => 'belum_baca',

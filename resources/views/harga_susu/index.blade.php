@@ -8,7 +8,7 @@
     <p class="text-muted">Tetapkan harga beli susu per liter yang berlaku.</p>
 </div>
 
-<div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+<div class="price-grid" style="gap: 2rem;">
     <!-- Form Update Harga -->
     <div class="card" style="height: fit-content;">
         <h3 class="mb-3">Update Harga Sekarang</h3>
@@ -93,6 +93,16 @@
     .action-btn.delete:hover {
         background: #b91c1c;
         color: white;
+    }
+
+    .price-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+    @media (min-width: 992px) {
+        .price-grid {
+            grid-template-columns: 1fr 2fr;
+        }
     }
 </style>
 @endsection

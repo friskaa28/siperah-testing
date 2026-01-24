@@ -458,6 +458,39 @@
             .table-responsive {
                 border: 0;
             }
+
+            /* Mobile-specific utilities */
+            .btn-sm, .btn {
+                min-height: 36px;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+
+            h1, .h1 {
+                font-size: 1.5rem !important;
+            }
+
+            h3, .h3 {
+                font-size: 1.2rem !important;
+            }
+
+            .card {
+                border-radius: 8px !important;
+            }
+
+            /* Force flex-wrap on button groups */
+            .d-flex.gap-2 {
+                flex-wrap: wrap;
+            }
+
+            /* Make tables more touch-friendly */
+            .table td, .table th {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+            }
         }
 
         /* ===== UTILITY ===== */
@@ -670,6 +703,7 @@
             transform: translateX(-50%) translateY(-5px);
         }
     </style>
+    @yield('styles')
 </head>
 <body>
     <!-- NAVBAR -->

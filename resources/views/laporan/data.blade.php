@@ -12,8 +12,8 @@
 
 <!-- Navigasi Tab (Segments) -->
 <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-    <div class="card-header bg-white p-0 border-0">
-        <ul class="nav nav-pills nav-fill" id="laporanTab" role="tablist">
+    <div class="card-header bg-white p-0 border-0" style="overflow-x: auto;">
+        <ul class="nav nav-pills nav-fill flex-nowrap flex-md-wrap" id="laporanTab" role="tablist" style="min-width: 600px; width: 100%;">
             <li class="nav-item" role="presentation">
                 <button class="nav-link py-3 @if($tab == 'pusat') active @endif" id="pusat-tab" data-bs-toggle="pill" data-bs-target="#pusat" type="button" role="tab" style="border-radius: 0; font-weight: 600;">
                     <i class="fas fa-building"></i> Laporan Pusat
@@ -43,54 +43,54 @@
                     <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                     <h5 class="fw-bold mb-0">REKAPITULASI PUSAT</h5>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
                         @if($isPrinting)
                         <button class="btn btn-sm btn-danger no-print" onclick="window.close()">
-                            <i class="fas fa-times"></i> Tutup Halaman
+                            <i class="fas fa-times"></i> <span class="d-none d-sm-inline">Tutup</span>
                         </button>
                         @endif
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'pusat', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
-                            <i class="fas fa-print"></i> Cetak Semua
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak Semua</span>
                         </a>
                         <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'pusat']) }}'">
-                            <i class="fas fa-file-excel"></i> Export Excel
+                            <i class="fas fa-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
                         </button>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-print"></i> Cetak Halaman
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak</span>
                         </button>
                     </div>
                 </div>
 
                 <form action="{{ route('laporan.data') }}" method="GET" class="row g-2 mb-4 bg-white p-3 shadow-sm" style="border-radius: 12px;">
                     <input type="hidden" name="tab" value="pusat">
-                    <div class="col-md-4">
+                    <div class="col-12 col-sm-6 col-md-4">
                         <label class="small fw-bold text-muted mb-1">Dari Tanggal</label>
                         <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-md-2">
                         <label class="small fw-bold text-muted mb-1">Sampai Tanggal</label>
                         <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3">
                         <label class="small fw-bold text-muted mb-1">Cari POS / Lokasi</label>
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Contoh: Krad" value="{{ $search }}">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-6 col-sm-3 col-md-2">
                         <label class="small fw-bold text-muted mb-1">Tampilkan</label>
                         <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5 baris</option>
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 baris</option>
-                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15 baris</option>
-                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20 baris</option>
-                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 baris</option>
-                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 baris</option>
-                            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 baris</option>
+                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
                         </select>
                     </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Filter</button>
+                    <div class="col-6 col-sm-3 col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold" style="min-height: 31px;">Filter</button>
                     </div>
                 </form>
 
@@ -165,33 +165,35 @@
                 <div class="mt-5 p-4 bg-white border shadow-sm no-print" style="border-radius: 12px; border: 2px solid var(--primary) !important;">
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-calculator"></i> RINGKASAN AKHIR (PER POS)</h6>
                     <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <table class="table table-sm table-bordered mb-0">
-                                <thead>
-                                    <tr class="bg-light">
-                                        <th>KATEGORI POS</th>
-                                        <th class="text-end">TOTAL VOLUME (Liter)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Total POS KRAD (Peternak Lokal)</td>
-                                        <td class="text-end fw-bold">{{ number_format($tkPusat, 1, ',', '.') }} L</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Total POS TR & P (Sub-Penampung)</td>
-                                        <td class="text-end fw-bold">{{ number_format($ttPusat, 1, ',', '.') }} L</td>
-                                    </tr>
-                                </tbody>
-                                <tfoot class="fw-bold">
-                                    <tr>
-                                        <th class="py-2">GRAND TOTAL KESELURUHAN</th>
-                                        <th class="text-end py-2" style="font-size: 1.1rem;">{{ number_format($gtPusat, 1, ',', '.') }} L</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                        <div class="col-lg-8 mb-4 mb-lg-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead>
+                                        <tr class="bg-light">
+                                            <th>KATEGORI POS</th>
+                                            <th class="text-end">TOTAL VOLUME (Liter)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Total POS KRAD (Peternak Lokal)</td>
+                                            <td class="text-end fw-bold">{{ number_format($tkPusat, 1, ',', '.') }} L</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total POS TR & P (Sub-Penampung)</td>
+                                            <td class="text-end fw-bold">{{ number_format($ttPusat, 1, ',', '.') }} L</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="fw-bold">
+                                        <tr>
+                                            <th class="py-2">GRAND TOTAL KESELURUHAN</th>
+                                            <th class="text-end py-2" style="font-size: 1.1rem;">{{ number_format($gtPusat, 1, ',', '.') }} L</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
-                        <div class="col-md-4 text-center mt-3 mt-md-0">
+                        <div class="col-lg-4 text-center">
                             <p class="small text-muted mb-4">Diverifikasi pada: <br><strong>{{ now()->format('d/m/Y H:i') }}</strong></p>
                             <div style="border-top: 1px solid #ddd; width: 150px; margin: 40px auto 0;"></div>
                             <p class="small fw-bold">Admin SIPERAH</p>
@@ -208,41 +210,41 @@
                     <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                     <h5 class="fw-bold mb-0">REKAPITULASI SUB-PENAMPUNG</h5>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
                         @if($isPrinting)
                         <button class="btn btn-sm btn-danger no-print" onclick="window.close()">
-                            <i class="fas fa-times"></i> Tutup Halaman
+                            <i class="fas fa-times"></i> <span class="d-none d-sm-inline">Tutup</span>
                         </button>
                         @endif
                         <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'sub_penampung']) }}'">
-                            <i class="fas fa-file-excel"></i> Export Excel
+                            <i class="fas fa-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
                         </button>
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'sub_penampung', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
-                            <i class="fas fa-print"></i> Cetak Semua
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak Semua</span>
                         </a>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-print"></i> Cetak Halaman
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak</span>
                         </button>
                     </div>
                 </div>
 
                 <form action="{{ route('laporan.data') }}" method="GET" class="row g-2 mb-4 bg-white p-3 shadow-sm" style="border-radius: 12px;">
                     <input type="hidden" name="tab" value="sub_penampung">
-                    <div class="col-md-4">
+                    <div class="col-12 col-sm-6 col-md-4">
                         <label class="small fw-bold text-muted mb-1">Dari Tanggal</label>
                         <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-md-2">
                         <label class="small fw-bold text-muted mb-1">Sampai Tanggal</label>
                         <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3">
                         <label class="small fw-bold text-muted mb-1">Cari Nama / ID Mitra</label>
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Contoh: Budi" value="{{ $search }}">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="small fw-bold text-muted mb-1">Kategori</label>
                         <select name="status_mitra" class="form-select form-select-sm">
                             <option value="">-- Semua --</option>
@@ -250,19 +252,19 @@
                             <option value="sub_penampung_p" {{ request('status_mitra') == 'sub_penampung_p' ? 'selected' : '' }}>Sub-P</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="small fw-bold text-muted mb-1">Tampilkan</label>
                         <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5 kartu</option>
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 kartu</option>
-                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15 kartu</option>
-                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20 kartu</option>
-                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 kartu</option>
-                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 kartu</option>
+                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                         </select>
                     </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Filter</button>
+                    <div class="col-12 col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold" style="min-height: 31px;">Filter</button>
                     </div>
                 </form>
 
@@ -424,39 +426,36 @@
                     <p style="font-size: 12pt; margin-top: 5px;" class="d-print-none">Tanggal: {{ \Carbon\Carbon::parse($tanggal)->format('d/m/Y') }}</p>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                     <h5 class="fw-bold mb-0">Monitoring Real-time Setoran & Potongan</h5>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
                         @if($isPrinting)
                         <button class="btn btn-sm btn-danger no-print" onclick="window.close()">
-                            <i class="fas fa-times"></i> Tutup Halaman
+                            <i class="fas fa-times"></i> <span class="d-none d-sm-inline">Tutup</span>
                         </button>
                         @endif
                         <a href="{{ request()->fullUrlWithQuery(['tab' => 'harian', 'print' => 'all']) }}" target="_blank" class="btn btn-sm btn-outline-primary no-print">
-                            <i class="fas fa-print"></i> Cetak Semua
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak Semua</span>
                         </a>
                         <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'pusat']) }}'">
-                            <i class="fas fa-file-excel"></i> Export Excel
+                            <i class="fas fa-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
                         </button>
                         <button class="btn btn-sm btn-outline-primary no-print" onclick="window.print()">
-                            <i class="fas fa-print"></i> Cetak Halaman
-                        </button>
-                        <button class="btn btn-sm btn-success fw-bold no-print" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel', 'tab' => 'harian']) }}'">
-                            <i class="fas fa-file-excel"></i> Export Excel
+                            <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Cetak</span>
                         </button>
                         <button class="btn btn-sm btn-outline-info no-print" onclick="showRekapModal()">
-                            <i class="fas fa-calendar-alt"></i> Rekap Bulanan
+                            <i class="fas fa-calendar-alt"></i> <span class="d-none d-sm-inline">Rekap Bulanan</span>
                         </button>
                     </div>
                 </div>
 
                 <form action="{{ route('laporan.data') }}" method="GET" class="row g-2 mb-4 bg-white p-3 shadow-sm" style="border-radius: 12px;">
                     <input type="hidden" name="tab" value="harian">
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3">
                         <label class="small fw-bold text-muted mb-1">Pilih Tanggal</label>
                         <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ $tanggal }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3">
                         <label class="small fw-bold text-muted mb-1">Kategori Mitra</label>
                         <select name="status_mitra" class="form-select form-select-sm">
                             <option value="">-- Semua Kategori --</option>
@@ -465,11 +464,11 @@
                             <option value="sub_penampung_p" {{ request('status_mitra') == 'sub_penampung_p' ? 'selected' : '' }}>Sub-Penampung P</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-md-3">
                         <label class="small fw-bold text-muted mb-1">Cari Nama / ID</label>
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Contoh: Heri" value="{{ $search }}">
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-6 col-sm-3 col-md-1">
                         <label class="small fw-bold text-muted mb-1">Baris</label>
                         <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
@@ -477,8 +476,8 @@
                             <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Filter</button>
+                    <div class="col-6 col-sm-3 col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold" style="min-height: 31px;">Filter</button>
                     </div>
                 </form>
 
