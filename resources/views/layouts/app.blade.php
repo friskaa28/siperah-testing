@@ -76,6 +76,16 @@
             color: var(--primary-dark);
         }
 
+        .navbar-logo-siperah {
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .navbar-logo-innovillage {
+            height: 28px;
+            object-fit: contain;
+        }
+
         .navbar-actions {
             display: flex;
             align-items: center;
@@ -141,6 +151,13 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--primary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .mobile-toggle:hover {
+            background: #F3F4F6;
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -460,6 +477,18 @@
             }
 
             /* Mobile-specific utilities */
+            .navbar {
+                padding: 0.5rem 0;
+            }
+
+            .navbar-logo-siperah {
+                height: 35px !important;
+            }
+
+            .navbar-logo-innovillage {
+                height: 22px !important;
+            }
+
             .btn-sm, .btn {
                 min-height: 36px;
                 padding: 0.5rem 0.75rem;
@@ -709,14 +738,17 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="container">
-            <a href="/" class="navbar-brand">
-                <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" style="height: 80px; object-fit: contain;">
-                <img src="{{ asset('img/logo-innovillage.png') }}" alt="Innovillage Logo" style="height: 30px; margin-left: 12px; object-fit: contain;">
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                @auth
+                <button class="mobile-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                @endauth
+                <a href="/" class="navbar-brand" style="display: flex; align-items: center; gap: 12px;">
+                    <img src="{{ asset('images/logo_siperah.png') }}" alt="SIPERAH Logo" class="navbar-logo-siperah">
+                    <img src="{{ asset('images/logo_innovillage.png') }}" alt="Innovillage Logo" class="navbar-logo-innovillage">
+                </a>
+            </div>
             <div class="navbar-actions">
                 @auth
-                    <button class="mobile-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-                    
                     @if(\App\Models\Setting::isEnabled('feature_notifikasi'))
                         <a href="/notifikasi" class="btn btn-secondary" style="background: transparent; border: none; padding: 0.5rem; position: relative; margin-right: 0.5rem; color: var(--text-light);">
                             <i class="fas fa-bell" style="font-size: 1.2rem;"></i>

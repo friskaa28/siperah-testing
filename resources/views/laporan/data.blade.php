@@ -12,21 +12,21 @@
 
 <!-- Navigasi Tab (Segments) -->
 <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-    <div class="card-header bg-white p-0 border-0" style="overflow-x: auto;">
-        <ul class="nav nav-pills nav-fill flex-nowrap flex-md-wrap" id="laporanTab" role="tablist" style="min-width: 600px; width: 100%;">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link py-3 @if($tab == 'pusat') active @endif" id="pusat-tab" data-bs-toggle="pill" data-bs-target="#pusat" type="button" role="tab" style="border-radius: 0; font-weight: 600;">
-                    <i class="fas fa-building"></i> Laporan Pusat
+    <div class="card-header bg-white p-0 border-0">
+        <ul class="nav nav-pills nav-fill" id="laporanTab" role="tablist" style="display: flex;">
+            <li class="nav-item" role="presentation" style="flex: 1; min-width: 0;">
+                <button class="nav-link py-3 @if($tab == 'pusat') active @endif" id="pusat-tab" data-bs-toggle="pill" data-bs-target="#pusat" type="button" role="tab" style="border-radius: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-size: 0.85rem;">
+                    <i class="fas fa-building"></i> <span class="d-none d-sm-inline">Laporan</span> Pusat
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link py-3 @if($tab == 'sub_penampung') active @endif" id="sub-penampung-tab" data-bs-toggle="pill" data-bs-target="#sub_penampung" type="button" role="tab" style="border-radius: 0; font-weight: 600;">
-                    <i class="fas fa-users"></i> Laporan Sub-Penampung
+            <li class="nav-item" role="presentation" style="flex: 1; min-width: 0;">
+                <button class="nav-link py-3 @if($tab == 'sub_penampung') active @endif" id="sub-penampung-tab" data-bs-toggle="pill" data-bs-target="#sub_penampung" type="button" role="tab" style="border-radius: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-size: 0.85rem;">
+                    <i class="fas fa-users"></i> Sub<span class="d-none d-sm-inline">-Penampung</span>
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link py-3 @if($tab == 'harian') active @endif" id="harian-tab" data-bs-toggle="pill" data-bs-target="#harian" type="button" role="tab" style="border-radius: 0; font-weight: 600;">
-                    <i class="fas fa-calendar-day"></i> Laporan Harian
+            <li class="nav-item" role="presentation" style="flex: 1; min-width: 0;">
+                <button class="nav-link py-3 @if($tab == 'harian') active @endif" id="harian-tab" data-bs-toggle="pill" data-bs-target="#harian" type="button" role="tab" style="border-radius: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-size: 0.85rem;">
+                    <i class="fas fa-calendar-day"></i> <span class="d-none d-sm-inline">Laporan</span> Harian
                 </button>
             </li>
         </ul>

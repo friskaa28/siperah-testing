@@ -13,66 +13,90 @@
         <i class="fas fa-check-circle"></i> {{ session('success') }}
     </div>
 @endif
-<div class="flex-between mb-4">
-    <h1>Slip Gaji & Pembayaran Susu <small style="font-size: 0.5em; opacity: 0.5;"></small></h1>
-    <div class="d-flex gap-2">
+<div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h1 class="mb-0">Slip Gaji & Pembayaran Susu</h1>
+    </div>
+    <div class="col-12 col-md-6">
         @if($errors->any())
-            <div style="background: #FEE2E2; color: #991B1B; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; border: 1px solid #FECACA;">
-                <ul>
+            <div style="background: #FEE2E2; color: #991B1B; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; border: 1px solid #FECACA; margin-bottom: 1rem;">
+                <ul style="margin: 0; padding-left: 1.2rem;">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
-        <div class="card shadow-sm border-0" style="border-radius: 12px; margin-bottom: 0;">
-            <div class="card-body p-2">
-                <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-2">
+        <div class="card shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card-body p-3">
+                <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="row g-2">
                     @csrf
-                    <label class="small fw-bold text-muted mb-0 text-nowrap">Unggah Data:</label>
-                    <input type="file" name="file" class="form-control form-control-sm w-auto" style="border-radius: 20px; min-width: 200px;" required accept=".xlsx, .xls">
-                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm text-nowrap" style="border-radius: 8px;" data-tooltip="Klik untuk mengunggah data slip gaji dan potongan dari file Excel">
-                        <i class="fas fa-file-import"></i> Unggah Excel
-                    </button>
-                    <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm px-3 fw-bold border shadow-sm text-nowrap" style="border-radius: 8px; color: #64748b;" data-tooltip="Unduh template Excel gabungan (Liter & 15 Potongan)">
-                        <i class="fas fa-download"></i> Unduh Contoh Data Excel
-                    </a>
+                    <div class="col-12">
+                        <label class="small fw-bold text-muted mb-1">Unggah Data:</label>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <input type="file" name="file" class="form-control form-control-sm" style="border-radius: 8px;" required accept=".xlsx, .xls">
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold" style="border-radius: 8px;">
+                            <i class="fas fa-file-import"></i> <span class="d-none d-sm-inline">Unggah</span> Excel
+                        </button>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm w-100 fw-bold border" style="border-radius: 8px; color: #64748b;">
+                            <i class="fas fa-download"></i> <span class="d-none d-sm-inline">Unduh</span> Contoh
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+<div class="row g-3">
     <!-- LEFT: MAIN TABLE -->
-    <div class="card">
-        <div class="flex-between mb-4">
-            <form action="{{ route('gaji.index') }}" method="GET" class="d-flex gap-2 align-center">
-                <select name="bulan" class="form-control" style="width: 130px;">
-                    @for($i=1; $i<=12; $i++)
-                        <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
-                    @endfor
-                </select>
-                <select name="tahun" class="form-control" style="width: 100px;">
-                    @for($i=now()->year; $i>=now()->year-1; $i--)
-                        <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
-                    @endfor
-                </select>
-                <select name="per_page" class="form-control" style="width: 100px;" onchange="this.form.submit()">
-                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 baris</option>
-                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 baris</option>
-                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 baris</option>
-                </select>
-                <button type="submit" class="btn btn-secondary">Lihat</button>
-            </form>
-            
-            <form action="{{ route('gaji.generate') }}" method="POST">
-                @csrf
-                <input type="hidden" name="bulan" value="{{ $bulan }}">
-                <input type="hidden" name="tahun" value="{{ $tahun }}">
-                <button type="submit" class="btn btn-success" title="Update data liter & sinkron potongan harian">Refresh & Sinkron Data</button>
-            </form>
-        </div>
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-body p-3">
+                <form action="{{ route('gaji.index') }}" method="GET" class="row g-2 mb-3">
+                    <div class="col-6 col-sm-4 col-md-3">
+                        <label class="small fw-bold mb-1">Bulan</label>
+                        <select name="bulan" class="form-control form-control-sm">
+                            @for($i=1; $i<=12; $i++)
+                                <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $i, 1)) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-2">
+                        <label class="small fw-bold mb-1">Tahun</label>
+                        <select name="tahun" class="form-control form-control-sm">
+                            @for($i=now()->year; $i>=now()->year-1; $i--)
+                                <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-2">
+                        <label class="small fw-bold mb-1">Tampilkan</label>
+                        <select name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
+                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-secondary btn-sm w-100">Lihat</button>
+                    </div>
+                    <div class="col-12 col-md-3 d-flex align-items-end">
+                        <form action="{{ route('gaji.generate') }}" method="POST" class="w-100">
+                            @csrf
+                            <input type="hidden" name="bulan" value="{{ $bulan }}">
+                            <input type="hidden" name="tahun" value="{{ $tahun }}">
+                            <button type="submit" class="btn btn-success btn-sm w-100" title="Update data liter & sinkron potongan harian">
+                                <i class="fas fa-sync"></i> Refresh & Sinkron
+                            </button>
+                        </form>
+                    </div>
+                </form>
 
         @if($slips->count() > 0)
         <div class="table-responsive">
@@ -128,37 +152,43 @@
             <p style="font-size: 0.85rem; color: #999;">Silakan upload Excel atau klik "Refresh & Sinkron Data".</p>
         </div>
         @endif
+            </div>
+        </div>
     </div>
 
     <!-- RIGHT: HELPER -->
-    <div class="card" style="background: #F9FAFB;">
-        <h3 class="mb-2">Panduan Gaji</h3>
-        <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5553; line-height: 1.6;">
-            <li><strong>Unggah Excel</strong>: Gunakan template untuk mengunggah liter & potongan sekaligus.</li>
-            <li><strong>Segarkan Data</strong>: Mengambil liter dari setoran harian & sinkronisasi otomatis potongan kasbon.</li>
-            <li><strong>Pratinjau</strong>: Cek detail slip, edit manual jika perlu, dan lakukan Tanda Tangan Digital.</li>
-        </ol>
+    <div class="col-12 col-lg-4">
+        <div class="card" style="background: #F9FAFB;">
+            <div class="card-body p-3">
+                <h3 class="mb-2" style="font-size: 1.1rem;">Panduan Gaji</h3>
+                <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5553; line-height: 1.6;">
+                    <li><strong>Unggah Excel</strong>: Gunakan template untuk mengunggah liter & potongan sekaligus.</li>
+                    <li><strong>Segarkan Data</strong>: Mengambil liter dari setoran harian & sinkronisasi otomatis potongan kasbon.</li>
+                    <li><strong>Pratinjau</strong>: Cek detail slip, edit manual jika perlu, dan lakukan Tanda Tangan Digital.</li>
+                </ol>
 
-        <h3 class="mt-4 mb-2">Bulan Tersedia:</h3>
-        <div class="d-flex flex-wrap gap-1 mb-4">
-            @php
-                $availableMonths = \App\Models\ProduksiHarian::selectRaw('MONTH(tanggal) as m, YEAR(tanggal) as y')
-                    ->distinct()->orderBy('y', 'desc')->orderBy('m', 'desc')->take(6)->get();
-            @endphp
-            @foreach($availableMonths as $am)
-                <a href="{{ route('gaji.index', ['bulan' => $am->m, 'tahun' => $am->y]) }}" class="btn btn-secondary p-1" style="font-size: 0.75rem;">
-                    {{ date('M Y', mktime(0, 0, 0, $am->m, 1, $am->y)) }}
-                </a>
-            @endforeach
-        </div>
-
-        <h3 class="mt-2 mb-2">Daftar Peternak Aktif:</h3>
-        <div style="max-height: 300px; overflow-y: auto; font-size: 0.8rem; border: 1px solid #E5E7EB; border-radius: 6px; padding: 5px; background: #fff;">
-            @foreach(\App\Models\Peternak::all() as $p)
-                <div style="padding: 5px; border-bottom: 1px solid #F3F4F6;">
-                    <strong>{{ $p->no_peternak ?: '??' }}</strong> - {{ $p->nama_peternak }}
+                <h3 class="mt-3 mb-2" style="font-size: 1.1rem;">Bulan Tersedia:</h3>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    @php
+                        $availableMonths = \App\Models\ProduksiHarian::selectRaw('MONTH(tanggal) as m, YEAR(tanggal) as y')
+                            ->distinct()->orderBy('y', 'desc')->orderBy('m', 'desc')->take(6)->get();
+                    @endphp
+                    @foreach($availableMonths as $am)
+                        <a href="{{ route('gaji.index', ['bulan' => $am->m, 'tahun' => $am->y]) }}" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">
+                            {{ date('M Y', mktime(0, 0, 0, $am->m, 1, $am->y)) }}
+                        </a>
+                    @endforeach
                 </div>
-            @endforeach
+
+                <h3 class="mt-3 mb-2" style="font-size: 1.1rem;">Daftar Peternak Aktif:</h3>
+                <div style="max-height: 300px; overflow-y: auto; font-size: 0.8rem; border: 1px solid #E5E7EB; border-radius: 6px; padding: 5px; background: #fff;">
+                    @foreach(\App\Models\Peternak::all() as $p)
+                        <div style="padding: 5px; border-bottom: 1px solid #F3F4F6;">
+                            <strong>{{ $p->no_peternak ?: '??' }}</strong> - {{ $p->nama_peternak }}
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 </div>
