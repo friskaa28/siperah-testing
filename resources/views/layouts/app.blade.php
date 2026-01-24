@@ -743,8 +743,8 @@
                 <button class="mobile-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
                 @endauth
                 <a href="/" class="navbar-brand" style="display: flex; align-items: center; gap: 12px;">
-                    <img src="{{ asset('images/logo_siperah.png') }}" alt="SIPERAH Logo" class="navbar-logo-siperah">
-                    <img src="{{ asset('images/logo_innovillage.png') }}" alt="Innovillage Logo" class="navbar-logo-innovillage">
+                    <img src="{{ asset('img/logo-siperah.png') }}" alt="SIPERAH Logo" class="navbar-logo-siperah">
+                    <img src="{{ asset('img/logo-innovillage.png') }}" alt="Innovillage Logo" class="navbar-logo-innovillage">
                 </a>
             </div>
             <div class="navbar-actions">
