@@ -753,7 +753,10 @@
                         <a href="/notifikasi" class="btn btn-secondary" style="background: transparent; border: none; padding: 0.5rem; position: relative; margin-right: 0.5rem; color: var(--text-light);">
                             <i class="fas fa-bell" style="font-size: 1.2rem;"></i>
                             @php
-                                $unreadCount = auth()->user()->notifikasi()->where('status_baca', 'belum_baca')->count();
+                                $unreadCount = auth()->user()->notifikasi()
+                                    ->where('status_baca', 'belum_baca')
+                                    ->where('kategori', '!=', 'bagi_hasil')
+                                    ->count();
                             @endphp
                             @if($unreadCount > 0)
                                 <span style="position: absolute; top: 0; right: 0; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; border: 2px solid white;">

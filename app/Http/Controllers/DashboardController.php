@@ -16,7 +16,7 @@ use Carbon\Carbon;
 
 class DashboardController extends BaseController
 {
-    public function peternakDashboard()
+    public function peternakDashboard(\Illuminate\Http\Request $request)
     {
         $user = Auth::user();
         $peternak = $user->peternak;
@@ -25,15 +25,25 @@ class DashboardController extends BaseController
             return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
         }
 
-        // Defined period: 14th of last month to 13th of this month (if today <= 13)
-        // Or 14th of this month to 13th of next month (if today > 13)
-        $now = now();
-        if ($now->day <= 13) {
-            $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
-            $endDate = $now->copy()->day(13)->endOfDay();
+        // Check if user provided custom date range
+        $customStartDate = $request->input('start_date');
+        $customEndDate = $request->input('end_date');
+
+        if ($customStartDate && $customEndDate) {
+            // Use custom dates from filter
+            $startDate = Carbon::parse($customStartDate)->startOfDay();
+            $endDate = Carbon::parse($customEndDate)->endOfDay();
         } else {
-            $startDate = $now->copy()->day(14)->startOfDay();
-            $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
+            // Default: Defined period: 14th of last month to 13th of this month (if today <= 13)
+            // Or 14th of this month to 13th of next month (if today > 13)
+            $now = now();
+            if ($now->day <= 13) {
+                $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
+                $endDate = $now->copy()->day(13)->endOfDay();
+            } else {
+                $startDate = $now->copy()->day(14)->startOfDay();
+                $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
+            }
         }
 
         // Total Liter in period
@@ -44,7 +54,7 @@ class DashboardController extends BaseController
         // Current Milk Price
         $currentPrice = HargaSusuHistory::getHargaAktif();
 
-        // Total Kasbon in period
+        // Total Potongan in period
         $totalKasbon = Kasbon::where('idpeternak', $peternak->idpeternak)
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->sum('total_rupiah');
@@ -55,8 +65,9 @@ class DashboardController extends BaseController
         // Announcements
         $pengumuman = Pengumuman::latest()->limit(3)->get();
 
-        // Notifikasi (5 terbaru)
+        // Notifikasi (5 terbaru, skip bagi_hasil)
         $notifikasi = Notifikasi::where('iduser', $user->iduser)
+            ->where('kategori', '!=', 'bagi_hasil')
             ->latest()
             ->limit(5)
             ->get();
@@ -124,6 +135,8 @@ class DashboardController extends BaseController
             'peternak' => $peternak,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'startDateStr' => $startDate->format('Y-m-d'),
+            'endDateStr' => $endDate->format('Y-m-d'),
             'dailyProduction' => $dailyProduction,
             'monthlyProduction' => $monthlyProduction,
         ]);
@@ -137,8 +150,22 @@ class DashboardController extends BaseController
             return back()->withErrors(['error' => 'Anda tidak berhak mengakses halaman ini.']);
         }
 
-        // Year Filter
+        // Date Range Filter for Widgets
+        $customStartDate = $request->input('start_date');
+        $customEndDate = $request->input('end_date');
+
+        if ($customStartDate && $customEndDate) {
+            $startDate = Carbon::parse($customStartDate)->startOfDay();
+            $endDate = Carbon::parse($customEndDate)->endOfDay();
+        } else {
+            // Default to current month
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
+        }
+
+        // Year Filter (for charts)
         $selectedYear = $request->input('year', now()->year);
+        $selectedMonth = $request->input('month'); // New: month filter
         $availableYears = range(now()->year, now()->year - 4);
 
         // KPI data
@@ -169,11 +196,12 @@ class DashboardController extends BaseController
             ->groupBy('status')
             ->get();
 
-        // Monthly Stats for Chart (Selected Year)
-        $monthlyStats = $this->getMonthlyStats($selectedYear);
+        // Monthly Stats for Chart (Selected Year and optionally Month)
+        $monthlyStats = $this->getMonthlyStats($selectedYear, $selectedMonth);
 
-        // Latest Notifications
+        // Latest Notifications (skip bagi_hasil)
         $notifikasi = Notifikasi::where('iduser', $user->iduser)
+            ->where('kategori', '!=', 'bagi_hasil')
             ->latest()
             ->limit(5)
             ->get();
@@ -181,9 +209,9 @@ class DashboardController extends BaseController
         // Active Milk Price
         $currentPrice = HargaSusuHistory::getHargaAktif();
 
-        // Widget Metrics (Today's Data)
-        $todayLiter = ProduksiHarian::whereDate('tanggal', now())->sum('jumlah_susu_liter');
-        $todayKasbon = Kasbon::whereDate('tanggal', now())->sum('total_rupiah');
+        // Widget Metrics (Date Range)
+        $periodLiter = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])->sum('jumlah_susu_liter');
+        $periodKasbon = Kasbon::whereBetween('tanggal', [$startDate, $endDate])->sum('total_rupiah');
         $totalLogistik = \App\Models\KatalogLogistik::count();
 
         return view('dashboard.pengelola', [
@@ -198,27 +226,50 @@ class DashboardController extends BaseController
             'currentPrice' => $currentPrice,
             'selectedYear' => $selectedYear,
             'availableYears' => $availableYears,
-            'todayLiter' => $todayLiter,
-            'todayKasbon' => $todayKasbon,
+            'periodLiter' => $periodLiter,
+            'periodKasbon' => $periodKasbon,
             'totalLogistik' => $totalLogistik,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'startDateStr' => $startDate->format('Y-m-d'),
+            'endDateStr' => $endDate->format('Y-m-d'),
+            'selectedMonth' => $selectedMonth,
         ]);
     }
 
-    private function getMonthlyStats($year)
+    private function getMonthlyStats($year, $month = null)
     {
         $stats = [];
         
-        for ($m = 1; $m <= 12; $m++) {
-            $query = ProduksiHarian::whereYear('tanggal', $year)->whereMonth('tanggal', $m);
-            
-            $prodTotal = $query->sum('jumlah_susu_liter');
-            $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
-            
-            $stats[] = [
-                'month' => date('M', mktime(0, 0, 0, $m, 1)),
-                'produksi' => (float)$prodTotal,
-                'active_peternak' => $activePeternak,
-            ];
+        if ($month) {
+            // Year-over-year comparison for selected month
+            $years = range($year, $year - 4);
+            foreach ($years as $y) {
+                $query = ProduksiHarian::whereYear('tanggal', $y)->whereMonth('tanggal', $month);
+                
+                $prodTotal = $query->sum('jumlah_susu_liter');
+                $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
+                
+                $stats[] = [
+                    'month' => (string)$y, // Use year as label
+                    'produksi' => (float)$prodTotal,
+                    'active_peternak' => $activePeternak,
+                ];
+            }
+        } else {
+            // All months for selected year
+            for ($m = 1; $m <= 12; $m++) {
+                $query = ProduksiHarian::whereYear('tanggal', $year)->whereMonth('tanggal', $m);
+                
+                $prodTotal = $query->sum('jumlah_susu_liter');
+                $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
+                
+                $stats[] = [
+                    'month' => date('M', mktime(0, 0, 0, $m, 1)),
+                    'produksi' => (float)$prodTotal,
+                    'active_peternak' => $activePeternak,
+                ];
+            }
         }
         return $stats;
     }

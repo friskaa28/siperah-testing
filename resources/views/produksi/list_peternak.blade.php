@@ -4,9 +4,17 @@
 
 @section('content')
 <div id="printableHeader" class="d-none">
-    <h2>KOPERASI PRODUSEN SI PENGOLAHAN RAHAYU</h2>
-    <p class="mb-0">Riwayat Setoran Susu Peternak</p>
-    <div class="text-end small fw-bold">Periode: {{ $startDate ?? '-' }} s/d {{ $endDate ?? '-' }}</div>
+    <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-3">
+        <img src="{{ asset('img/logo-siperah.png') }}" alt="Logo" style="height: 80px; margin-right: 20px;">
+        <div class="text-start">
+            <h2 class="mb-0 fw-bold">PETERNAK MARGO MULYO ABADI</h2>
+            <p class="mb-0">Jl. Raya Kradinan Tulungagung</p>
+        </div>
+    </div>
+    <div class="text-center">
+        <h4 class="fw-bold">Riwayat Setoran Susu Peternak</h4>
+        <div class="small fw-bold">Periode: {{ $startDate ?? '-' }} s/d {{ $endDate ?? '-' }}</div>
+    </div>
 </div>
 
 <div class="row mb-4 align-items-center">

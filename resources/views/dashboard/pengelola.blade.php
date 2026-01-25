@@ -3,10 +3,42 @@
 @section('title', 'Dashboard Admin - SIPERAH')
 
 @section('content')
-<div class="row align-items-center mb-4">
+<div class="row align-items-center mb-3">
     <div class="col-12">
         <h1 class="fw-bold mb-0">Dashboard Admin</h1>
         <p class="text-muted">Pantau operasional harian dan kelola data master.</p>
+    </div>
+</div>
+
+<!-- DATE FILTER -->
+<div class="card mb-4" style="border-radius: 12px; border: 1px solid #E5E7EB;">
+    <div class="card-body p-3">
+        <form action="{{ route('dashboard.pengelola') }}" method="GET" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Tanggal Mulai</label>
+                <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDateStr }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Tanggal Akhir</label>
+                <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDateStr }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Tahun (untuk chart)</label>
+                <select name="year" class="form-select form-select-sm">
+                    @foreach($availableYears as $year)
+                        <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm px-4">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="{{ route('dashboard.pengelola') }}" class="btn btn-outline-secondary btn-sm px-4">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -17,8 +49,8 @@
     <div class="widget-item">
         <div class="small-box bg-success-custom">
             <div class="inner">
-                <h3>{{ number_format($todayLiter, 1) }}<sup style="font-size: 0.5em;">L</sup></h3>
-                <p>Setoran Hari Ini</p>
+                <h3>{{ number_format($periodLiter, 1) }}<sup style="font-size: 0.5em;">L</sup></h3>
+                <p>Setoran Periode Ini</p>
             </div>
             <div class="icon">
                 <i class="fas fa-cow"></i>
@@ -29,18 +61,18 @@
         </div>
     </div>
 
-    <!-- Kasbon Widget -->
+    <!-- Potongan Widget -->
     <div class="widget-item">
         <div class="small-box bg-danger-custom">
             <div class="inner">
-                <h3>Rp {{ number_format($todayKasbon/1000, 0) }}<sup style="font-size: 0.5em;">k</sup></h3>
-                <p>Kasbon Hari Ini</p>
+                <h3>Rp {{ number_format($periodKasbon/1000, 0) }}<sup style="font-size: 0.5em;">k</sup></h3>
+                <p>Potongan Periode Ini</p>
             </div>
             <div class="icon">
                 <i class="fas fa-shopping-basket"></i>
             </div>
             <a href="{{ route('kasbon.index') }}" class="small-box-footer">
-                Input Kasbon <i class="fas fa-arrow-circle-right"></i>
+                Input Potongan <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>
@@ -166,10 +198,11 @@
     .dashboard-grid-pengelola {
         display: grid;
         grid-template-columns: 1fr;
+        align-items: start;
     }
     @media (min-width: 992px) {
         .dashboard-grid-pengelola {
-            grid-template-columns: 2fr 1.2fr;
+            grid-template-columns: 1.5fr 1fr;
         }
     }
 </style>
@@ -193,9 +226,30 @@
 
         <!-- Monthly Stats Chart -->
         <div class="card" style="padding: 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                 <h3 class="fw-bold mb-0" style="font-size: 1.1rem;"><i class="fas fa-chart-line"></i> Statistik Data Setor Susu</h3>
-                <form action="{{ route('dashboard.pengelola') }}" method="GET" class="d-inline-block">
+                <form action="{{ route('dashboard.pengelola') }}" method="GET" class="d-flex flex-column flex-sm-row gap-2">
+                    @if(request('start_date'))
+                        <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    @endif
+                    @if(request('end_date'))
+                        <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    @endif
+                    <select name="month" class="form-select form-select-sm" onchange="this.form.submit()" style="border-radius: 8px; font-weight: 500;">
+                        <option value="">Semua Bulan</option>
+                        <option value="1" {{ request('month') == '1' ? 'selected' : '' }}>Januari</option>
+                        <option value="2" {{ request('month') == '2' ? 'selected' : '' }}>Februari</option>
+                        <option value="3" {{ request('month') == '3' ? 'selected' : '' }}>Maret</option>
+                        <option value="4" {{ request('month') == '4' ? 'selected' : '' }}>April</option>
+                        <option value="5" {{ request('month') == '5' ? 'selected' : '' }}>Mei</option>
+                        <option value="6" {{ request('month') == '6' ? 'selected' : '' }}>Juni</option>
+                        <option value="7" {{ request('month') == '7' ? 'selected' : '' }}>Juli</option>
+                        <option value="8" {{ request('month') == '8' ? 'selected' : '' }}>Agustus</option>
+                        <option value="9" {{ request('month') == '9' ? 'selected' : '' }}>September</option>
+                        <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
+                        <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
+                        <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+                    </select>
                     <select name="year" class="form-select form-select-sm" onchange="this.form.submit()" style="border-radius: 8px; font-weight: 500;">
                         @foreach($availableYears as $year)
                             <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
@@ -212,9 +266,9 @@
     <!-- Right Sidebar: KPI & Activity -->
     <div>
         <!-- Top 5 Kontributor Chart -->
-        <div class="card mb-4" style="padding: 1.5rem;">
+        <div class="card mb-4" style="padding: 1.5rem; height: 100%;">
             <h3 class="fw-bold mb-3" style="font-size: 1.1rem;"><i class="fas fa-trophy text-warning"></i> Top 5 Kontributor</h3>
-            <div style="height: 300px; position: relative;">
+            <div style="height: 250px; position: relative;">
                 <canvas id="topPeternakChart"></canvas>
             </div>
         </div>

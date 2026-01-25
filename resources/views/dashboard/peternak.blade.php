@@ -16,8 +16,32 @@
 </div>
 
 <!-- INFO PERIODE -->
-<div style="background: #E0F2FE; color: #0369A1; padding: 12px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #BAE6FD; font-size: 0.9rem;">
+<div style="background: #E0F2FE; color: #0369A1; padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #BAE6FD; font-size: 0.9rem;">
     <i class="fas fa-calendar-alt"></i> Periode Gajian: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
+</div>
+
+<!-- DATE FILTER -->
+<div class="card mb-4" style="border-radius: 12px; border: 1px solid #E5E7EB;">
+    <div class="card-body p-3">
+        <form action="{{ route('dashboard.peternak') }}" method="GET" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Tanggal Mulai</label>
+                <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDateStr }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Tanggal Akhir</label>
+                <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDateStr }}" required>
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary btn-sm px-4">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="{{ route('dashboard.peternak') }}" class="btn btn-outline-secondary btn-sm px-4">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="dashboard-grid mb-4">
@@ -28,17 +52,17 @@
         <p class="mb-0 mt-2">Setoran terkumpul di periode ini.</p>
     </div>
 
-    <!-- Card 2: Kasbon/Potongan -->
+    <!-- Card 2: Potongan -->
     <div class="card" style="border-left: 4px solid var(--danger); padding: 1.5rem;">
-        <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Total Kasbon/Pakan</h3>
+        <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Total Potongan</h3>
         <h2 style="color: var(--danger); font-size: 2.25rem;">Rp {{ number_format($totalKasbon, 0, ',', '.') }}</h2>
-        <p class="mb-0 mt-2">Total hutang barang/pakan saat ini.</p>
+        <p class="mb-0 mt-2">Total potongan/hutang saat ini.</p>
     </div>
 
     <div class="card" style="border-left: 4px solid var(--success); padding: 1.5rem; background: #F0FDF4;">
         <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Estimasi Gaji Bersih</h3>
         <h2 style="color: var(--success); font-size: 2.25rem;">Rp {{ number_format($estimasiGaji, 0, ',', '.') }}</h2>
-        <p class="mb-0 mt-2"><strong>(Liter x Rp {{ number_format($currentPrice, 0, ',', '.') }}) - Kasbon</strong></p>
+        <p class="mb-0 mt-2"><strong>(Liter x Rp {{ number_format($currentPrice, 0, ',', '.') }}) - Potongan</strong></p>
         <div class="mt-2 pt-2 border-top" style="font-size: 0.75rem; color: var(--text-light);">
             <i class="fas fa-certificate"></i> Terverifikasi Digital SIPERAH
         </div>

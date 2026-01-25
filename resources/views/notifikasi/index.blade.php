@@ -16,10 +16,6 @@
        class="btn @if($kategoriAktif === 'jadwal') btn-primary @else btn-secondary @endif">
         Jadwal
     </a>
-    <a href="/notifikasi?kategori=bagi_hasil" 
-       class="btn @if($kategoriAktif === 'bagi_hasil') btn-primary @else btn-secondary @endif">
-        Bagi Hasil
-    </a>
 </div>
 
 <!-- Notifikasi List -->

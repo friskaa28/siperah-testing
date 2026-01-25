@@ -7,6 +7,7 @@ use App\Models\BagiHasil;
 use App\Models\Peternak;
 use App\Models\Notifikasi;
 use App\Exports\ProduksiTemplateExport;
+use App\Exports\SubPenampungReportExport;
 use App\Imports\ProduksiImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
@@ -152,12 +153,12 @@ class ProduksiController extends Controller
             $produksi->havingRaw('pagi > 0 AND sore > 0');
         }
 
+        if ($request->get('export') === 'excel') {
+            return Excel::download(new SubPenampungReportExport($produksi->get()), 'Riwayat_Setoran_'.now()->format('YmdHis').'.xlsx');
+        }
+
         $produksi = $produksi->paginate($perPage)
             ->withQueryString();
-
-        if ($request->get('export') === 'excel') {
-            return Excel::download(new SubPenampungReportExport($produksi), 'Riwayat_Setoran_'.now()->format('YmdHis').'.xlsx');
-        }
 
         return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage', 'startDate', 'endDate', 'idpeternak'));
     }

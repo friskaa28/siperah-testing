@@ -13,7 +13,8 @@ class NotifikasiController extends Controller
         $user = Auth::user();
         $kategori = $request->get('kategori', 'semua');
 
-        $query = Notifikasi::where('iduser', $user->iduser);
+        $query = Notifikasi::where('iduser', $user->iduser)
+            ->where('kategori', '!=', 'bagi_hasil');
 
         if ($kategori !== 'semua') {
             $query->where('kategori', $kategori);
@@ -56,6 +57,7 @@ class NotifikasiController extends Controller
         $user = Auth::user();
         $count = Notifikasi::where('iduser', $user->iduser)
             ->where('status_baca', 'belum_baca')
+            ->where('kategori', '!=', 'bagi_hasil')
             ->count();
 
         return response()->json(['count' => $count]);

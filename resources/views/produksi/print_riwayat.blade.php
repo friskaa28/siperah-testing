@@ -6,9 +6,13 @@
     <style>
         @page { size: A4 portrait; margin: 1cm; }
         body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; -webkit-print-color-adjust: exact; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px double #000; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 18pt; text-transform: uppercase; }
-        .header p { margin: 5px 0 0; font-size: 12pt; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; }
+        .header img { height: 80px; margin-right: 20px; }
+        .header-text { text-align: left; }
+        .header-text h1 { margin: 0; font-size: 18pt; text-transform: uppercase; font-weight: bold; }
+        .header-text p { margin: 2px 0 0; font-size: 11pt; }
+        .report-title { text-align: center; margin-bottom: 20px; }
+        .report-title h2 { margin: 0; font-size: 14pt; text-transform: uppercase; }
         
         .section-title { margin-top: 20px; font-weight: bold; font-size: 12pt; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
         
@@ -30,8 +34,15 @@
 <body onload="window.print()">
 
     <div class="header">
-        <h1>KOPERASI PRODUSEN SI PENGOLAHAN RAHAYU</h1>
-        <p>Laporan Riwayat Setoran Susu</p>
+        <img src="{{ asset('img/logo-siperah.png') }}" alt="Logo">
+        <div class="header-text">
+            <h1>PETERNAK MARGO MULYO ABADI</h1>
+            <p>Jl. Raya Kradinan Tulungagung</p>
+        </div>
+    </div>
+
+    <div class="report-title">
+        <h2>Laporan Riwayat Setoran Susu</h2>
         <p style="font-size: 10pt; font-weight: normal; margin-top: 5px;">
             Periode: 
             {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d/m/Y') : 'Awal' }} 
