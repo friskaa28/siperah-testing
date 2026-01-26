@@ -17,7 +17,7 @@
 
 <!-- INFO PERIODE -->
 <div style="background: #E0F2FE; color: #0369A1; padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #BAE6FD; font-size: 0.9rem;">
-    <i class="fas fa-calendar-alt"></i> Periode Gajian: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
+    <i class="fas fa-calendar-alt"></i> Periode Bulan Ini: <strong>{{ $startDate->format('d M Y') }}</strong> s/d <strong>{{ $endDate->format('d M Y') }}</strong>
 </div>
 
 <!-- DATE FILTER -->
@@ -72,7 +72,7 @@
 <div class="row mb-4">
     <div class="col-md-8">
         <div class="card p-3 h-100">
-            <h4 class="mb-3">Grafik Produksi Harian ({{ $startDate->format('d M') }} - {{ $endDate->format('d M') }})</h4>
+            <h4 class="mb-3">Grafik Produksi Harian (Bulan Ini)</h4>
             <canvas id="dailyChart" style="max-height: 300px;"></canvas>
         </div>
     </div>

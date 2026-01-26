@@ -18,44 +18,48 @@
 </div>
 
 <div class="row mb-4 align-items-center">
-    <div class="col-md-6">
+    <div class="col-xl-3 col-lg-4 col-md-12 mb-3 mb-lg-0">
         <h1 class="h3 mb-0"><i class="fas fa-history"></i> Riwayat Setor Susu</h1>
-        <p class="text-muted">Kelola dan pantau data pengumpulan susu harian</p>
+        <p class="text-muted mb-0">Kelola dan pantau data pengumpulan susu harian</p>
     </div>
     @if(isset($isAdmin) && $isAdmin)
-    <div class="col-md-6">
-        <form action="{{ route('produksi.index') }}" method="GET" class="d-flex flex-wrap gap-2 justify-content-end align-items-end">
+    <div class="col-xl-9 col-lg-8 col-md-12">
+        <form action="{{ route('produksi.index') }}" method="GET" class="d-flex flex-wrap gap-2 justify-content-lg-end justify-content-start align-items-end">
             @if(request('idpeternak')) <input type="hidden" name="idpeternak" value="{{ request('idpeternak') }}"> @endif
-            <div class="filter-group">
+            
+            <div class="filter-group flex-grow-1 flex-md-grow-0" style="min-width: 130px;">
                 <label class="small fw-bold text-muted mb-1">Mulai</label>
                 <input type="date" name="start_date" class="form-control form-control-sm border-2" value="{{ $startDate }}">
             </div>
-            <div class="filter-group">
+            
+            <div class="filter-group flex-grow-1 flex-md-grow-0" style="min-width: 130px;">
                 <label class="small fw-bold text-muted mb-1">Hingga</label>
                 <input type="date" name="end_date" class="form-control form-control-sm border-2" value="{{ $endDate }}">
             </div>
-            <div class="filter-group">
+            
+            <div class="filter-group flex-grow-1 flex-md-grow-0" style="min-width: 70px;">
                 <label class="small fw-bold text-muted mb-1">Baris</label>
-                <select name="per_page" class="form-select form-select-sm border-2" style="max-width: 100px;" onchange="this.form.submit()">
+                <select name="per_page" class="form-select form-select-sm border-2" onchange="this.form.submit()">
                     <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
                     <option value="30" {{ $perPage == 30 ? 'selected' : '' }}>30</option>
                     <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                 </select>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group flex-grow-1 flex-md-grow-0" style="min-width: 110px;">
                 <label class="small fw-bold text-muted mb-1">Status</label>
-                <select name="status_setor" class="form-select form-select-sm border-2" style="max-width: 150px;" onchange="this.form.submit()">
+                <select name="status_setor" class="form-select form-select-sm border-2" onchange="this.form.submit()">
                     <option value="">-- Semua --</option>
                     <option value="pagi" {{ request('status_setor') == 'pagi' ? 'selected' : '' }}>Pagi</option>
                     <option value="sore" {{ request('status_setor') == 'sore' ? 'selected' : '' }}>Sore</option>
                     <option value="lengkap" {{ request('status_setor') == 'lengkap' ? 'selected' : '' }}>Lengkap</option>
                 </select>
             </div>
+
             @if(isset($isAdmin) && $isAdmin)
-            <div class="filter-group">
+            <div class="filter-group flex-grow-1 flex-md-grow-0" style="min-width: 140px;">
                 <label class="small fw-bold text-muted mb-1">Peternak</label>
-                <select name="idpeternak" class="form-select form-select-sm border-2" style="max-width: 200px;" onchange="this.form.submit()">
+                <select name="idpeternak" class="form-select form-select-sm border-2" onchange="this.form.submit()">
                     <option value="">-- Semua --</option>
                     @foreach($peternaks as $p)
                         <option value="{{ $p->idpeternak }}" {{ $idpeternak == $p->idpeternak ? 'selected' : '' }}>
@@ -65,13 +69,16 @@
                 </select>
             </div>
             @endif
-            <button type="submit" class="btn btn-primary btn-sm fw-bold px-3">Filter</button>
-            <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel']) }}'">
-                <i class="fas fa-file-excel"></i> Export
-            </button>
-            <a href="{{ route('produksi.print', request()->query()) }}" target="_blank" class="btn btn-info btn-sm fw-bold px-3">
-                <i class="fas fa-print"></i> Cetak
-            </a>
+
+            <div class="d-flex gap-2 mt-2 mt-md-0 align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm fw-bold px-3">Filter</button>
+                <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="window.location.href='{{ request()->fullUrlWithQuery(['export' => 'excel']) }}'">
+                    <i class="fas fa-file-excel"></i> Export
+                </button>
+                <a href="{{ route('produksi.print', request()->query()) }}" target="_blank" class="btn btn-info btn-sm fw-bold px-3">
+                    <i class="fas fa-print"></i> Cetak
+                </a>
+            </div>
         </form>
     </div>
     @endif
@@ -102,10 +109,10 @@
                     // But user asked to conform to input which has NO cost now.
                 @endphp
                     <tr>
-                        <td class="px-4 py-3 fw-bold">{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 fw-bold" data-label="Tanggal">{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
                         @if(isset($isAdmin) && $isAdmin)
-                            <td class="py-3">{{ $p->peternak->nama_peternak }}</td>
-                            <td class="py-3 text-center">
+                            <td class="py-3" data-label="Nama">{{ $p->peternak->nama_peternak }}</td>
+                            <td class="py-3 text-center" data-label="Status">
                                 @if($p->pagi > 0 && $p->sore > 0)
                                     <span class="badge bg-success">Lengkap</span>
                                 @elseif($p->pagi > 0)
@@ -117,12 +124,12 @@
                                 @endif
                             </td>
                         @endif
-                        <td class="py-3 text-center text-primary fw-bold">{{ $p->pagi > 0 ? number_format($p->pagi, 1, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-center text-primary fw-bold">{{ $p->sore > 0 ? number_format($p->sore, 1, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-end fw-bold">{{ number_format($p->total, 1, ',', '.') }} L</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Pagi (L)">{{ $p->pagi > 0 ? number_format($p->pagi, 1, ',', '.') : '-' }}</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Sore (L)">{{ $p->sore > 0 ? number_format($p->sore, 1, ',', '.') : '-' }}</td>
+                        <td class="py-3 text-end fw-bold" data-label="Total (L)">{{ number_format($p->total, 1, ',', '.') }} L</td>
                         @if(isset($isAdmin) && $isAdmin)
-                        <td class="py-3 px-4">
-                            <div class="d-flex justify-content-center gap-3">
+                        <td class="py-3 px-4" data-label="Aksi">
+                            <div class="d-flex justify-content-center gap-3 action-btns-mobile">
                                 @php
                                     $actions = [
                                         'pagi' => ['id' => $p->idpagi, 'icon' => 'fa-sun', 'title' => 'Pagi'],
@@ -220,6 +227,18 @@
 </style>
 @section('styles')
 <style>
+    @media (max-width: 768px) {
+        .card-body { padding: 1rem; }
+        .table thead { display: none; }
+        .table tbody tr { display: block; margin-bottom: 1rem; border: 1px solid #eee; border-radius: 8px; padding: 10px; background: #fff; }
+        .table tbody td { display: block; text-align: right; padding: 5px 10px; border: none; position: relative; padding-left: 50%; }
+        .table tbody td::before { content: attr(data-label); position: absolute; left: 10px; width: 45%; text-align: left; font-weight: bold; color: #666; font-size: 0.8rem; }
+        .table tbody td.px-4 { padding-left: 50% !important; }
+        .table tbody td.text-center { text-align: right; }
+        .table tbody td.text-end { text-align: right; }
+        .action-btns-mobile { justify-content: flex-end !important; }
+    }
+
     @media print {
         @page { size: portrait; margin: 1.5cm; }
         .no-print, .sidebar, .navbar, .footer, .btn, form, .pagination, .action-btn, .gap-3 .d-flex.flex-column { display: none !important; }

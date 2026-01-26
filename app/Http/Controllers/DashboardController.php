@@ -34,16 +34,9 @@ class DashboardController extends BaseController
             $startDate = Carbon::parse($customStartDate)->startOfDay();
             $endDate = Carbon::parse($customEndDate)->endOfDay();
         } else {
-            // Default: Defined period: 14th of last month to 13th of this month (if today <= 13)
-            // Or 14th of this month to 13th of next month (if today > 13)
-            $now = now();
-            if ($now->day <= 13) {
-                $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
-                $endDate = $now->copy()->day(13)->endOfDay();
-            } else {
-                $startDate = $now->copy()->day(14)->startOfDay();
-                $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
-            }
+            // Default: Current month (1st to end of month)
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
         }
 
         // Total Liter in period

@@ -70,7 +70,7 @@
     </div>
     <div class="card-body p-0">
         <div class="ratio ratio-16x9" style="min-height: 600px;">
-            <iframe src="https://heyzine.com/flip-book/dce36e099f.html" allowfullscreen class="border-0 w-100 h-100"></iframe>
+            <iframe src="https://heyzine.com/flip-book/e6622afd64.html" allowfullscreen class="border-0 w-100 h-100"></iframe>
         </div>
     </div>
 </div>

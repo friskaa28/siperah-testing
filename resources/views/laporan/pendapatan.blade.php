@@ -7,7 +7,7 @@
 <div class="row align-items-center mb-4">
     <div class="col-md-6">
         <h1 class="h3 fw-bold mb-0"><i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan</h1>
-        <p class="text-muted mb-0">Rincian setoran susu dan potongan kasbon periode ini</p>
+        <p class="text-muted mb-0">Rincian setoran susu dan potongan kasbon periode bulan ini</p>
     </div>
     <div class="col-md-6 text-md-end mt-3 mt-md-0">
         <a href="{{ route('peternak.laporan.pdf', request()->all()) }}" class="btn btn-outline-danger btn-sm px-3 shadow-sm">
@@ -23,7 +23,7 @@
             <div class="col-12 col-md-3">
                 <label class="small fw-bold text-muted mb-1">Periode</label>
                 <select name="range" class="form-select form-select-sm shadow-sm" onchange="this.form.submit()" style="border-radius: 8px;">
-                    <option value="1" {{ $range == '1' ? 'selected' : '' }}>Periode Aktif (14-13)</option>
+                    <option value="1" {{ $range == '1' ? 'selected' : '' }}>Bulan Ini</option>
                     <option value="custom" {{ $range == 'custom' ? 'selected' : '' }}>Pilih Tanggal Manual</option>
                 </select>
             </div>
@@ -48,56 +48,64 @@
 </div>
 
 
-<div class="grid" style="grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
+<div class="row g-4">
     <!-- Detail Setoran -->
-    <div class="card">
-        <h3 class="fw-bold mb-3" style="font-size: 1rem;"><i class="fas fa-history"></i> Histori Setoran Susu</h3>
-        <table class="table small">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Waktu</th>
-                    <th class="text-end">Liter</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($produksi as $p)
-                <tr>
-                    <td>{{ $p->tanggal->format('d/m/Y') }}</td>
-                    <td>{{ ucfirst($p->waktu_setor) }}</td>
-                    <td class="text-end fw-bold">{{ number_format($p->jumlah_susu_liter, 1) }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="3" class="text-center py-4 text-muted">Tidak ada data produksi.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="col-lg-8 col-md-12">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; padding: 1.5rem;">
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem; color: #1e293b;"><i class="fas fa-history me-2 text-primary"></i> Histori Setoran Susu</h3>
+            <div class="table-responsive">
+                <table class="table table-hover small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Waktu</th>
+                            <th class="text-end">Liter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($produksi as $p)
+                        <tr>
+                            <td>{{ $p->tanggal->format('d/m/Y') }}</td>
+                            <td><span class="badge {{ $p->waktu_setor == 'pagi' ? 'bg-primary' : 'bg-warning text-dark' }}">{{ ucfirst($p->waktu_setor) }}</span></td>
+                            <td class="text-end fw-bold">{{ number_format($p->jumlah_susu_liter, 1) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="3" class="text-center py-4 text-muted">Tidak ada data produksi.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Detail Kasbon -->
-    <div class="card">
-        <h3 class="fw-bold mb-3" style="font-size: 1rem;"><i class="fas fa-shopping-basket"></i> Histori Kasbon & Logistik</h3>
-        <table class="table small">
-            <thead>
-                <tr>
-                    <th>Barang / Tgl</th>
-                    <th class="text-end">Rupiah</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($kasbonHistory as $k)
-                <tr>
-                    <td>
-                        <div class="fw-bold">{{ $k->nama_item }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">{{ $k->tanggal->format('d/m/y') }} | {{ $k->qty }} x Rp{{ number_format($k->harga_satuan, 0) }}</div>
-                    </td>
-                    <td class="text-end text-danger fw-bold">-{{ number_format($k->total_rupiah, 0) }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="2" class="text-center py-4 text-muted">Tidak ada data kasbon.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="col-lg-4 col-md-12">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; padding: 1.5rem;">
+            <h3 class="fw-bold mb-3" style="font-size: 1.1rem; color: #1e293b;"><i class="fas fa-shopping-basket me-2 text-warning"></i> Histori Kasbon & Logistik</h3>
+            <div class="table-responsive">
+                <table class="table table-hover small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-end">Rupiah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($kasbonHistory as $k)
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ $k->nama_item }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">{{ $k->tanggal->format('d/m/y') }} | {{ $k->qty }} x Rp{{ number_format($k->harga_satuan, 0) }}</div>
+                            </td>
+                            <td class="text-end text-danger fw-bold">-{{ number_format($k->total_rupiah, 0) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="2" class="text-center py-4 text-muted">Tidak ada data kasbon.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

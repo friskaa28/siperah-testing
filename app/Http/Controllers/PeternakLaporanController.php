@@ -26,14 +26,8 @@ class PeternakLaporanController extends Controller
         $endDate = $request->get('end_date');
 
         if ($range !== 'custom') {
-            $now = now();
-            if ($now->day <= 13) {
-                $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
-                $endDate = $now->copy()->day(13)->endOfDay();
-            } else {
-                $startDate = $now->copy()->day(14)->startOfDay();
-                $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
-            }
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
         } else {
             $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
             $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
@@ -79,14 +73,8 @@ class PeternakLaporanController extends Controller
         $endDate = $request->get('end_date');
 
         if ($range !== 'custom') {
-            $now = now();
-            if ($now->day <= 13) {
-                $startDate = $now->copy()->subMonth()->day(14)->startOfDay();
-                $endDate = $now->copy()->day(13)->endOfDay();
-            } else {
-                $startDate = $now->copy()->day(14)->startOfDay();
-                $endDate = $now->copy()->addMonth()->day(13)->endOfDay();
-            }
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
         } else {
             $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
             $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
