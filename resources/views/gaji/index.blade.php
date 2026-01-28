@@ -13,6 +13,14 @@
         <i class="fas fa-check-circle"></i> {{ session('success') }}
     </div>
 @endif
+
+<div class="alert alert-warning">
+    <i class="fas fa-bug"></i> <strong>Mode Debug Server:</strong><br>
+    Harga Susu yang terdeteksi untuk periode ini (per {{ \Carbon\Carbon::createFromDate($tahun, $bulan, 13)->translatedFormat('d F Y') }}): 
+    <strong>Rp {{ number_format($debugPrice ?? 0, 0, ',', '.') }}</strong>
+    <br>
+    <small>Jika ini Rp 0, maka "Sisa Bayar" akan tetap 0 meski ada liter susu. Silakan input harga susu yang berlaku sebelum tanggal tersebut.</small>
+</div>
 <div class="row mb-4 align-items-center">
     <div class="col-12 col-md-6 mb-3 mb-md-0">
         <h1 class="mb-0">Slip Gaji & Pembayaran Susu</h1>

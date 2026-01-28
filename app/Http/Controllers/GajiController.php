@@ -37,7 +37,11 @@ class GajiController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage'));
+        // DEBUG: Check price for this period
+        $endDate = Carbon::createFromDate($tahun, $bulan, 13)->endOfDay();
+        $debugPrice = HargaSusuHistory::getHargaAktif($endDate);
+
+        return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage', 'debugPrice'));
     }
 
     public function downloadTemplate()
