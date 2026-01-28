@@ -145,7 +145,8 @@ class GajiController extends Controller
     public function edit($idslip)
     {
         $slip = SlipPembayaran::with('peternak')->findOrFail($idslip);
-        return view('gaji.edit', compact('slip'));
+        $currentHarga = HargaSusuHistory::getHargaAktif($slip->tanggal_bayar ?? now());
+        return view('gaji.edit', compact('slip', 'currentHarga'));
     }
 
     public function update(Request $request, $idslip)

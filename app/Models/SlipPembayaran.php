@@ -68,6 +68,11 @@ class SlipPembayaran extends Model
     protected static function booted()
     {
         static::saving(function ($model) {
+            // Auto-calculate total gross if not manually overridden or to ensure consistency
+            if ($model->jumlah_susu > 0 && $model->harga_satuan > 0) {
+                $model->total_pembayaran = $model->jumlah_susu * $model->harga_satuan;
+            }
+
             $model->total_potongan = 
                 ($model->potongan_shr ?? 0) +
                 ($model->potongan_hutang_bl_ll ?? 0) +

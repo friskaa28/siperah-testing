@@ -40,11 +40,21 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label small fw-bold text-muted">Jumlah Susu (Liter)</label>
-                        <input type="number" step="0.01" name="jumlah_susu" class="form-control bg-light" value="{{ $slip->jumlah_susu }}" required disabled>
+                        <input type="number" step="any" name="jumlah_susu" id="jumlah_susu" class="form-control bg-light" value="{{ $slip->jumlah_susu }}" required disabled>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted">Harga Satuan (Rp)</label>
-                        <input type="number" name="harga_satuan" class="form-control bg-light" value="{{ (int)$slip->harga_satuan }}" required disabled>
+                        <div class="input-group">
+                            <input type="number" name="harga_satuan" id="harga_satuan" class="form-control bg-light" value="{{ (int)$slip->harga_satuan }}" required disabled>
+                            @if($slip->harga_satuan <= 0)
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-apply-price" style="display: none;" onclick="applyCurrentPrice({{ $currentHarga }})">
+                                    <i class="fas fa-magic"></i> Gunakan Rp{{ number_format($currentHarga, 0, ',', '.') }}
+                                </button>
+                            @endif
+                        </div>
+                        @if($slip->harga_satuan <= 0)
+                            <small class="text-danger fw-bold" id="price-warning"><i class="fas fa-exclamation-triangle"></i> Harga belum diatur!</small>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted">Status Bayar</label>
@@ -55,7 +65,8 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label small fw-bold text-muted">Total Pembayaran (Gross)</label>
-                        <input type="number" name="total_pembayaran" class="form-control bg-light fw-bold" value="{{ (int)$slip->total_pembayaran }}" required disabled>
+                        <input type="number" name="total_pembayaran" id="total_pembayaran" class="form-control bg-light fw-bold" value="{{ (int)$slip->total_pembayaran }}" required readonly>
+                        <small class="text-muted" style="font-size: 0.7rem;">Dihitung otomatis: Liter x Harga</small>
                     </div>
                 </div>
             </div>
@@ -169,57 +180,62 @@
 <script>
     const btnToggle = document.getElementById('btn-edit-toggle');
     const btnSave = document.getElementById('btn-save');
+    const btnApplyPrice = document.getElementById('btn-apply-price');
     const form = document.getElementById('form-gaji');
-    const inputs = form.querySelectorAll('input, select');
     const signModal = document.getElementById('signModal');
 
     if (btnToggle) {
         btnToggle.addEventListener('click', () => {
             const isEditing = btnToggle.classList.contains('active');
+            const allInputs = form.querySelectorAll('input, select');
             
             if (!isEditing) {
                 // Switch to Edit Mode
-                inputs.forEach(input => {
-                    input.disabled = false;
-                    input.classList.remove('bg-light');
+                allInputs.forEach(input => {
+                    if (input.id !== 'total_pembayaran') { // Keep gross readonly
+                        input.disabled = false;
+                        input.classList.remove('bg-light');
+                    }
                 });
                 btnToggle.innerHTML = '<i class="fas fa-times"></i> Batal Edit';
                 btnToggle.classList.replace('btn-warning', 'btn-outline-danger');
                 btnToggle.classList.add('active');
                 btnSave.style.display = 'block';
+                if (btnApplyPrice) btnApplyPrice.style.display = 'block';
             } else {
                 // Back to Preview Mode
-                location.reload(); // Simplest way to revert state
+                location.reload(); 
             }
         });
     }
 
-    function showSignPopup() {
-        signModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
+    function applyCurrentPrice(price) {
+        document.getElementById('harga_satuan').value = price;
+        const warning = document.getElementById('price-warning');
+        if (warning) warning.style.display = 'none';
+        calculate();
     }
 
-    function hideSignPopup() {
-        signModal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    // Auto-calculate logic
-    inputs.forEach(input => {
-        if (input.type === 'number') {
-            input.addEventListener('input', calculate);
+    // Auto-calculate logic for all numeric inputs
+    form.addEventListener('input', function(e) {
+        if (e.target.type === 'number') {
+            calculate();
         }
     });
 
     function calculate() {
-        const totalBayar = parseFloat(document.getElementsByName('total_pembayaran')[0].value) || 0;
-        let totalPotongan = 0;
+        const liter = parseFloat(document.getElementById('jumlah_susu').value) || 0;
+        const harga = parseFloat(document.getElementById('harga_satuan').value) || 0;
+        const totalGross = liter * harga;
         
+        document.getElementById('total_pembayaran').value = Math.round(totalGross);
+        
+        let totalPotongan = 0;
         @foreach($potongans as $key => $label)
             totalPotongan += parseFloat(document.getElementsByName('{{ $key }}')[0].value) || 0;
         @endforeach
 
-        const sisa = totalBayar - totalPotongan;
+        const sisa = totalGross - totalPotongan;
 
         document.getElementById('total_p_display').innerText = 'Rp ' + Math.round(totalPotongan).toLocaleString('id-ID');
         document.getElementById('sisa_p_display').innerText = 'Rp ' + Math.round(sisa).toLocaleString('id-ID');
