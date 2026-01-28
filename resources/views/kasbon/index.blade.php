@@ -27,7 +27,7 @@
 
             <div class="form-group">
                 <label class="form-label">Pilih Barang / Logistik</label>
-                <select name="idlogistik" id="idlogistik" class="form-select" required onchange="updateSubtotal()">
+                <select name="idlogistik" id="idlogistik" class="form-select select2" required onchange="updateSubtotal()">
                     <option value="">-- Pilih Barang --</option>
                     @foreach($items as $item)
                         <option value="{{ $item->id }}" data-price="{{ $item->harga_satuan }}">{{ $item->nama_barang }} (Rp {{ number_format($item->harga_satuan, 0, ',', '.') }})</option>
@@ -169,9 +169,17 @@
 
 <script>
     $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "-- Pilih Mitra --",
-            allowClear: true
+        $('.select2').each(function() {
+            $(this).select2({
+                placeholder: $(this).find('option:first').text(),
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
+        // Open select2 on focus
+        $(document).on('focus', '.select2-selection.select2-selection--single', function (e) {
+            $(this).closest(".select2-container").siblings('select:enabled').select2('open');
         });
     });
 

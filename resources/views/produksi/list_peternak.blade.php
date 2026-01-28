@@ -124,9 +124,9 @@
                                 @endif
                             </td>
                         @endif
-                        <td class="py-3 text-center text-primary fw-bold" data-label="Pagi (L)">{{ $p->pagi > 0 ? number_format($p->pagi, 1, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-center text-primary fw-bold" data-label="Sore (L)">{{ $p->sore > 0 ? number_format($p->sore, 1, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-end fw-bold" data-label="Total (L)">{{ number_format($p->total, 1, ',', '.') }} L</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Pagi (L)">{{ $p->pagi > 0 ? number_format($p->pagi, 2, ',', '.') : '-' }}</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Sore (L)">{{ $p->sore > 0 ? number_format($p->sore, 2, ',', '.') : '-' }}</td>
+                        <td class="py-3 text-end fw-bold" data-label="Total (L)">{{ number_format($p->total, 2, ',', '.') }} L</td>
                         @if(isset($isAdmin) && $isAdmin)
                         <td class="py-3 px-4" data-label="Aksi">
                             <div class="d-flex justify-content-center gap-3 action-btns-mobile">

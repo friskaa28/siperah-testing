@@ -23,7 +23,7 @@ class ProduksiHarian extends Model
     ];
 
     protected $casts = [
-        'jumlah_susu_liter' => 'decimal:2',
+        'jumlah_susu_liter' => 'decimal:3',
         'biaya_pakan' => 'decimal:2',
         'biaya_tenaga' => 'decimal:2',
         'biaya_operasional' => 'decimal:2',

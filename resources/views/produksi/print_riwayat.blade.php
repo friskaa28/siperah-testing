@@ -82,18 +82,18 @@
                             @endphp
                             <tr>
                                 <td class="center">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
-                                <td class="num">{{ $row->pagi > 0 ? number_format($row->pagi, 1, ',', '.') : '-' }}</td>
-                                <td class="num">{{ $row->sore > 0 ? number_format($row->sore, 1, ',', '.') : '-' }}</td>
-                                <td class="num">{{ number_format($row->total, 1, ',', '.') }}</td>
+                                <td class="num">{{ $row->pagi > 0 ? number_format($row->pagi, 2, ',', '.') : '-' }}</td>
+                                <td class="num">{{ $row->sore > 0 ? number_format($row->sore, 2, ',', '.') : '-' }}</td>
+                                <td class="num">{{ number_format($row->total, 2, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr class="footer-total">
                             <td class="center">TOTAL</td>
-                            <td class="num">{{ number_format($totalPagi, 1, ',', '.') }}</td>
-                            <td class="num">{{ number_format($totalSore, 1, ',', '.') }}</td>
-                            <td class="num">{{ number_format($totalAll, 1, ',', '.') }}</td>
+                            <td class="num">{{ number_format($totalPagi, 2, ',', '.') }}</td>
+                            <td class="num">{{ number_format($totalSore, 2, ',', '.') }}</td>
+                            <td class="num">{{ number_format($totalAll, 2, ',', '.') }}</td>
                         </tr>
                     </tfoot>
                 </table>

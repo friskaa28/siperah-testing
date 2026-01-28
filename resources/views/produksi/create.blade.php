@@ -33,7 +33,7 @@
                                 <div class="row g-2 mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label x-small fw-bold" for="tanggal">Tanggal</label>
-                                        <input type="date" id="tanggal" name="tanggal" class="form-control form-control-sm" required value="{{ now()->format('Y-m-d') }}">
+                                        <input type="date" id="tanggal" name="tanggal" class="form-control form-control-sm" required value="{{ request('tanggal') ?? now()->format('Y-m-d') }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label x-small fw-bold" for="waktu_setor">Waktu Setor</label>
@@ -61,7 +61,7 @@
                                 <div class="mb-3">
                                     <label class="form-label x-small fw-bold text-primary" for="jumlah_susu_liter">Total Liter</label>
                                     <div class="input-group">
-                                        <input type="number" id="jumlah_susu_liter" name="jumlah_susu_liter" class="form-control" step="0.01" required autofocus style="font-size: 1.25rem; font-weight: 700; height: 50px;" placeholder="0.00">
+                                        <input type="number" id="jumlah_susu_liter" name="jumlah_susu_liter" class="form-control" step="any" required autofocus style="font-size: 1.25rem; font-weight: 700; height: 50px;" placeholder="0.000">
                                         <span class="input-group-text bg-light px-3 fw-bold">LTR</span>
                                     </div>
                                 </div>
@@ -127,8 +127,16 @@
 <script>
     $(document).ready(function() {
         $('.select2').select2({
-            placeholder: "-- Pilih Mitra --",
-            allowClear: true
+            placeholder: "-- Cari Mitra (Ketik Nama / No. Mitra) --",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#produksiForm'),
+            minimumInputLength: 0,
+        });
+
+        // Open select2 on focus
+        $(document).on('focus', '.select2-selection.select2-selection--single', function (e) {
+            $(this).closest(".select2-container").siblings('select:enabled').select2('open');
         });
 
         $('#idpeternak').on('change', function() {
@@ -158,7 +166,7 @@
                 }
             });
             
-            totalInput.value = total.toFixed(2);
+            totalInput.value = total.toFixed(3);
         } catch (e) {
             alert('Format input tidak valid.');
         }
@@ -169,13 +177,15 @@
         const hour = now.getHours();
         const waktuSelect = document.getElementById('waktu_setor');
         
-        if (!{{ old('waktu_setor') ? 'true' : 'false' }}) {
+        @if(request('waktu_setor'))
+            waktuSelect.value = "{{ request('waktu_setor') }}";
+        @elseif(!old('waktu_setor'))
             if (hour >= 5 && hour < 12) {
                 waktuSelect.value = 'pagi';
             } else if (hour >= 13 && hour <= 23) {
                 waktuSelect.value = 'sore';
             }
-        }
+        @endif
     });
 </script>
 @endsection

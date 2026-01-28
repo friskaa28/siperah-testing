@@ -176,7 +176,7 @@
                                     @if($day <= $daysInMonth)
                                         <td style="border: 2px solid #000 !important; font-weight: bold; background: #fafafa;">{{ $day }}</td>
                                         <td style="border: 2px solid #000 !important;">
-                                            {{ isset($dailyTotals[$day]) ? number_format($dailyTotals[$day], 1, ',', '.') : '-' }}
+                                            {{ isset($dailyTotals[$day]) ? number_format($dailyTotals[$day], 2, ',', '.') : '-' }}
                                         </td>
                                     @else
                                         <td style="border: 2px solid #000 !important; background: #eee;"></td>
@@ -192,7 +192,7 @@
                 <div class="mt-4 p-3 border" style="border: 2px solid #000 !important; max-width: 250px;">
                     <div class="d-flex justify-content-between fw-bold" style="font-size: 1.1rem;">
                         <span>TOTAL:</span>
-                        <span>{{ number_format($monthlyTotal, 1, ',', '.') }} Ltr</span>
+                        <span>{{ number_format($monthlyTotal, 2, ',', '.') }} Ltr</span>
                     </div>
                 </div>
 

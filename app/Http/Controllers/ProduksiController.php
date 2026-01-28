@@ -92,10 +92,17 @@ class ProduksiController extends Controller
         ]);
 
         if ($isAdmin) {
-            return redirect()->route('produksi.create')->with('success', 'Setor Susu berhasil dicatat!'); 
+            return redirect()->route('produksi.create', [
+                'tanggal' => $validated['tanggal'],
+                'idpeternak' => $idpeternak,
+                'waktu_setor' => $validated['waktu_setor']
+            ])->with('success', 'Setor Susu berhasil dicatat!'); 
         }
 
-        return redirect()->route('produksi.create')->with('success', 'Setor Susu berhasil dicatat!');
+        return redirect()->route('produksi.create', [
+            'tanggal' => $validated['tanggal'],
+            'waktu_setor' => $validated['waktu_setor']
+        ])->with('success', 'Setor Susu berhasil dicatat!');
     }
 
     public function listPeternak(Request $request)

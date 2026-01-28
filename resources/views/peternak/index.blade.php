@@ -141,7 +141,7 @@
                     <input type="password" name="password" class="form-control" required minlength="8">
                 </div>
                 <hr>
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label class="form-label">No. Mitra (Otomatis jika kosong)</label>
                     <input type="text" name="no_peternak" class="form-control" placeholder="Contoh: MTR-001">
                 </div>
@@ -185,7 +185,7 @@
                     <label class="form-label">Nama Mitra</label>
                     <input type="text" id="edit_nama_peternak" class="form-control" readonly style="background-color: #f8f9fa;">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label class="form-label">No. Mitra</label>
                     <input type="text" name="no_peternak" id="edit_no_peternak" class="form-control">
                 </div>

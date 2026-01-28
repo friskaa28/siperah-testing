@@ -67,7 +67,7 @@
                         <tr>
                             <td>{{ $p->tanggal->format('d/m/Y') }}</td>
                             <td><span class="badge {{ $p->waktu_setor == 'pagi' ? 'bg-primary' : 'bg-warning text-dark' }}">{{ ucfirst($p->waktu_setor) }}</span></td>
-                            <td class="text-end fw-bold">{{ number_format($p->jumlah_susu_liter, 1) }}</td>
+                            <td class="text-end fw-bold">{{ number_format($p->jumlah_susu_liter, 2, ',', '.') }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="3" class="text-center py-4 text-muted">Tidak ada data produksi.</td></tr>
@@ -115,7 +115,7 @@
     <div class="row text-center">
         <div class="col-md-3 mb-3 mb-md-0">
             <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Liter</small>
-            <span class="fs-4 fw-bold text-primary">{{ number_format($totalLiter, 1, ',', '.') }} L</span>
+            <span class="fs-4 fw-bold text-primary">{{ number_format($totalLiter, 2, ',', '.') }} L</span>
         </div>
         <div class="col-md-3 mb-3 mb-md-0">
             <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Pendapatan Kotor</small>

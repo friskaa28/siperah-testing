@@ -20,8 +20,14 @@ class HargaSusuHistory extends Model
     public static function getHargaAktif($tanggal = null)
     {
         $tanggal = $tanggal ?: now();
-        return self::where('tanggal_berlaku', '<=', $tanggal)
+        $price = self::where('tanggal_berlaku', '<=', $tanggal)
             ->orderBy('tanggal_berlaku', 'desc')
-            ->first()?->harga ?? 0;
+            ->first();
+
+        if (!$price) {
+            $price = self::orderBy('tanggal_berlaku', 'desc')->first();
+        }
+
+        return $price?->harga ?? 0;
     }
 }
