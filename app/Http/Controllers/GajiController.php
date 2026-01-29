@@ -37,11 +37,7 @@ class GajiController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // DEBUG: Check price for this period
-        $endDate = Carbon::createFromDate($tahun, $bulan, 13)->endOfDay();
-        $debugPrice = HargaSusuHistory::getHargaAktif($endDate);
-
-        return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage', 'debugPrice'));
+        return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage'));
     }
 
     public function downloadTemplate()
@@ -65,6 +61,17 @@ class GajiController extends Controller
             if ($totalLiters <= 0) continue;
 
             $harga = HargaSusuHistory::getHargaAktif($endDate);
+            
+            // DEBUG: Force stop to check what the server sees
+            dd([
+                'Debug Info' => 'Checking Variables on Server',
+                'Peternak' => $p->nama_peternak,
+                'Periode Cutoff (Sistem)' => $endDate->toDateTimeString(),
+                'Tanggal Berlaku Harga (Query)' => $endDate->toDateString(),
+                'Harga Ditemukan' => $harga . ' (Jika 0 berarti tidak ada harga history sebelumnya)',
+                'Harga Susu History Latest' => HargaSusuHistory::orderBy('tanggal_berlaku', 'desc')->first(),
+                'Harga Susu History All' => HargaSusuHistory::all()
+            ]);
             
             // Initial deduction from Kasbon (only total for reference if needed, 
             // but we'll use syncPotongan for detailed breakdown)
