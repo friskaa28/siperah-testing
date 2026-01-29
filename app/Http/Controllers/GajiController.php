@@ -62,17 +62,6 @@ class GajiController extends Controller
 
             $harga = HargaSusuHistory::getHargaAktif($endDate);
             
-            // DEBUG: Force stop to check what the server sees
-            dd([
-                'Debug Info' => 'Checking Variables on Server',
-                'Peternak' => $p->nama_peternak,
-                'Periode Cutoff (Sistem)' => $endDate->toDateTimeString(),
-                'Tanggal Berlaku Harga (Query)' => $endDate->toDateString(),
-                'Harga Ditemukan' => $harga . ' (Jika 0 berarti tidak ada harga history sebelumnya)',
-                'Harga Susu History Latest' => HargaSusuHistory::orderBy('tanggal_berlaku', 'desc')->first(),
-                'Harga Susu History All' => HargaSusuHistory::all()
-            ]);
-            
             // Initial deduction from Kasbon (only total for reference if needed, 
             // but we'll use syncPotongan for detailed breakdown)
             $totalKasbon = Kasbon::where('idpeternak', $p->idpeternak)
