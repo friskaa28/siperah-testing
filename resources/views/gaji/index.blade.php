@@ -17,35 +17,90 @@
     <div class="col-12 col-md-6 mb-3 mb-md-0">
         <h1 class="mb-0">Slip Gaji & Pembayaran Susu</h1>
     </div>
-    <div class="col-12 col-md-6">
-        @if($errors->any())
-            <div style="background: #FEE2E2; color: #991B1B; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; border: 1px solid #FECACA; margin-bottom: 1rem;">
-                <ul style="margin: 0; padding-left: 1.2rem;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+</div>
+
+<div class="row mb-4">
+    <!-- Existing Monthly Upload -->
+    <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+        <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <h6 class="fw-bold text-muted mb-0"><i class="fas fa-file-invoice-dollar"></i> Unggah Gaji & Potongan (Bulanan)</h6>
             </div>
-        @endif
-        <div class="card shadow-sm border-0" style="border-radius: 12px;">
             <div class="card-body p-3">
-                <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="row g-2">
+                <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end">
                     @csrf
                     <div class="col-12">
-                        <label class="small fw-bold text-muted mb-1">Unggah Data:</label>
-                    </div>
-                    <div class="col-12 col-sm-6">
                         <input type="file" name="file" class="form-control form-control-sm" style="border-radius: 8px;" required accept=".xlsx, .xls">
                     </div>
-                    <div class="col-6 col-sm-3">
+                    <div class="col-6">
                         <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold" style="border-radius: 8px;">
-                            <i class="fas fa-file-import"></i> <span class="d-none d-sm-inline">Unggah</span> Excel
+                            <i class="fas fa-upload"></i> Unggah Bulanan
                         </button>
                     </div>
-                    <div class="col-6 col-sm-3">
+                    <div class="col-6">
                         <a href="{{ route('gaji.template') }}" class="btn btn-light btn-sm w-100 fw-bold border" style="border-radius: 8px; color: #64748b;">
-                            <i class="fas fa-download"></i> <span class="d-none d-sm-inline">Unduh</span> Contoh
+                            <i class="fas fa-download"></i> Template
                         </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Daily Upload (Matrix Support) -->
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <h6 class="fw-bold text-muted mb-0"><i class="fas fa-cow"></i> Unggah Setor Susu (Harian)</h6>
+            </div>
+            <div class="card-body p-3">
+                <form action="{{ route('produksi.import') }}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end">
+                    @csrf
+                    <!-- Date Context for Matrix Import -->
+                    <div class="col-6">
+                        <select name="bulan" class="form-control form-control-sm" style="border-radius: 8px;">
+                            @for($i=1; $i<=12; $i++)
+                                <option value="{{ $i }}" {{ date('n') == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select name="tahun" class="form-control form-control-sm" style="border-radius: 8px;">
+                            @for($i=now()->year; $i>=now()->year-1; $i--)
+                                <option value="{{ $i }}" {{ now()->year == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    
+                    <div class="col-12">
+                        <input type="file" name="file" class="form-control form-control-sm" style="border-radius: 8px;" required accept=".xlsx, .xls">
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold" style="border-radius: 8px;">
+                            <i class="fas fa-upload"></i> Unggah Harian
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <div class="btn-group w-100">
+                            <button type="button" class="btn btn-light btn-sm fw-bold border dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 8px; color: #64748b;">
+                                <i class="fas fa-download"></i> Template
+                            </button>
+                            <ul class="dropdown-menu shadow border-0" style="border-radius: 12px;">
+                                <li>
+                                    <a class="dropdown-item py-2 small" href="{{ route('produksi.template', ['format' => 'matrix']) }}">
+                                        <i class="fas fa-th me-2 text-primary"></i> <span class="fw-bold">Format Matriks (Manual)</span><br>
+                                        <span class="text-muted" style="font-size: 0.75rem;">Sesuai buku catatan Anda</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 small" href="{{ route('produksi.template') }}">
+                                        <i class="fas fa-list me-2 text-secondary"></i> Format List (Standar)<br>
+                                        <span class="text-muted" style="font-size: 0.75rem;">Kolom Tanggal, Waktu, Liter</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -58,45 +113,49 @@
     <div class="col-12 col-lg-8">
         <div class="card">
             <div class="card-body p-3">
-                <form action="{{ route('gaji.index') }}" method="GET" class="row g-2 mb-3">
-                    <div class="col-6 col-sm-4 col-md-3">
-                        <label class="small fw-bold mb-1">Bulan</label>
-                        <select name="bulan" class="form-control form-control-sm">
-                            @for($i=1; $i<=12; $i++)
-                                <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $i, 1)) }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-2">
-                        <label class="small fw-bold mb-1">Tahun</label>
-                        <select name="tahun" class="form-control form-control-sm">
-                            @for($i=now()->year; $i>=now()->year-1; $i--)
-                                <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-6 col-sm-4 col-md-2">
-                        <label class="small fw-bold mb-1">Tampilkan</label>
-                        <select name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                        </select>
-                    </div>
-                    <div class="col-6 col-sm-6 col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-secondary btn-sm w-100">Lihat</button>
+                <div class="row g-2 mb-3">
+                    <div class="col-12 col-md-9">
+                        <form action="{{ route('gaji.index') }}" method="GET" class="row g-2">
+                            <div class="col-6 col-sm-4">
+                                <label class="small fw-bold mb-1">Bulan</label>
+                                <select name="bulan" class="form-control form-control-sm">
+                                    @for($i=1; $i<=12; $i++)
+                                        <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $i, 1)) }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <label class="small fw-bold mb-1">Tahun</label>
+                                <select name="tahun" class="form-control form-control-sm">
+                                    @for($i=now()->year; $i>=now()->year-1; $i--)
+                                        <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <label class="small fw-bold mb-1">Tampilkan</label>
+                                <select name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
+                                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-secondary btn-sm w-100">Lihat</button>
+                            </div>
+                        </form>
                     </div>
                     <div class="col-12 col-md-3 d-flex align-items-end">
                         <form action="{{ route('gaji.generate') }}" method="POST" class="w-100">
                             @csrf
                             <input type="hidden" name="bulan" value="{{ $bulan }}">
                             <input type="hidden" name="tahun" value="{{ $tahun }}">
-                            <button type="submit" class="btn btn-success btn-sm w-100" title="Update data liter & sinkron potongan harian">
+                            <button type="submit" class="btn btn-success btn-sm w-100 fw-bold" title="Update data liter & sinkron potongan harian" style="height: 31px;">
                                 <i class="fas fa-sync"></i> Refresh & Sinkron
                             </button>
                         </form>
                     </div>
-                </form>
+                </div>
 
         @if($slips->count() > 0)
         <div class="table-responsive">
@@ -116,7 +175,7 @@
                             <div style="font-weight: 600;">{{ $s->peternak->nama_peternak }}</div>
                             <div style="font-size: 0.75rem; color: #666;">No: {{ $s->peternak->no_peternak ?: '-' }}</div>
                         </td>
-                        <td class="text-center">{{ number_format($s->jumlah_susu, 2) }} L</td>
+                        <td class="text-center">{{ rtrim(rtrim(number_format($s->jumlah_susu, 2, ',', '.'), '0'), ',') }} L</td>
                         <td style="font-weight: 700; color: #166534; text-align: right; font-size: 1.1rem;">
                             Rp {{ number_format($s->sisa_pembayaran, 0, ',', '.') }}
                             @if($s->isSigned())
@@ -166,6 +225,16 @@
                     <li><strong>Segarkan Data</strong>: Mengambil liter dari setoran harian & sinkronisasi otomatis potongan kasbon.</li>
                     <li><strong>Pratinjau</strong>: Cek detail slip, edit manual jika perlu, dan lakukan Tanda Tangan Digital.</li>
                 </ol>
+
+                <div class="mt-3 p-3 border rounded shadow-sm" style="background: #E0F2FE; border-color: #BAE6FD !important;">
+                    <h4 class="fw-bold mb-2" style="font-size: 0.95rem; color: #0369A1;"><i class="fas fa-info-circle"></i> Sistem Periode</h4>
+                    <p class="small mb-0" style="color: #075985;">Perhitungan dihitung per 1 bulan berjalan dengan pembagian:</p>
+                    <ul class="small mt-1 mb-0 ps-3" style="color: #0c4a6e;">
+                        <li><strong>Awal:</strong> Tanggal terakhir bulan lalu (Hanya SORE).</li>
+                        <li><strong>Tengah:</strong> Tanggal 1 s/d H-1 bulan ini (FULL 24 jam).</li>
+                        <li><strong>Akhir:</strong> Tanggal terakhir bulan ini (Hanya PAGI).</li>
+                    </ul>
+                </div>
 
                 <h3 class="mt-3 mb-2" style="font-size: 1.1rem;">Bulan Tersedia:</h3>
                 <div class="d-flex flex-wrap gap-1 mb-3">

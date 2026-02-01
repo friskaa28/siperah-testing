@@ -110,9 +110,9 @@
                                 @forelse($data['pusat'] as $row)
                                 <tr style="page-break-inside: avoid;">
                                     <td class="py-3 fw-bold px-4" style="text-align: left;">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
-                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->pagi > 0 ? number_format($row->pagi, 1, ',', '.') : '-' }}</td>
-                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->sore > 0 ? number_format($row->sore, 1, ',', '.') : '-' }}</td>
-                                    <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ number_format($row->total, 1, ',', '.') }} L</td>
+                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->pagi > 0 ? rtrim(rtrim(number_format($row->pagi, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                                    <td class="py-3 text-center text-primary fw-bold">{{ $row->sore > 0 ? rtrim(rtrim(number_format($row->sore, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                                    <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ rtrim(rtrim(number_format($row->total, 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                                 <!-- Summing total moved to controller -->
                                 @empty
@@ -121,14 +121,14 @@
                                 @if(isset($data['pusat']) && count($data['pusat']) > 0)
                                 <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
                                     <td colspan="3" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="px-4" style="font-size: 1.1rem; text-align: right;">{{ number_format($data['pusat']->sum('total'), 1, ',', '.') }} L</td>
+                                    <td class="px-4" style="font-size: 1.1rem; text-align: right;">{{ rtrim(rtrim(number_format($data['pusat']->sum('total'), 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
                             <tfoot class="fw-bold">
                                 <tr>
                                     <td colspan="3" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtPusat, 1, ',', '.') }} L</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ rtrim(rtrim(number_format($gtPusat, 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -187,7 +187,7 @@
                                     <tfoot class="fw-bold">
                                         <tr>
                                             <th class="py-2">GRAND TOTAL KESELURUHAN</th>
-                                            <th class="text-end py-2" style="font-size: 1.1rem;">{{ number_format($gtPusat, 1, ',', '.') }} L</th>
+                                            <th class="text-end py-2" style="font-size: 1.1rem;">{{ rtrim(rtrim(number_format($gtPusat, 2, ',', '.'), '0'), ',') }} L</th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -331,9 +331,9 @@
                                 <tr style="page-break-inside: avoid;">
                                     <td class="py-3 px-4" style="text-align: left;">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
                                     <td class="py-3 px-4 fw-bold" style="text-align: left;">{{ $row->peternak->nama_peternak }}</td>
-                                    <td class="py-3 text-center">{{ number_format($row->pagi, 1, ',', '.') }}</td>
-                                    <td class="py-3 text-center">{{ number_format($row->sore, 1, ',', '.') }}</td>
-                                    <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ number_format($row->total, 1, ',', '.') }} L</td>
+                                    <td class="py-3 text-center">{{ $row->pagi > 0 ? rtrim(rtrim(number_format($row->pagi, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                                    <td class="py-3 text-center">{{ $row->sore > 0 ? rtrim(rtrim(number_format($row->sore, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                                    <td class="py-3 fw-bold text-primary px-4" style="text-align: right;">{{ rtrim(rtrim(number_format($row->total, 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                                 @empty
                                 <tr><td colspan="7" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
@@ -349,7 +349,7 @@
                                 <tr>
                                 <tr>
                                     <td colspan="4" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ number_format($gtSub, 1, ',', '.') }} L</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ rtrim(rtrim(number_format($gtSub, 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -657,7 +657,7 @@
                     </tbody>
                 </table>
                 <div class="mt-4 p-2 border fw-bold" style="border: 2px solid #000 !important; width: 220px;">
-                    TOTAL: {{ number_format($monthlyTotal, 1, ',', '.') }} Ltr
+                    TOTAL: {{ rtrim(rtrim(number_format($monthlyTotal, 2, ',', '.'), '0'), ',') }} Ltr
                 </div>
             </div>
             <div class="text-center mt-4 no-print">

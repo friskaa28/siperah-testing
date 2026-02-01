@@ -49,7 +49,7 @@
     <div class="widget-item">
         <div class="small-box bg-success-custom">
             <div class="inner">
-                <h3>{{ number_format($periodLiter, 1) }}<sup style="font-size: 0.5em;">L</sup></h3>
+                <h3>{{ rtrim(rtrim(number_format($periodLiter, 2, ',', '.'), '0'), ',') }}<sup style="font-size: 0.5em;">L</sup></h3>
                 <p>Setoran Periode Ini</p>
             </div>
             <div class="icon">

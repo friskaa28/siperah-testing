@@ -109,7 +109,10 @@
                     // But user asked to conform to input which has NO cost now.
                 @endphp
                     <tr>
-                        <td class="px-4 py-3 fw-bold" data-label="Tanggal">{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 fw-bold" data-label="Tanggal">
+                            <div>{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</div>
+                            <small class="text-muted fw-normal"><i class="far fa-clock"></i> {{ \Carbon\Carbon::parse($p->input_time)->format('H:i') }}</small>
+                        </td>
                         @if(isset($isAdmin) && $isAdmin)
                             <td class="py-3" data-label="Nama">{{ $p->peternak->nama_peternak }}</td>
                             <td class="py-3 text-center" data-label="Status">
@@ -124,9 +127,9 @@
                                 @endif
                             </td>
                         @endif
-                        <td class="py-3 text-center text-primary fw-bold" data-label="Pagi (L)">{{ $p->pagi > 0 ? number_format($p->pagi, 2, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-center text-primary fw-bold" data-label="Sore (L)">{{ $p->sore > 0 ? number_format($p->sore, 2, ',', '.') : '-' }}</td>
-                        <td class="py-3 text-end fw-bold" data-label="Total (L)">{{ number_format($p->total, 2, ',', '.') }} L</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Pagi (L)">{{ $p->pagi > 0 ? rtrim(rtrim(number_format($p->pagi, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                        <td class="py-3 text-center text-primary fw-bold" data-label="Sore (L)">{{ $p->sore > 0 ? rtrim(rtrim(number_format($p->sore, 2, ',', '.'), '0'), ',') : '-' }}</td>
+                        <td class="py-3 text-end fw-bold" data-label="Total (L)">{{ rtrim(rtrim(number_format($p->total, 2, ',', '.'), '0'), ',') }} L</td>
                         @if(isset($isAdmin) && $isAdmin)
                         <td class="py-3 px-4" data-label="Aksi">
                             <div class="d-flex justify-content-center gap-3 action-btns-mobile">

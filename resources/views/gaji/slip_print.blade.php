@@ -57,7 +57,7 @@
             <div>KELOMPOK</div><div>:</div><div>{{ strtoupper($slip->peternak->kelompok ?? '-') }}</div>
             <div>PERIODE / BULAN</div><div>:</div><div>{{ strtoupper(date('F Y', mktime(0, 0, 0, $slip->bulan, 1, $slip->tahun))) }}</div>
             <div>TS</div><div>:</div><div>-</div>
-            <div>JUMLAH SUSU (Liter)</div><div>:</div><div style="text-align: right; width: 100px;">{{ number_format($slip->jumlah_susu, 2) }}</div>
+            <div>JUMLAH SUSU (Liter)</div><div>:</div><div style="text-align: right; width: 100px;">{{ rtrim(rtrim(number_format($slip->jumlah_susu, 2, ',', '.'), '0'), ',') }}</div>
             <div>Harga @ LITER</div><div>:</div><div style="text-align: right; width: 100px;">Rp {{ number_format($slip->harga_satuan, 0, ',', '.') }}</div>
             <div style="font-weight: bold;">JUMLAH PEMBAYARAN</div><div>:</div><div style="text-align: right; width: 100px; border-bottom: 1px solid #000; font-weight: bold;">Rp {{ number_format($slip->total_pembayaran, 0, ',', '.') }}</div>
         </div>

@@ -18,14 +18,28 @@ class LaporanController extends Controller
     public function pusatReport(Request $request)
     {
         $now = now();
-        $startDate = $request->get('start_date', $now->copy()->subMonth()->day(14)->format('Y-m-d'));
-        $endDate = $request->get('end_date', $now->copy()->day(13)->format('Y-m-d'));
+        $bulan = $request->get('bulan', $now->month);
+        $tahun = $request->get('tahun', $now->year);
+        
+        $currentMonth = Carbon::createFromDate($tahun, $bulan, 1);
+        $prevMonth = $currentMonth->copy()->subMonth();
+
+        $startDate = $request->get('start_date', $prevMonth->endOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', $currentMonth->endOfMonth()->format('Y-m-d'));
 
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
 
         // Aggregate by date and POS (Location) for all mitras
-        $reportData = ProduksiHarian::whereBetween('tanggal', [$start, $end])
+        $reportData = ProduksiHarian::where(function($q) use ($startDate, $endDate) {
+            $q->where(function($sq) use ($startDate) {
+                $sq->whereDate('tanggal', $startDate)->where('waktu_setor', 'sore');
+            })->orWhere(function($sq) use ($startDate, $endDate) {
+                $sq->whereDate('tanggal', '>', $startDate)->whereDate('tanggal', '<', $endDate);
+            })->orWhere(function($sq) use ($endDate) {
+                $sq->whereDate('tanggal', $endDate)->where('waktu_setor', 'pagi');
+            });
+        })
             ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
             ->selectRaw('tanggal, peternak.lokasi as pos, 
                 SUM(jumlah_susu_liter) as total')
@@ -63,14 +77,28 @@ class LaporanController extends Controller
     public function subPenampungReport(Request $request)
     {
         $now = now();
-        $startDate = $request->get('start_date', $now->copy()->subMonth()->day(14)->format('Y-m-d'));
-        $endDate = $request->get('end_date', $now->copy()->day(13)->format('Y-m-d'));
+        $bulan = $request->get('bulan', $now->month);
+        $tahun = $request->get('tahun', $now->year);
+        
+        $currentMonth = Carbon::createFromDate($tahun, $bulan, 1);
+        $prevMonth = $currentMonth->copy()->subMonth();
+
+        $startDate = $request->get('start_date', $prevMonth->endOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', $currentMonth->endOfMonth()->format('Y-m-d'));
 
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
 
         // Get production data grouped by sub-penampung
-        $reportData = ProduksiHarian::whereBetween('tanggal', [$start, $end])
+        $reportData = ProduksiHarian::where(function($q) use ($startDate, $endDate) {
+            $q->where(function($sq) use ($startDate) {
+                $sq->whereDate('tanggal', $startDate)->where('waktu_setor', 'sore');
+            })->orWhere(function($sq) use ($startDate, $endDate) {
+                $sq->whereDate('tanggal', '>', $startDate)->whereDate('tanggal', '<', $endDate);
+            })->orWhere(function($sq) use ($endDate) {
+                $sq->whereDate('tanggal', $endDate)->where('waktu_setor', 'pagi');
+            });
+        })
             ->whereHas('peternak', function($q) {
                 $q->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
             })
@@ -105,13 +133,8 @@ class LaporanController extends Controller
         $currentMonth = Carbon::createFromDate($tahun, $bulan, 1);
         $prevMonth = $currentMonth->copy()->subMonth();
         
-        // Start: 30th of prev month
-        $startDay = min(30, $prevMonth->daysInMonth);
-        $startDate = $prevMonth->copy()->day($startDay)->format('Y-m-d');
-        
-        // End: 30th of current month
-        $endDay = min(30, $currentMonth->daysInMonth);
-        $endDate = $currentMonth->copy()->day($endDay)->format('Y-m-d');
+        $startDate = $prevMonth->endOfMonth()->format('Y-m-d');
+        $endDate = $currentMonth->endOfMonth()->format('Y-m-d');
     }
 
     $start = Carbon::parse($startDate)->startOfDay();

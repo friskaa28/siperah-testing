@@ -147,10 +147,12 @@ class ProduksiController extends Controller
                 MAX(CASE WHEN waktu_setor = "sore" THEN idproduksi END) as idsore,
                 SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
                 SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
-                SUM(jumlah_susu_liter) as total')
+                SUM(jumlah_susu_liter) as total,
+            MAX(created_at) as input_time,
+            MAX(updated_at) as last_update')
             ->groupBy('tanggal', 'idpeternak')
             ->groupBy('tanggal', 'idpeternak')
-            ->orderBy('tanggal', 'desc');
+            ->orderBy('last_update', 'desc');
 
         if ($request->get('status_setor') === 'pagi') {
             $produksi->havingRaw('pagi > 0 AND sore = 0');
@@ -259,6 +261,16 @@ class ProduksiController extends Controller
     public function edit($idproduksi)
     {
         $produksi = ProduksiHarian::findOrFail($idproduksi);
+        
+        // Sum duplicates to show the REAL total in the edit form
+        $totalLiter = ProduksiHarian::where('tanggal', $produksi->tanggal)
+            ->where('idpeternak', $produksi->idpeternak)
+            ->where('waktu_setor', $produksi->waktu_setor)
+            ->sum('jumlah_susu_liter');
+            
+        // Override the instance value for the view
+        $produksi->jumlah_susu_liter = $totalLiter;
+
         $peternaks = Peternak::all();
         return view('produksi.edit', compact('produksi', 'peternaks'));
     }
@@ -266,6 +278,14 @@ class ProduksiController extends Controller
     public function update(Request $request, $idproduksi)
     {
         $produksi = ProduksiHarian::findOrFail($idproduksi);
+        
+        // Find ALL duplicates based on the ORIGINAL data before update
+        // We will delete these after updating the main record
+        $duplicates = ProduksiHarian::where('tanggal', $produksi->tanggal)
+            ->where('idpeternak', $produksi->idpeternak)
+            ->where('waktu_setor', $produksi->waktu_setor)
+            ->where('idproduksi', '!=', $idproduksi)
+            ->get();
         
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -277,27 +297,47 @@ class ProduksiController extends Controller
 
         $produksi->update($validated);
 
-        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil diperbarui.');
+        // Delete the merged duplicates
+        foreach($duplicates as $dup) {
+            $dup->delete();
+        }
+
+        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil diperbarui dan duplikat telah digabungkan.');
     }
 
     public function destroy($idproduksi)
     {
         $produksi = ProduksiHarian::findOrFail($idproduksi);
-        $produksi->delete();
+        
+        // Delete ALL records that belong to this specific session (duplicates included)
+        ProduksiHarian::where('tanggal', $produksi->tanggal)
+            ->where('idpeternak', $produksi->idpeternak)
+            ->where('waktu_setor', $produksi->waktu_setor)
+            ->delete();
 
-        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil dihapus.');
+        return redirect()->route('produksi.index')->with('success', 'Data produksi (dan duplikatnya) berhasil dihapus.');
     }
 
-    public function downloadTemplate()
+    public function downloadTemplate(Request $request)
     {
-        return Excel::download(new ProduksiTemplateExport, 'template_produksi_harian.xlsx');
+        if ($request->format == 'matrix') {
+            return Excel::download(new \App\Exports\ProduksiMatrixTemplateExport, 'template_produksi_matriks.xlsx');
+        }
+        return Excel::download(new \App\Exports\ProduksiListTemplateExport, 'template_produksi_list.xlsx');
     }
 
     public function import(Request $request)
     {
-        $request->validate(['file' => 'required|mimes:xlsx,xls']);
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+            'bulan' => 'nullable|integer|between:1,12',
+            'tahun' => 'nullable|integer|min:2020',
+        ]);
         
-        $import = new ProduksiImport;
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
+
+        $import = new ProduksiImport($bulan, $tahun);
         Excel::import($import, $request->file('file'));
 
         if ($import->imported > 0) {

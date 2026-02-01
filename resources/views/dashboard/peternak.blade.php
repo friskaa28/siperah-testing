@@ -48,7 +48,7 @@
     <!-- Card 1: Setoran Susu -->
     <div class="card" style="border-left: 4px solid var(--primary); padding: 1.5rem;">
         <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Total Setoran Susu</h3>
-        <h2 style="color: var(--primary); font-size: 2.25rem;">{{ number_format($totalLiter, 1, ',', '.') }} <small style="font-size: 1rem;">Liter</small></h2>
+        <h2 style="color: var(--primary); font-size: 2.25rem;">{{ rtrim(rtrim(number_format($totalLiter, 2, ',', '.'), '0'), ',') }} <small style="font-size: 1rem;">Liter</small></h2>
         <p class="mb-0 mt-2">Setoran terkumpul di periode ini.</p>
     </div>
 

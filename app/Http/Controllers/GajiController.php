@@ -49,13 +49,21 @@ class GajiController extends Controller
     {
         $peternaks = Peternak::all();
         
-        // Defined period: 14th of previous month to 13th of chosen month
-        $endDate = Carbon::createFromDate($tahun, $bulan, 13)->endOfDay();
-        $startDate = $endDate->copy()->subMonth()->day(14)->startOfDay();
+        // Defined period: Last day of previous month (afternoon) to last day of chosen month (morning)
+        $endDate = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->startOfDay();
+        $startDate = Carbon::createFromDate($tahun, $bulan, 1)->subMonth()->endOfMonth()->startOfDay();
 
         foreach ($peternaks as $p) {
             $totalLiters = ProduksiHarian::where('idpeternak', $p->idpeternak)
-                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->where(function($q) use ($startDate, $endDate) {
+                    $q->where(function($sq) use ($startDate) {
+                        $sq->whereDate('tanggal', $startDate)->where('waktu_setor', 'sore');
+                    })->orWhere(function($sq) use ($startDate, $endDate) {
+                        $sq->whereDate('tanggal', '>', $startDate)->whereDate('tanggal', '<', $endDate);
+                    })->orWhere(function($sq) use ($endDate) {
+                        $sq->whereDate('tanggal', $endDate)->where('waktu_setor', 'pagi');
+                    });
+                })
                 ->sum('jumlah_susu_liter');
 
             if ($totalLiters <= 0) continue;
@@ -89,8 +97,8 @@ class GajiController extends Controller
     public function syncPotongan($idslip)
     {
         $slip = SlipPembayaran::findOrFail($idslip);
-        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 13)->endOfDay();
-        $startDate = $endDate->copy()->subMonth()->day(14)->startOfDay();
+        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->endOfMonth()->startOfDay();
+        $startDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->subMonth()->endOfMonth()->startOfDay();
 
         $kasbons = Kasbon::where('idpeternak', $slip->idpeternak)
             ->whereBetween('tanggal', [$startDate, $endDate])

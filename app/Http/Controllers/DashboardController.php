@@ -32,16 +32,26 @@ class DashboardController extends BaseController
         if ($customStartDate && $customEndDate) {
             // Use custom dates from filter
             $startDate = Carbon::parse($customStartDate)->startOfDay();
-            $endDate = Carbon::parse($customEndDate)->endOfDay();
+            $endDate = Carbon::parse($customEndDate)->startOfDay();
         } else {
-            // Default: Current month (1st to end of month)
-            $startDate = now()->startOfMonth();
-            $endDate = now()->endOfMonth();
+            // Default: Session-based current month
+            $currentMonth = now()->startOfMonth();
+            $prevMonth = $currentMonth->copy()->subMonth();
+            $startDate = $prevMonth->endOfMonth()->startOfDay();
+            $endDate = $currentMonth->endOfMonth()->startOfDay();
         }
 
-        // Total Liter in period
+        // Total Liter in period (Session-based inclusive logic)
         $totalLiter = ProduksiHarian::where('idpeternak', $peternak->idpeternak)
-            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->where(function($sq) use ($startDate) {
+                    $sq->whereDate('tanggal', $startDate)->where('waktu_setor', 'sore');
+                })->orWhere(function($sq) use ($startDate, $endDate) {
+                    $sq->whereDate('tanggal', '>', $startDate)->whereDate('tanggal', '<', $endDate);
+                })->orWhere(function($sq) use ($endDate) {
+                    $sq->whereDate('tanggal', $endDate)->where('waktu_setor', 'pagi');
+                });
+            })
             ->sum('jumlah_susu_liter');
 
         // Current Milk Price
@@ -144,34 +154,42 @@ class DashboardController extends BaseController
         }
 
         // Date Range Filter for Widgets
+        // Date Range Filter for Widgets
         $customStartDate = $request->input('start_date');
         $customEndDate = $request->input('end_date');
+        
+        $reqYear = $request->input('year');
+        $reqMonth = $request->input('month');
 
         if ($customStartDate && $customEndDate) {
             $startDate = Carbon::parse($customStartDate)->startOfDay();
-            $endDate = Carbon::parse($customEndDate)->endOfDay();
+            $endDate = Carbon::parse($customEndDate)->startOfDay();
+        } elseif ($reqYear && $reqMonth) {
+            // If Month/Year selected, use Session Logic for that month
+            $currentMonth = Carbon::createFromDate($reqYear, $reqMonth, 1)->startOfMonth();
+            $prevMonth = $currentMonth->copy()->subMonth();
+            $startDate = $prevMonth->endOfMonth()->startOfDay(); // e.g. Jan 31
+            $endDate = $currentMonth->endOfMonth()->startOfDay(); // e.g. Feb 28
         } else {
-            // Default to current month
-            $startDate = now()->startOfMonth();
+            // Default: 1 Jan 2026 to End of Current Month (User Request)
+            $startDate = Carbon::create(2026, 01, 01)->startOfDay();
             $endDate = now()->endOfMonth();
         }
 
         // Year Filter (for charts)
         $selectedYear = $request->input('year', now()->year);
-        $selectedMonth = $request->input('month'); // New: month filter
+        $selectedMonth = $request->input('month'); 
         $availableYears = range(now()->year, now()->year - 4);
 
         // KPI data
         $totalPeternak = Peternak::count();
-        $totalProduksiBulanIni = ProduksiHarian::whereMonth('tanggal', now()->month)
-            ->whereYear('tanggal', now()->year)
+        
+        // KPI data - Total Produksi based on selected range (Simple Between)
+        $totalProduksiBulanIni = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
             ->sum('jumlah_susu_liter');
-        $totalDistribusi = Distribusi::whereMonth('tanggal_kirim', now()->month)
-            ->whereYear('tanggal_kirim', now()->year)
-            ->count();
-        $totalBagiHasil = BagiHasil::whereMonth('tanggal', now()->month)
-            ->whereYear('tanggal', now()->year)
-            ->sum('total_pendapatan');
+
+        $totalDistribusi = Distribusi::whereBetween('tanggal_kirim', [$startDate, $endDate])->count();
+        $totalBagiHasil = BagiHasil::whereBetween('tanggal', [$startDate, $endDate])->sum('total_pendapatan');
 
         // Top 5 peternak
         // Top 5 Peternak (by Volume Susu in Selected Year)
@@ -202,8 +220,10 @@ class DashboardController extends BaseController
         // Active Milk Price
         $currentPrice = HargaSusuHistory::getHargaAktif();
 
-        // Widget Metrics (Date Range)
-        $periodLiter = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])->sum('jumlah_susu_liter');
+        // Widget Metrics (Simple Between)
+        $periodLiter = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
+            ->sum('jumlah_susu_liter');
+
         $periodKasbon = Kasbon::whereBetween('tanggal', [$startDate, $endDate])->sum('total_rupiah');
         $totalLogistik = \App\Models\KatalogLogistik::count();
 
