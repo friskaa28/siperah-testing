@@ -118,19 +118,15 @@
                                 @empty
                                 <tr><td colspan="5" class="py-5 text-muted text-center">Data tidak ditemukan untuk periode ini.</td></tr>
                                 @endforelse
-                                @if(isset($data['pusat']) && count($data['pusat']) > 0)
-                                <tr class="bg-light fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000;">
-                                    <td colspan="3" class="text-end py-3 px-4">TOTAL KESELURUHAN (HALAMAN INI)</td>
-                                    <td class="px-4" style="font-size: 1.1rem; text-align: right;">{{ rtrim(rtrim(number_format($data['pusat']->sum('total'), 2, ',', '.'), '0'), ',') }} L</td>
+                                
+                                {{-- GRAND TOTAL (Only on Last Page or Print All) --}}
+                                @if($isPrinting || (!$isPrinting && !$data['pusat']->hasMorePages()))
+                                <tr class="fw-bold" style="page-break-inside: avoid; border-top: 2px solid #000; background-color: #e9ecef;">
+                                    <td colspan="3" class="text-end py-3 px-4" style="font-size: 1.1rem;">GRAND TOTAL</td>
+                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ rtrim(rtrim(number_format($gtPusat, 2, ',', '.'), '0'), ',') }} L</td>
                                 </tr>
                                 @endif
                             </tbody>
-                            <tfoot class="fw-bold">
-                                <tr>
-                                    <td colspan="3" class="text-end py-3 px-4">GRAND TOTAL</td>
-                                    <td class="px-4" style="font-size: 1.2rem; text-align: right;">{{ rtrim(rtrim(number_format($gtPusat, 2, ',', '.'), '0'), ',') }} L</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>

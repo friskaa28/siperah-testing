@@ -23,8 +23,10 @@
                 <form action="{{ route('produksi.update', $produksi->idproduksi) }}" method="POST" id="editProduksiForm">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="redirect_to" value="{{ request('redirect_to', old('redirect_to')) }}">
 
                     <div class="row g-3">
+
                         <!-- Left Column -->
                         <div class="col-md-7 border-end-md pe-md-4">
                             <div class="d-flex align-items-center mb-3">

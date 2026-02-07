@@ -24,12 +24,15 @@
             @endif
 
             <div class="form-group">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" id="email" name="email" class="form-control" required value="{{ old('email') }}">
+                <label class="form-label" for="email">Email / Nomor HP</label>
+                <input type="text" id="email" name="email" class="form-control" required value="{{ old('email') }}">
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">Password</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label" for="password">Password</label>
+                    <a href="{{ route('password.request') }}" class="small text-primary text-decoration-none">Lupa Password?</a>
+                </div>
                 <div class="input-group">
                     <input type="password" id="password" name="password" class="form-control" required style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">
                     <span class="input-group-text" style="background: white; border-left: none; cursor: pointer; border-top-left-radius: 0; border-bottom-left-radius: 0;" onclick="togglePassword('password', 'toggleIcon')">

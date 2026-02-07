@@ -16,10 +16,17 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
+        $request->validate([
+            'email' => 'required|string', // Change from 'email' to 'string' to allow Phone No
             'password' => 'required',
         ]);
+
+        $loginType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'nohp';
+
+        $credentials = [
+            $loginType => $request->email,
+            'password' => $request->password
+        ];
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
@@ -43,7 +50,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password tidak valid.',
+            'email' => 'Email/No HP atau password tidak valid.',
         ])->onlyInput('email');
     }
 

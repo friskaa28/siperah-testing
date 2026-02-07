@@ -23,6 +23,7 @@ class RegisterController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'nohp' => 'nullable|string|max:15|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:peternak,pengelola,admin',
             // Peternak specific validation (conditional)
@@ -37,6 +38,7 @@ class RegisterController extends Controller
             $user = User::create([
                 'nama' => $validated['nama'],
                 'email' => $validated['email'],
+                'nohp' => $validated['nohp'] ?? null,
                 'password' => Hash::make($validated['password']),
                 'role' => $validated['role'],
             ]);

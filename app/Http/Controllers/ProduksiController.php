@@ -69,13 +69,31 @@ class ProduksiController extends Controller
             $idpeternak = $peternak->idpeternak;
         }
 
-        // Create produksi record
-        $produksi = ProduksiHarian::create(array_merge($validated, [
-            'idpeternak' => $idpeternak,
-            'biaya_pakan' => 0,
-            'biaya_tenaga' => 0,
-            'biaya_operasional' => 0,
-        ]));
+        // Check if record already exists
+        $existingProduksi = ProduksiHarian::where('tanggal', $validated['tanggal'])
+            ->where('idpeternak', $idpeternak)
+            ->where('waktu_setor', $validated['waktu_setor'])
+            ->first();
+
+        if ($existingProduksi) {
+            // Update existing record (Add to it)
+            $existingProduksi->increment('jumlah_susu_liter', $validated['jumlah_susu_liter']);
+            // Append note if exists
+            if (!empty($validated['catatan'])) {
+                $existingProduksi->catatan = ($existingProduksi->catatan ? $existingProduksi->catatan . '; ' : '') . $validated['catatan'];
+                $existingProduksi->save();
+            }
+            $actionMsg = "ditambahkan ke data yang sudah ada (Total: {$existingProduksi->jumlah_susu_liter}L)";
+        } else {
+            // Create new record
+            ProduksiHarian::create(array_merge($validated, [
+                'idpeternak' => $idpeternak,
+                'biaya_pakan' => 0,
+                'biaya_tenaga' => 0,
+                'biaya_operasional' => 0,
+            ]));
+            $actionMsg = "berhasil dicatat";
+        }
 
         // Get target user for notification
         $targetPeternak = Peternak::find($idpeternak);
@@ -85,7 +103,7 @@ class ProduksiController extends Controller
         Notifikasi::create([
             'iduser' => $targetUser,
             'judul' => 'Setor Susu Tercatat',
-            'pesan' => "Setor Susu Anda sebesar {$validated['jumlah_susu_liter']} liter ({$validated['waktu_setor']}) telah tercatat.",
+            'pesan' => "Setor Susu Anda sebesar {$validated['jumlah_susu_liter']} liter ({$validated['waktu_setor']}) telah {$actionMsg}.",
             'tipe' => 'success',
             'kategori' => 'jadwal',
             'status_baca' => 'belum_baca',
@@ -96,14 +114,15 @@ class ProduksiController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'idpeternak' => $idpeternak,
                 'waktu_setor' => $validated['waktu_setor']
-            ])->with('success', 'Setor Susu berhasil dicatat!'); 
+            ])->with('success', "Setor Susu {$actionMsg}!"); 
         }
 
         return redirect()->route('produksi.create', [
             'tanggal' => $validated['tanggal'],
             'waktu_setor' => $validated['waktu_setor']
-        ])->with('success', 'Setor Susu berhasil dicatat!');
+        ])->with('success', "Setor Susu {$actionMsg}!");
     }
+
 
     public function listPeternak(Request $request)
     {
@@ -138,8 +157,24 @@ class ProduksiController extends Controller
             $query->where('tanggal', '<=', $endDate);
         }
 
+        $statusSetor = $request->get('status_setor');
+        if ($statusSetor === 'pagi' || $statusSetor === 'sore') {
+            $query->where('waktu_setor', $statusSetor);
+        }
+
         $perPage = $request->get('per_page', 15);
         
+        // Calculate totals if filtering by specific farmer (BEFORE grouping the main query)
+        $summary = null;
+        if ($idpeternak) {
+            $summaryQuery = clone $query;
+            $summary = $summaryQuery->selectRaw('
+                SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as total_pagi,
+                SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as total_sore,
+                SUM(jumlah_susu_liter) as grand_total
+            ')->first();
+        }
+
         // Group by date and peternak to show Pagi/Sore/Total
         $produksi = $query->with('peternak')
             ->selectRaw('tanggal, idpeternak, 
@@ -151,14 +186,9 @@ class ProduksiController extends Controller
             MAX(created_at) as input_time,
             MAX(updated_at) as last_update')
             ->groupBy('tanggal', 'idpeternak')
-            ->groupBy('tanggal', 'idpeternak')
             ->orderBy('last_update', 'desc');
 
-        if ($request->get('status_setor') === 'pagi') {
-            $produksi->havingRaw('pagi > 0 AND sore = 0');
-        } elseif ($request->get('status_setor') === 'sore') {
-            $produksi->havingRaw('sore > 0 AND pagi = 0');
-        } elseif ($request->get('status_setor') === 'lengkap') {
+        if ($statusSetor === 'lengkap') {
             $produksi->havingRaw('pagi > 0 AND sore > 0');
         }
 
@@ -169,8 +199,9 @@ class ProduksiController extends Controller
         $produksi = $produksi->paginate($perPage)
             ->withQueryString();
 
-        return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage', 'startDate', 'endDate', 'idpeternak'));
+        return view('produksi.list_peternak', compact('produksi', 'peternaks', 'isAdmin', 'perPage', 'startDate', 'endDate', 'idpeternak', 'summary'));
     }
+
 
     public function printRiwayat(Request $request)
     {
@@ -302,8 +333,14 @@ class ProduksiController extends Controller
             $dup->delete();
         }
 
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo) {
+            return redirect($redirectTo)->with('success', 'Data produksi berhasil diperbarui dan duplikat telah digabungkan.');
+        }
+
         return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil diperbarui dan duplikat telah digabungkan.');
     }
+
 
     public function destroy($idproduksi)
     {
@@ -315,8 +352,13 @@ class ProduksiController extends Controller
             ->where('waktu_setor', $produksi->waktu_setor)
             ->delete();
 
+        if (request()->has('redirect_to')) {
+            return redirect(request('redirect_to'))->with('success', 'Data produksi (dan duplikatnya) berhasil dihapus.');
+        }
+
         return redirect()->route('produksi.index')->with('success', 'Data produksi (dan duplikatnya) berhasil dihapus.');
     }
+
 
     public function downloadTemplate(Request $request)
     {

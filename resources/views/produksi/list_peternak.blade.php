@@ -84,7 +84,52 @@
     @endif
 </div>
 
+@if(isset($idpeternak) && $idpeternak && isset($summary))
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary bg-gradient text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1 opacity-75 small fw-bold text-white">Grand Total (L)</h6>
+                        <h2 class="mb-0 fw-bold text-white">{{ rtrim(rtrim(number_format($summary->grand_total, 2, ',', '.'), '0'), ',') }}</h2>
+                    </div>
+                    <i class="fas fa-flask fa-2x opacity-50 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success bg-gradient text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1 opacity-75 small fw-bold text-white">Total Pagi (L)</h6>
+                        <h2 class="mb-0 fw-bold text-white">{{ rtrim(rtrim(number_format($summary->total_pagi, 2, ',', '.'), '0'), ',') }}</h2>
+                    </div>
+                    <i class="fas fa-sun fa-2x opacity-50 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning bg-gradient text-dark h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1 opacity-75 small fw-bold text-dark">Total Sore (L)</h6>
+                        <h2 class="mb-0 fw-bold text-dark">{{ rtrim(rtrim(number_format($summary->total_sore, 2, ',', '.'), '0'), ',') }}</h2>
+                    </div>
+                    <i class="fas fa-moon fa-2x opacity-50 text-dark"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="card shadow-sm border-0" style="border-radius: 12px;">
+
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
@@ -144,18 +189,21 @@
                                     <div class="d-flex flex-column align-items-center gap-1">
                                         <span class="small text-muted fw-bold" style="font-size: 0.7rem;">{{ strtoupper($type) }}</span>
                                         <div class="d-flex gap-1 border rounded p-1">
-                                            <a href="{{ route('produksi.edit', $act['id']) }}" class="text-warning p-1" title="Edit {{ $act['title'] }}">
+                                            <a href="{{ route('produksi.edit', ['idproduksi' => $act['id'], 'redirect_to' => request()->fullUrl()]) }}" class="text-warning p-1" title="Edit {{ $act['title'] }}">
                                                 <i class="fas fa-edit fa-xs"></i>
                                             </a>
                                             <form action="{{ route('produksi.destroy', $act['id']) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data {{ $act['title'] }} ini?')">
+
                                                 @csrf
                                                 @method('DELETE')
+                                                <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                                                 <button type="submit" class="text-danger border-0 bg-transparent p-1" title="Hapus {{ $act['title'] }}">
                                                     <i class="fas fa-trash fa-xs"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
+
                                     @endif
                                 @endforeach
                             </div>

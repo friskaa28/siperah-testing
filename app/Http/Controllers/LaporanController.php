@@ -143,34 +143,36 @@ class LaporanController extends Controller
         $isPrinting = $request->get('print') === 'all';
         
         // 1. Laporan Pusat Data (Split by POS/Location - Inclusive)
-        $pusatQuery = ProduksiHarian::where(function($q) use ($startDate, $endDate) {
-            $q->where(function($sq) use ($startDate) {
-                $sq->where('tanggal', $startDate)->where('waktu_setor', 'sore');
-            })->orWhere(function($sq) use ($startDate, $endDate) {
-                $sq->where('tanggal', '>', $startDate)->where('tanggal', '<', $endDate);
-            })->orWhere(function($sq) use ($endDate) {
-                $sq->where('tanggal', $endDate)->where('waktu_setor', 'pagi');
-            });
-        })
+        // Table Query: Group by Date ONLY to avoid duplicates
+        $pusatQuery = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
             ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
             ->when($search, function($q) use ($search) {
                 return $q->where('peternak.lokasi', 'like', "%$search%");
             })
-            ->selectRaw('tanggal, peternak.lokasi as pos, peternak.status_mitra,
+            ->selectRaw('tanggal, 
                 SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
                 SUM(CASE WHEN waktu_setor = "sore" THEN jumlah_susu_liter ELSE 0 END) as sore,
                 SUM(jumlah_susu_liter) as total')
-            ->groupBy('tanggal', 'peternak.lokasi', 'peternak.status_mitra')
-            ->orderBy('tanggal', 'asc')
-            ->orderBy('peternak.lokasi', 'asc');
+            ->groupBy('tanggal')
+            ->orderBy('tanggal', 'asc');
 
-        // Calculate totals from ALL matching records before pagination
-        $pusatAll = $pusatQuery->get();
-        $gtPusat = $pusatAll->sum('total');
-        $tkPusat = $pusatAll->where('status_mitra', 'peternak')->sum('total');
-        $ttPusat = $pusatAll->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p'])->sum('total');
+        // Totals Query: Group by Status Mitra for the Summary Box
+        $posSummary = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
+            ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
+            ->when($search, function($q) use ($search) {
+                return $q->where('peternak.lokasi', 'like', "%$search%");
+            })
+            ->selectRaw('peternak.status_mitra, SUM(jumlah_susu_liter) as total')
+            ->groupBy('peternak.status_mitra')
+            ->get();
 
-        $data['pusat'] = $isPrinting ? $pusatAll : $pusatQuery->paginate($perPage, ['*'], 'pusat_page')->withQueryString();
+        // Calculate totals from the summary query
+        $gtPusat = $posSummary->sum('total');
+        $tkPusat = $posSummary->where('status_mitra', 'peternak')->sum('total');
+        $ttPusat = $posSummary->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p'])->sum('total');
+
+        $data['pusat'] = $isPrinting ? $pusatQuery->get() : $pusatQuery->paginate($perPage, ['*'], 'pusat_page')->withQueryString();
+
 
         // 2. Laporan Sub-Penampung Data
         $subQuery = ProduksiHarian::where(function($q) use ($startDate, $endDate) {

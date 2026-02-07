@@ -44,6 +44,12 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label" for="nohp">Nomor HP</label>
+                <input type="text" id="nohp" name="nohp" class="form-control" placeholder="Contoh: 08123456789" value="{{ old('nohp') }}">
+                <small class="text-muted" style="font-size: 0.8rem;">Opsional, dapat digunakan untuk login.</small>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label" for="password">Password</label>
                 <div class="input-group">
                     <input type="password" id="password" name="password" class="form-control" required placeholder="Minimal 8 karakter" style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">
