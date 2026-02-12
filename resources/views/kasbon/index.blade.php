@@ -20,7 +20,7 @@
                 <select name="idpeternak" id="idpeternak" class="form-select select2" required>
                     <option value="">-- Pilih Mitra --</option>
                     @foreach($peternaks as $p)
-                        <option value="{{ $p->idpeternak }}">{{ $p->no_peternak ? '['.$p->no_peternak.'] ' : '' }}{{ $p->nama_peternak }}</option>
+                        <option value="{{ $p->idpeternak }}" {{ old('idpeternak') == $p->idpeternak ? 'selected' : '' }}>{{ $p->no_peternak ? '['.$p->no_peternak.'] ' : '' }}{{ $p->nama_peternak }}</option>
                     @endforeach
                 </select>
             </div>
@@ -42,7 +42,7 @@
 
             <div class="form-group">
                 <label class="form-label">Tanggal Transaksi</label>
-                <input type="date" name="tanggal" class="form-control" required value="{{ date('Y-m-d') }}">
+                <input type="date" name="tanggal" class="form-control" required value="{{ old('tanggal', date('Y-m-d')) }}">
             </div>
 
             <div class="p-3 mb-4 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">

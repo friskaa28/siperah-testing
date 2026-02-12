@@ -46,7 +46,7 @@ class KasbonController extends Controller
             'tanggal' => $validated['tanggal'],
         ]);
 
-        return back()->with('success', 'Kasbon berhasil dicatat!');
+        return back()->withInput()->with('success', 'Kasbon berhasil dicatat!');
     }
 
     public function destroy($id)
