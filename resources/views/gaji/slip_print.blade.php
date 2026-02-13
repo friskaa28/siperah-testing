@@ -65,42 +65,30 @@
         <div class="section-title">Potongan</div>
         
         <div class="table-split">
+            @php
+                // Split deductions into two columns
+                $totalItems = $deductions->count();
+                $chunkSize = ceil($totalItems / 2);
+                $chunks = $deductions->chunk($chunkSize);
+                $leftPot = $chunks->get(0, []);
+                $rightPot = $chunks->get(1, []);
+                $counter = 1;
+            @endphp
+
             <div>
-                @php
-                    $leftPot = [
-                        'potongan_shr' => '1 SHR',
-                        'potongan_hutang_bl_ll' => '2 HUT. BL LL',
-                        'potongan_pakan_a' => '3 PAKAN A',
-                        'potongan_pakan_b' => '4 PAKAN B',
-                        'potongan_vitamix' => '5 VITAMIX',
-                        'potongan_konsentrat' => '6 KONSENTRAT',
-                        'potongan_skim' => '7 SKIM',
-                        'potongan_ib_keswan' => '8 IB/KESWAN',
-                    ];
-                @endphp
-                @foreach($leftPot as $key => $label)
+                @foreach($leftPot as $label => $amount)
                 <div class="deduction-item">
-                    <span>{{ $label }}</span>
-                    <span>Rp {{ number_format($slip->$key, 0, ',', '.') }}</span>
+                    <span>{{ $counter++ }} {{ $label }}</span>
+                    <span>Rp {{ number_format($amount, 0, ',', '.') }}</span>
                 </div>
                 @endforeach
             </div>
             <div>
-                @php
-                    $rightPot = [
-                        'potongan_susu_a' => '9 SUSU A',
-                        'potongan_kas_bon' => '10 KAS BON',
-                        'potongan_pakan_b_2' => '11 PAKAN B (2)',
-                        'potongan_sp' => '12 SP',
-                        'potongan_karpet' => '13 KARPET',
-                        'potongan_vaksin' => '14 VAKSIN',
-                        'potongan_lain_lain' => '15 LAIN-LAIN',
-                    ];
-                @endphp
-                @foreach($rightPot as $key => $label)
+                @php $counter = $chunkSize + 1; @endphp
+                @foreach($rightPot as $label => $amount)
                 <div class="deduction-item">
-                    <span>{{ $label }}</span>
-                    <span>Rp {{ number_format($slip->$key, 0, ',', '.') }}</span>
+                    <span>{{ $counter++ }} {{ $label }}</span>
+                    <span>Rp {{ number_format($amount, 0, ',', '.') }}</span>
                 </div>
                 @endforeach
             </div>

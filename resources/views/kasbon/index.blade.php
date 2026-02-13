@@ -58,7 +58,7 @@
     <div class="card">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0">Riwayat Potongan Terbaru</h3>
-            <form action="{{ route('kasbon.index') }}" method="GET" class="d-flex gap-2 align-items-center">
+            <form action="{{ route('kasbon.index') }}" method="GET" class="d-flex gap-2 align-items-center flex-wrap">
                 <div style="width: 250px;">
                     <select name="idpeternak" class="form-select select2" onchange="this.form.submit()">
                         <option value="">-- Semua Mitra --</option>
@@ -69,11 +69,24 @@
                         @endforeach
                     </select>
                 </div>
+                <div style="width: 200px;">
+                    <select name="jenis_inputan" class="form-select select2" onchange="this.form.submit()">
+                        <option value="">-- Semua Jenis --</option>
+                        @foreach($itemNames as $name)
+                            <option value="{{ $name }}" {{ request('jenis_inputan') == $name ? 'selected' : '' }}>
+                                {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <select name="per_page" class="form-select w-auto" onchange="this.form.submit()">
                     <option value="10" {{ $kasbons->perPage() == 10 ? 'selected' : '' }}>10 baris</option>
                     <option value="25" {{ $kasbons->perPage() == 25 ? 'selected' : '' }}>25 baris</option>
                     <option value="50" {{ $kasbons->perPage() == 50 ? 'selected' : '' }}>50 baris</option>
                 </select>
+                @if(request()->hasAny(['idpeternak', 'jenis_inputan']))
+                    <a href="{{ route('kasbon.index') }}" class="btn btn-secondary btn-sm" title="Reset Filter"><i class="fas fa-times"></i></a>
+                @endif
             </form>
         </div>
         <div class="table-responsive">
@@ -101,6 +114,9 @@
                         </td>
                         <td class="fw-bold text-danger">Rp {{ number_format($k->total_rupiah, 0, ',', '.') }}</td>
                         <td class="text-center">
+                            <a href="{{ route('kasbon.edit', $k->id) }}" class="action-btn edit me-1" title="Edit Data" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-edit"></i>
+                            </a>
                             <form action="{{ route('kasbon.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus data kasbon ini?')" class="d-inline">
                                 @csrf
                                 @method('DELETE')

@@ -153,6 +153,8 @@ Route::middleware(['auth', 'pengelola.admin.only'])->group(function () {
     // Kasbon Management
     Route::get('/kasbon', [KasbonController::class, 'index'])->name('kasbon.index');
     Route::post('/kasbon', [KasbonController::class, 'store'])->name('kasbon.store');
+    Route::get('/kasbon/{id}/edit', [KasbonController::class, 'edit'])->name('kasbon.edit');
+    Route::put('/kasbon/{id}', [KasbonController::class, 'update'])->name('kasbon.update');
     Route::delete('/kasbon/{id}', [KasbonController::class, 'destroy'])->name('kasbon.destroy');
 
     // Laporan Data (Konsolidasi)

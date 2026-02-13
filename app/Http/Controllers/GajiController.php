@@ -104,7 +104,7 @@ class GajiController extends Controller
             'potongan_hutang_bl_ll' => '/hut.*bl.*ll/i',
             'potongan_pakan_a' => '/pakan\s*a/i',
             'potongan_pakan_b' => '/pakan\s*b(?!\s*\(2\))/i',
-            'potongan_vitamix' => '/vitami/i', // Match Vitamin or Vitamix
+            'potongan_vitamix' => '/(vitami|vetami)/i', // Match Vitamin or Vitamix or Vetamix
             'potongan_konsentrat' => '/konsentrat/i',
             'potongan_skim' => '/skim/i',
             'potongan_ib_keswan' => '/(ib|keswan)/i',
@@ -171,6 +171,21 @@ class GajiController extends Controller
         $peternakId = $slip->peternak->no_peternak ?: 'MTR-' . str_pad($slip->peternak->idpeternak, 3, '0', STR_PAD_LEFT);
         $qrBase64 = $this->generateQrBase64(url()->full());
         
+        // Fetch detailed deductions for dynamic printing
+        $startDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->endOfMonth();
+
+        $kasbons = Kasbon::where('idpeternak', $slip->idpeternak)
+            ->whereBetween('tanggal', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
+
+        // Group by item name and sum the amount
+        $deductions = $kasbons->groupBy(function($item) {
+            return strtoupper($item->nama_item);
+        })->map(function ($row) {
+            return $row->sum('total_rupiah');
+        })->sortKeys();
+
         // Log print activity
         ActivityLog::log(
             'PRINT_SALARY_SLIP',
@@ -178,7 +193,7 @@ class GajiController extends Controller
             $slip
         );
         
-        return view('gaji.slip_print', compact('slip', 'peternakId', 'qrBase64'));
+        return view('gaji.slip_print', compact('slip', 'peternakId', 'qrBase64', 'deductions'));
     }
 
     private function generateQrBase64($data)
