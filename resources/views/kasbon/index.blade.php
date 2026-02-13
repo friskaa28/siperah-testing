@@ -58,9 +58,18 @@
     <div class="card">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0">Riwayat Potongan Terbaru</h3>
-            <form action="{{ route('kasbon.index') }}" method="GET">
-                @if(request('idpeternak')) <input type="hidden" name="idpeternak" value="{{ request('idpeternak') }}"> @endif
-                <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+            <form action="{{ route('kasbon.index') }}" method="GET" class="d-flex gap-2 align-items-center">
+                <div style="width: 250px;">
+                    <select name="idpeternak" class="form-select select2" onchange="this.form.submit()">
+                        <option value="">-- Semua Mitra --</option>
+                        @foreach($peternaks as $p)
+                            <option value="{{ $p->idpeternak }}" {{ request('idpeternak') == $p->idpeternak ? 'selected' : '' }}>
+                                {{ $p->nama_peternak }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <select name="per_page" class="form-select w-auto" onchange="this.form.submit()">
                     <option value="10" {{ $kasbons->perPage() == 10 ? 'selected' : '' }}>10 baris</option>
                     <option value="25" {{ $kasbons->perPage() == 25 ? 'selected' : '' }}>25 baris</option>
                     <option value="50" {{ $kasbons->perPage() == 50 ? 'selected' : '' }}>50 baris</option>
