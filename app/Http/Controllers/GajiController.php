@@ -49,21 +49,14 @@ class GajiController extends Controller
     {
         $peternaks = Peternak::all();
         
-        // Defined period: Last day of previous month (afternoon) to last day of chosen month (morning)
-        $endDate = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth()->startOfDay();
-        $startDate = Carbon::createFromDate($tahun, $bulan, 1)->subMonth()->endOfMonth()->startOfDay();
+        // Defined period: Full Calendar Month (1st to End of Month)
+        // Matches "Riwayat Setor Susu" logic
+        $startDate = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth();
 
         foreach ($peternaks as $p) {
             $totalLiters = ProduksiHarian::where('idpeternak', $p->idpeternak)
-                ->where(function($q) use ($startDate, $endDate) {
-                    $q->where(function($sq) use ($startDate) {
-                        $sq->whereDate('tanggal', $startDate)->where('waktu_setor', 'sore');
-                    })->orWhere(function($sq) use ($startDate, $endDate) {
-                        $sq->whereDate('tanggal', '>', $startDate)->whereDate('tanggal', '<', $endDate);
-                    })->orWhere(function($sq) use ($endDate) {
-                        $sq->whereDate('tanggal', $endDate)->where('waktu_setor', 'pagi');
-                    });
-                })
+                ->whereBetween('tanggal', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->sum('jumlah_susu_liter');
 
             if ($totalLiters <= 0) continue;
@@ -97,11 +90,13 @@ class GajiController extends Controller
     public function syncPotongan($idslip)
     {
         $slip = SlipPembayaran::findOrFail($idslip);
-        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->endOfMonth()->startOfDay();
-        $startDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->subMonth()->endOfMonth()->startOfDay();
+        // Defined period: Full Calendar Month (1st to End of Month)
+        // Matches "Riwayat Setor Susu" logic
+        $startDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($slip->tahun, $slip->bulan, 1)->endOfMonth();
 
         $kasbons = Kasbon::where('idpeternak', $slip->idpeternak)
-            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->whereBetween('tanggal', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
         $mapping = [
