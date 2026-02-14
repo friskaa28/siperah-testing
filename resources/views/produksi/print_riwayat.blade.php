@@ -14,9 +14,6 @@
         .report-title { text-align: center; margin-bottom: 10px; }
         .report-title h2 { margin: 0; font-size: 12pt; text-transform: uppercase; }
         
-        .month-section { page-break-before: always; }
-        .month-section:first-child { page-break-before: avoid; }
-        
         .section-title { margin-top: 5px; font-weight: bold; font-size: 11pt; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; page-break-inside: auto; }
@@ -59,7 +56,7 @@
     @forelse($groupedData as $peternakName => $months)
         @php $isFirstMonth = true; @endphp
         @foreach($months as $monthName => $records)
-            <div class="month-section {{ $isFirstMonth ? '' : 'page-break' }}">
+            <div style="{{ $isFirstMonth ? '' : 'page-break-before: always;' }}">
                 <div class="peternak-info">
                     <strong>Nama Peternak:</strong> {{ $peternakName }}
                 </div>
