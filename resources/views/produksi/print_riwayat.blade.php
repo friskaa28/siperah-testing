@@ -5,7 +5,7 @@
     <title>Laporan Riwayat Setor Susu</title>
     <style>
         @page { size: A4 portrait; margin: 0.8cm; }
-        body { font-family: Arial, sans-serif; font-size: 9pt; color: #000; -webkit-print-color-adjust: exact; }
+        body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; -webkit-print-color-adjust: exact; }
         .header { display: flex; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
         .header img { height: 60px; margin-right: 15px; }
         .header-text { text-align: left; }
@@ -14,18 +14,21 @@
         .report-title { text-align: center; margin-bottom: 10px; }
         .report-title h2 { margin: 0; font-size: 12pt; text-transform: uppercase; }
         
-        .section-title { margin-top: 10px; font-weight: bold; font-size: 10pt; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+        .month-section { page-break-before: always; }
+        .month-section:first-child { page-break-before: avoid; }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; page-break-inside: auto; }
+        .section-title { margin-top: 5px; font-weight: bold; font-size: 11pt; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; page-break-inside: auto; }
         tr { page-break-inside: avoid; page-break-after: auto; }
-        th, td { border: 1px solid #000; padding: 3px 5px; font-size: 8pt; }
+        th, td { border: 1px solid #000; padding: 4px 6px; font-size: 9pt; }
         th { background-color: #fff; text-align: center; font-weight: bold; }
         td.num { text-align: right; }
         td.center { text-align: center; }
         
         .footer-total { font-weight: bold; background-color: #f9f9f9; }
         
-        .peternak-info { margin-bottom: 8px; font-size: 9pt; }
+        .peternak-info { margin-bottom: 8px; font-size: 10pt; }
         
         .no-print { display: none; }
         @media print {
@@ -54,12 +57,13 @@
     </div>
 
     @forelse($groupedData as $peternakName => $months)
-        <div style="page-break-after: always; break-after: page;">
-            <div class="peternak-info">
-                <strong>Nama Peternak:</strong> {{ $peternakName }}
-            </div>
+        @php $isFirstMonth = true; @endphp
+        @foreach($months as $monthName => $records)
+            <div class="month-section {{ $isFirstMonth ? '' : 'page-break' }}">
+                <div class="peternak-info">
+                    <strong>Nama Peternak:</strong> {{ $peternakName }}
+                </div>
 
-            @foreach($months as $monthName => $records)
                 <div class="section-title">Bulan: {{ $monthName }}</div>
                 <table>
                     <thead>
@@ -99,8 +103,9 @@
                         </tr>
                     </tfoot>
                 </table>
-            @endforeach
-        </div>
+            </div>
+            @php $isFirstMonth = false; @endphp
+        @endforeach
     @empty
         <div style="text-align: center; padding: 50px;">
             <p>Tidak ada data produksi yang ditemukan untuk periode ini.</p>
