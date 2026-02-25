@@ -17,7 +17,7 @@ class DatabaseSyncSeeder extends Seeder
                 'nama' => 'Analytics Team',
                 'email' => 'analytics@siperah.com',
                 'password' => 'analytics123',
-                'role' => 'tim_analytics',
+                'role' => 'admin', // Changed from 'tim_analytics' because db ENUM only allows 'peternak','pengelola','admin'
             ],
             [
                 'nama' => 'Friska Pengelola',
