@@ -10,7 +10,7 @@
     </div>
     <div class="col-md-6 text-end">
         <a href="{{ route('peternak.laporan.index') }}" class="btn btn-secondary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
-            <i class="fas fa-file-invoice-dollar"></i> Slip Gaji & Laporan
+            <i class="fas fa-file-invoice-dollar"></i> Slip Pembayaran & Laporan
         </a>
     </div>
 </div>
@@ -60,7 +60,7 @@
     </div>
 
     <div class="card" style="border-left: 4px solid var(--success); padding: 1.5rem; background: #F0FDF4;">
-        <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Estimasi Gaji Bersih</h3>
+        <h3 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Estimasi Pembayaran Bersih</h3>
         <h2 style="color: var(--success); font-size: 2.25rem;">Rp {{ number_format($estimasiGaji, 0, ',', '.') }}</h2>
         <p class="mb-0 mt-2"><strong>(Liter x Rp {{ number_format($currentPrice, 0, ',', '.') }}) - Potongan</strong></p>
         <div class="mt-2 pt-2 border-top" style="font-size: 0.75rem; color: var(--text-light);">

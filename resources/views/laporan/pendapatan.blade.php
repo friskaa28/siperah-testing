@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan Pendapatan - SIPERAH')
+@section('title', 'Laporan Pembayaran - SIPERAH')
 
 @section('content')
 
 <div class="row align-items-center mb-4">
     <div class="col-md-6">
-        <h1 class="h3 fw-bold mb-0"><i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan</h1>
+        <h1 class="h3 fw-bold mb-0"><i class="fas fa-file-invoice-dollar"></i> Laporan Pembayaran</h1>
         <p class="text-muted mb-0">Rincian setoran susu dan potongan kasbon periode bulan ini</p>
     </div>
     <div class="col-md-6 text-md-end mt-3 mt-md-0">
@@ -126,7 +126,7 @@
             <span class="fs-5 fw-bold text-danger">- Rp {{ number_format($totalKasbon, 0, ',', '.') }}</span>
         </div>
         <div class="col-md-3">
-            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Gaji Bersih Diterima</small>
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Pembayaran Bersih Diterima</small>
             <span class="fs-4 fw-bold text-success">Rp {{ number_format($netSalary, 0, ',', '.') }}</span>
         </div>
     </div>

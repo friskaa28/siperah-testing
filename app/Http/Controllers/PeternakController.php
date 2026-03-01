@@ -22,10 +22,25 @@ class PeternakController extends Controller
             $query->where('status_mitra', $request->status_mitra);
         }
 
+        // Filter by koperasi_id if user is scoped (VILLAGE ADMIN ROLE)
+        if (auth()->user()->koperasi_id) {
+            $query->where('koperasi_id', auth()->user()->koperasi_id);
+        }
+
+        // Filter if sub-penampung
+        if (auth()->user()->isSubPenampung()) {
+            $query->where(function($q) {
+                $q->where('id_sub_penampung', auth()->user()->peternak->idpeternak)
+                  ->orWhere('idpeternak', auth()->user()->peternak->idpeternak);
+            });
+        }
+
         $perPage = $request->get('per_page', 5);
         $peternaks = $query->paginate($perPage)->withQueryString();
 
-        return view('peternak.index', compact('peternaks'));
+        $subPenampungs = Peternak::whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p'])->get();
+
+        return view('peternak.index', compact('peternaks', 'subPenampungs'));
     }
 
     public function store(Request $request)
@@ -38,6 +53,7 @@ class PeternakController extends Controller
             'no_peternak' => 'nullable|string',
             'lokasi' => 'nullable|string',
             'kelompok' => 'nullable|string',
+            'id_sub_penampung' => 'nullable|exists:peternak,idpeternak',
         ]);
 
         \Illuminate\Support\Facades\DB::beginTransaction();
@@ -56,7 +72,8 @@ class PeternakController extends Controller
                 'lokasi' => $request->lokasi,
                 'kelompok' => $request->kelompok,
                 'status_mitra' => $request->status_mitra,
-                'koperasi_id' => 1,
+                'id_sub_penampung' => $request->id_sub_penampung ?: (auth()->user()->isSubPenampung() ? auth()->user()->peternak->idpeternak : null),
+                'koperasi_id' => auth()->user()->koperasi_id,
             ]);
 
             \Illuminate\Support\Facades\DB::commit();
@@ -76,6 +93,7 @@ class PeternakController extends Controller
             'no_peternak' => 'nullable|string',
             'lokasi' => 'nullable|string',
             'kelompok' => 'nullable|string',
+            'id_sub_penampung' => 'nullable|exists:peternak,idpeternak',
         ]);
 
         $peternak->update($request->all());

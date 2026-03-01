@@ -110,7 +110,7 @@
                                     <form action="{{ route('activity-log.undo', $log->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan tanda tangan ini? Slip gaji terkait akan terbuka kuncinya.')">
                                         @csrf
                                         <button type="submit" class="btn btn-outline-danger btn-sm" style="font-size: 0.7rem; padding: 2px 8px;">
-                                            <i class="fas fa-undo"></i> Buka Kunci / Batalkan
+                                            <i class="fas fa-undo"></i> Buka Kunci / Batalkan Tanda Tangan
                                         </button>
                                     </form>
                                 </div>
@@ -155,7 +155,7 @@
         <div class="card bg-light">
             <div class="card-body text-center">
                 <h3 class="mb-0">{{ $logs->where('action', 'PRINT_SALARY_SLIP')->count() }}</h3>
-                <small class="text-muted">Cetak Slip Gaji (Halaman Ini)</small>
+                <small class="text-muted">Cetak Slip Pembayaran (Halaman Ini)</small>
             </div>
         </div>
     </div>

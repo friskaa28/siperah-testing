@@ -171,7 +171,7 @@
             </tr>
         </table>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e2e8f0; text-align: right;">
-            <span style="font-size: 9pt; color: #64748b; font-weight: bold;">ESTIMASI GAJI BERSIH: </span>
+            <span style="font-size: 9pt; color: #64748b; font-weight: bold;">ESTIMASI PEMBAYARAN BERSIH: </span>
             <span style="font-size: 18pt; color: #16a34a; font-weight: bold;">Rp {{ number_format($netSalary, 0, ',', '.') }}</span>
         </div>
     </div>

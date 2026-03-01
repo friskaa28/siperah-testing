@@ -22,8 +22,24 @@ class ProduksiController extends Controller
         $lastProduksi = null;
         $katalog = \App\Models\KatalogLogistik::all();
 
-        if ($user->isAdmin() || $user->isPengelola()) {
-            $peternaks = Peternak::all();
+        if ($user->isSubPenampung()) {
+            $peternaks = Peternak::where('id_sub_penampung', $user->peternak->idpeternak)
+                ->orWhere('idpeternak', $user->peternak->idpeternak)
+                ->get();
+            if ($request->idpeternak) {
+                // Ensure the requested peternak is within their group
+                if ($peternaks->contains('idpeternak', $request->idpeternak)) {
+                    $lastProduksi = ProduksiHarian::where('idpeternak', $request->idpeternak)
+                        ->orderBy('idproduksi', 'desc')
+                        ->first();
+                }
+            }
+        } elseif ($user->isAdmin() || $user->isPengelola()) {
+            $peternaksQuery = Peternak::query();
+            if ($user->koperasi_id) {
+                $peternaksQuery->where('koperasi_id', $user->koperasi_id);
+            }
+            $peternaks = $peternaksQuery->get();
             if ($request->idpeternak) {
                 $lastProduksi = ProduksiHarian::where('idpeternak', $request->idpeternak)
                     ->orderBy('idproduksi', 'desc')
@@ -59,7 +75,7 @@ class ProduksiController extends Controller
 
         $validated = $request->validate($rules);
 
-        if ($isAdmin) {
+        if (!$user->isSubPenampung() && $isAdmin) {
              $idpeternak = $validated['idpeternak'];
         } else {
             $peternak = $user->peternak;
@@ -67,6 +83,20 @@ class ProduksiController extends Controller
                 return back()->withErrors(['error' => 'Profil peternak tidak ditemukan.']);
             }
             $idpeternak = $peternak->idpeternak;
+
+            // If sub-penampung, we might be recording for an athlete or ourselves
+            if ($user->isSubPenampung() && $request->has('idpeternak')) {
+                // Verify the peternak is in their group
+                $isAllowed = Peternak::where('idpeternak', $request->idpeternak)
+                    ->where(function($q) use ($peternak) {
+                        $q->where('id_sub_penampung', $peternak->idpeternak)
+                          ->orWhere('idpeternak', $peternak->idpeternak);
+                    })->exists();
+                
+                if ($isAllowed) {
+                    $idpeternak = $request->idpeternak;
+                }
+            }
         }
 
         // Check if record already exists
@@ -136,8 +166,27 @@ class ProduksiController extends Controller
 
         $query = ProduksiHarian::query();
 
-        if ($isAdmin) {
-            $peternaks = Peternak::all();
+        if ($user->isSubPenampung()) {
+            $subId = $user->peternak->idpeternak;
+            $peternaks = Peternak::where('id_sub_penampung', $subId)
+                ->orWhere('idpeternak', $subId)
+                ->get();
+            
+            if ($idpeternak) {
+                if ($peternaks->contains('idpeternak', $idpeternak)) {
+                    $query->where('idpeternak', $idpeternak);
+                } else {
+                    $query->where('idpeternak', 0);
+                }
+            } else {
+                $query->whereIn('idpeternak', $peternaks->pluck('idpeternak'));
+            }
+        } elseif ($isAdmin) {
+            $peternaksQuery = Peternak::query();
+            if ($user->koperasi_id) {
+                $peternaksQuery->where('koperasi_id', $user->koperasi_id);
+            }
+            $peternaks = $peternaksQuery->get();
             if ($idpeternak) {
                 $query->where('idpeternak', $idpeternak);
             }
@@ -215,8 +264,27 @@ class ProduksiController extends Controller
 
         $query = ProduksiHarian::query();
 
-        if ($isAdmin) {
-            $peternaks = Peternak::all(); // Need this if we want to show filter info or name lookup
+        if ($user->isSubPenampung()) {
+            $subId = $user->peternak->idpeternak;
+            $peternaks = Peternak::where('id_sub_penampung', $subId)
+                ->orWhere('idpeternak', $subId)
+                ->get();
+            
+            if ($idpeternak) {
+                if ($peternaks->contains('idpeternak', $idpeternak)) {
+                    $query->where('idpeternak', $idpeternak);
+                } else {
+                    $query->where('idpeternak', 0);
+                }
+            } else {
+                $query->whereIn('idpeternak', $peternaks->pluck('idpeternak'));
+            }
+        } elseif ($isAdmin) {
+            $peternaksQuery = Peternak::query();
+            if ($user->koperasi_id) {
+                $peternaksQuery->where('koperasi_id', $user->koperasi_id);
+            }
+            $peternaks = $peternaksQuery->get();
             if ($idpeternak) {
                 $query->where('idpeternak', $idpeternak);
             }
@@ -302,7 +370,21 @@ class ProduksiController extends Controller
         // Override the instance value for the view
         $produksi->jumlah_susu_liter = $totalLiter;
 
-        $peternaks = Peternak::all();
+        $user = Auth::user();
+        if ($user->isSubPenampung()) {
+            $peternaksQuery = Peternak::where('id_sub_penampung', $user->peternak->idpeternak)
+                ->orWhere('idpeternak', $user->peternak->idpeternak);
+            $peternaks = $peternaksQuery->get();
+        } elseif ($user->isAdmin() || $user->isPengelola()) {
+            $peternaksQuery = Peternak::query();
+            if ($user->koperasi_id) {
+                $peternaksQuery->where('koperasi_id', $user->koperasi_id);
+            }
+            $peternaks = $peternaksQuery->get();
+        } else {
+            $peternaks = collect([$user->peternak]);
+        }
+    
         return view('produksi.edit', compact('produksi', 'peternaks'));
     }
 
@@ -346,6 +428,13 @@ class ProduksiController extends Controller
     {
         $produksi = ProduksiHarian::findOrFail($idproduksi);
         
+        // Log the deletion for Human Error Rate KPI
+        \App\Models\ActivityLog::log(
+            'DELETE_PRODUKSI',
+            'Menghapus data produksi: ' . $produksi->jumlah_susu_liter . 'L (' . $produksi->waktu_setor . ') tanggal ' . $produksi->tanggal,
+            $produksi
+        );
+
         // Delete ALL records that belong to this specific session (duplicates included)
         ProduksiHarian::where('tanggal', $produksi->tanggal)
             ->where('idpeternak', $produksi->idpeternak)

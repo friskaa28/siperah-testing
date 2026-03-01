@@ -781,11 +781,11 @@
 
                         <!-- Page 4 Right: Report Steps -->
                         <div class="page-content" data-idx="3">
-                            <h4>Cek Gaji & Laporan:</h4>
+                            <h4>Cek Pembayaran & Laporan:</h4>
                             <p>Transparansi adalah kunci kemitraan yang sehat.</p>
                             <ul style="margin-left: 20px; margin-top: 15px;">
                                 <li style="margin-bottom: 10px;">Menu <strong>Laporan</strong> menampilkan grafik pendapatan Anda bulan ini.</li>
-                                <li style="margin-bottom: 10px;">Menu <strong>Slip Gaji</strong> menampilkan rincian total susu, potongan pakan/kasbon, dan uang bersih yang diterima.</li>
+                                <li style="margin-bottom: 10px;">Menu <strong>Slip Pembayaran</strong> menampilkan rincian total susu, potongan pakan/kasbon, dan uang bersih yang diterima.</li>
                                 <li>Anda bisa mengunduh Laporan dalam bentuk PDF untuk pengajuan kredit ke bank atau koperasi.</li>
                             </ul>
                             <div style="margin-top: 30px; text-align: center;">

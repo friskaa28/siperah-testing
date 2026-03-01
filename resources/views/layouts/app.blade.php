@@ -797,7 +797,7 @@
                         <i class="fas fa-history"></i> Riwayat Setor Susu
                     </a>
                     <a href="{{ route('peternak.laporan.index') }}" class="sidebar-item @if(request()->is('laporan*')) active @endif">
-                        <i class="fas fa-file-invoice-dollar"></i> Laporan Pendapatan
+                        <i class="fas fa-file-invoice-dollar"></i> Laporan Pembayaran
                     </a>
 
                     <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
@@ -806,6 +806,30 @@
                     <a href="{{ route('panduan.index') }}" class="sidebar-item @if(request()->is('panduan*')) active @endif">
                         <i class="fas fa-book"></i> Panduan Aplikasi
                     </a>
+
+                    @if(auth()->user()->isSubPenampung())
+                        <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 1rem;">
+                            Manajemen Tim
+                        </div>
+                        <a href="/produksi/input" class="sidebar-item @if(request()->is('produksi/input')) active @endif">
+                            <i class="fas fa-plus-circle"></i> Input Setor Susu
+                        </a>
+                        <a href="{{ route('kasbon.index') }}" class="sidebar-item @if(request()->is('kasbon*')) active @endif">
+                            <i class="fas fa-minus-circle"></i> Input Potongan
+                        </a>
+                        <a href="/produksi" class="sidebar-item @if(request()->is('produksi')) active @endif">
+                            <i class="fas fa-history"></i> Riwayat Setoran
+                        </a>
+                        <a href="/gaji" class="sidebar-item @if(request()->is('gaji*')) active @endif">
+                            <i class="fas fa-money-bill-wave"></i> Manajemen Pembayaran
+                        </a>
+                        <a href="{{ route('laporan.data') }}" class="sidebar-item @if(request()->is('laporan/data*')) active @endif">
+                            <i class="fas fa-file-invoice"></i> Laporan Tim
+                        </a>
+                        <a href="{{ route('peternak.index') }}" class="sidebar-item @if(request()->is('peternak*')) active @endif">
+                            <i class="fas fa-user-friends"></i> Data Mitra
+                        </a>
+                    @endif
                 @elseif(auth()->user()->role === 'pengelola' || auth()->user()->role === 'admin')
                     <a href="/dashboard-pengelola" class="sidebar-item @if(request()->is('dashboard-pengelola')) active @endif">
                         <i class="fas fa-chart-line"></i> Dashboard
@@ -830,7 +854,7 @@
                         <i class="fas fa-history"></i> Riwayat Setor Susu
                     </a>
                     <a href="/gaji" class="sidebar-item @if(request()->is('gaji*')) active @endif">
-                        <i class="fas fa-money-bill-wave"></i> Manajemen Gaji
+                        <i class="fas fa-money-bill-wave"></i> Manajemen Pembayaran
                     </a>
                     <a href="{{ route('laporan.data') }}" class="sidebar-item @if(request()->is('laporan/data*')) active @endif">
                         <i class="fas fa-file-invoice"></i> Laporan Data
@@ -869,8 +893,30 @@
                     <a href="{{ route('settings.index') }}" class="sidebar-item @if(request()->is('settings')) @if(!request()->is('settings/users*')) active @endif @endif">
                         <i class="fas fa-cog"></i> Pengaturan Fitur
                     </a>
+
+                    {{-- Removed KPI Input from Admin as requested --}}
                     @endif
+
+                @elseif(auth()->user()->role === 'tim_analytics')
+                    {{-- ===== TIM ANALYTICS SIDEBAR ===== --}}
+                    <div style="padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-top: 0.5rem;">
+                        KPI Analytics
+                    </div>
+                    <a href="{{ route('analytics.dashboard') }}" class="sidebar-item @if(request()->is('analytics/dashboard*')) active @endif">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard KPI
+                    </a>
+                    <a href="{{ route('analytics.usage') }}" class="sidebar-item @if(request()->is('analytics/usage*')) active @endif">
+                        <i class="fas fa-users"></i> Analitik Penggunaan
+                    </a>
+                    <a href="{{ route('analytics.errors') }}" class="sidebar-item @if(request()->is('analytics/errors*')) active @endif">
+                        <i class="fas fa-exclamation-triangle"></i> Error Rate
+                    </a>
+                    <a href="{{ route('analytics.profit') }}" class="sidebar-item @if(request()->is('analytics/profit*')) active @endif">
+                        <i class="fas fa-coins"></i> Analisis Profit
+                    </a>
                 @endif
+
+
 
                 <!-- Mobile Logout Button -->
                 <div class="mobile-logout d-md-none mt-4 border-top pt-4 px-3">

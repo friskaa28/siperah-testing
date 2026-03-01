@@ -120,7 +120,12 @@
                         <option value="admin">Admin</option>
                         <option value="pengelola">Pengelola</option>
                         <option value="peternak">Peternak</option>
+                        <option value="tim_analytics">Tim Analytics</option>
                     </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Unit Koperasi/Desa (Opsional)</label>
+                    <input type="text" name="koperasi_id" class="form-control" placeholder="Kosongkan untuk Super Admin">
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Password</label>
@@ -160,7 +165,12 @@
                         <option value="admin">Admin</option>
                         <option value="pengelola">Pengelola</option>
                         <option value="peternak">Peternak</option>
+                        <option value="tim_analytics">Tim Analytics</option>
                     </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Unit Koperasi/Desa (Opsional)</label>
+                    <input type="text" name="koperasi_id" id="edit_koperasi_id" class="form-control" placeholder="Kosongkan untuk Super Admin">
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Ganti Password (Kosongkan jika tidak diubah)</label>
@@ -198,6 +208,7 @@
         document.getElementById('edit_nama').value = user.nama;
         document.getElementById('edit_email').value = user.email;
         document.getElementById('edit_role').value = user.role;
+        document.getElementById('edit_koperasi_id').value = user.koperasi_id || '';
         editModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }

@@ -277,7 +277,7 @@
         <div class="card bg-primary text-white" style="border: none; border-radius: 12px;">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="fw-bold mb-0">Manajemen Gaji</h5>
+                    <h5 class="fw-bold mb-0">Manajemen Pembayaran</h5>
                     <small class="text-white-50">Rekap & Hitung Gaji Mitra</small>
                 </div>
                 <a href="/gaji" class="btn btn-light text-primary fw-bold rounded-pill px-4">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Gaji - SIPERAH')
+@section('title', 'Manajemen Pembayaran - SIPERAH')
 
 @section('content')
 @if(session('error'))
@@ -15,7 +15,7 @@
 @endif
 <div class="row mb-4 align-items-center">
     <div class="col-12 col-md-6 mb-3 mb-md-0">
-        <h1 class="mb-0">Slip Gaji & Pembayaran Susu</h1>
+        <h1 class="mb-0">Slip Pembayaran & Pembayaran Susu</h1>
     </div>
 </div>
 
@@ -24,7 +24,7 @@
     <div class="col-12 col-lg-6 mb-3 mb-lg-0">
         <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
             <div class="card-header bg-white border-0 pt-3 pb-0">
-                <h6 class="fw-bold text-muted mb-0"><i class="fas fa-file-invoice-dollar"></i> Unggah Gaji & Potongan (Bulanan)</h6>
+                <h6 class="fw-bold text-muted mb-0"><i class="fas fa-file-invoice-dollar"></i> Unggah Pembayaran & Potongan (Bulanan)</h6>
             </div>
             <div class="card-body p-3">
                 <form action="{{ route('gaji.import') }}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end">
@@ -189,7 +189,7 @@
                                 <a href="{{ route('gaji.edit', $s->idslip) }}" class="action-btn detail" title="Pratinjau & Edit Potongan">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="action-btn print" title="Cetak Slip Gaji">
+                                <a href="{{ route('gaji.print', $s->idslip) }}" target="_blank" class="action-btn print" title="Cetak Slip Pembayaran">
                                     <i class="fas fa-print"></i>
                                 </a>
                             </div>
@@ -219,7 +219,7 @@
     <div class="col-12 col-lg-4">
         <div class="card" style="background: #F9FAFB;">
             <div class="card-body p-3">
-                <h3 class="mb-2" style="font-size: 1.1rem;">Panduan Gaji</h3>
+                <h3 class="mb-2" style="font-size: 1.1rem;">Panduan Pembayaran</h3>
                 <ol style="font-size: 0.85rem; padding-left: 1.2rem; color: #4B5553; line-height: 1.6;">
                     <li><strong>Unggah Excel</strong>: Gunakan template untuk mengunggah liter & potongan sekaligus.</li>
                     <li><strong>Segarkan Data</strong>: Mengambil liter dari setoran harian & sinkronisasi otomatis potongan kasbon.</li>

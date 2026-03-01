@@ -56,6 +56,9 @@
                     <th class="py-3">Nama Mitra</th>
                     <th class="py-3">Desa / Lokasi</th>
                     <th class="py-3">Kategori</th>
+                    @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
+                    <th class="py-3">Sub-Penampung</th>
+                    @endif
                     <th class="py-3 text-center px-4">Aksi</th>
                 </tr>
             </thead>
@@ -87,6 +90,11 @@
                                 {{ $catLabel }}
                             </span>
                         </td>
+                        @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
+                        <td class="py-3">
+                            {{ $p->subPenampung->nama_peternak ?? '-' }}
+                        </td>
+                        @endif
                         <td class="py-3 px-4">
                             <div class="d-flex gap-2 justify-content-center">
                                 <button class="action-btn edit" onclick="showEditModal({{ json_encode($p) }})" title="Edit Mitra">
@@ -162,6 +170,17 @@
                         <option value="sub_penampung">Sub-Penampung (Umum)</option>
                     </select>
                 </div>
+                @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
+                <div class="form-group">
+                    <label class="form-label">Unit Sub-Penampung (Jika Peternak)</label>
+                    <select name="id_sub_penampung" class="form-select">
+                        <option value="">-- Bukan Anggota Sub --</option>
+                        @foreach($subPenampungs as $sp)
+                            <option value="{{ $sp->idpeternak }}">{{ $sp->nama_peternak }} ({{ $sp->lokasi }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
                 <div class="d-flex gap-2 mt-4">
                     <button type="button" class="btn btn-secondary flex-grow-1" onclick="hideAddModal()">Batal</button>
                     <button type="submit" class="btn btn-primary flex-grow-1">Simpan Mitra</button>
@@ -206,6 +225,17 @@
                         <option value="sub_penampung">Sub-Penampung (Umum)</option>
                     </select>
                 </div>
+                @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
+                <div class="form-group">
+                    <label class="form-label">Unit Sub-Penampung (Jika Peternak)</label>
+                    <select name="id_sub_penampung" id="edit_id_sub_penampung" class="form-select">
+                        <option value="">-- Bukan Anggota Sub --</option>
+                        @foreach($subPenampungs as $sp)
+                            <option value="{{ $sp->idpeternak }}">{{ $sp->nama_peternak }} ({{ $sp->lokasi }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
                 <div class="d-flex gap-2 mt-4">
                     <button type="button" class="btn btn-secondary flex-grow-1" onclick="hideEditModal()">Batal</button>
                     <button type="submit" class="btn btn-primary flex-grow-1">Simpan Perubahan</button>
@@ -240,6 +270,9 @@
         document.getElementById('edit_lokasi').value = p.lokasi || '';
         document.getElementById('edit_kelompok').value = p.kelompok || '';
         document.getElementById('edit_status_mitra').value = p.status_mitra || 'peternak';
+        if (document.getElementById('edit_id_sub_penampung')) {
+            document.getElementById('edit_id_sub_penampung').value = p.id_sub_penampung || '';
+        }
         editModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }

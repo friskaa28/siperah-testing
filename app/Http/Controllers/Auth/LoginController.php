@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,8 +34,12 @@ class LoginController extends Controller
             
             $user = Auth::user();
             
-            if ($user->isPeternak()) {
+            if ($user->isSubPenampung()) {
+                return redirect('/dashboard-pengelola');
+            } elseif ($user->isPeternak()) {
                 return redirect('/dashboard-peternak');
+            } elseif ($user->isAnalytics()) {
+                return redirect('/analytics/dashboard');
             } elseif ($user->isPengelola() || $user->isAdmin()) {
                 return redirect('/dashboard-pengelola');
             }
@@ -56,6 +61,20 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Record session end time and duration
+        $sessionId = $request->session()->get('kpi_session_id');
+        if ($sessionId) {
+            $kpiSession = UserSession::find($sessionId);
+            if ($kpiSession && $kpiSession->login_at) {
+                $now = now();
+                $kpiSession->logout_at = $now;
+                // Ensure duration is a positive integer to prevent SQL range errors
+                $diff = $now->diffInSeconds($kpiSession->login_at);
+                $kpiSession->duration_seconds = (int) abs($diff);
+                $kpiSession->save();
+            }
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

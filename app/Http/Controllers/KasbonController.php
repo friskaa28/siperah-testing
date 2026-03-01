@@ -14,6 +14,20 @@ class KasbonController extends Controller
     {
         $query = Kasbon::with(['peternak', 'logistik'])->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
         
+        if (auth()->user()->koperasi_id) {
+            $query->whereHas('peternak', function($q) {
+                $q->where('koperasi_id', auth()->user()->koperasi_id);
+            });
+        }
+        
+        if (auth()->user()->isSubPenampung()) {
+            $subId = auth()->user()->peternak->idpeternak;
+            $query->whereHas('peternak', function($q) use ($subId) {
+                $q->where('id_sub_penampung', $subId)
+                  ->orWhere('idpeternak', $subId);
+            });
+        }
+        
         if ($request->idpeternak) {
             $query->where('idpeternak', $request->idpeternak);
         }
@@ -24,7 +38,14 @@ class KasbonController extends Controller
 
         $perPage = $request->get('per_page', 10);
         $kasbons = $query->paginate($perPage)->withQueryString();
-        $peternaks = Peternak::orderBy('nama_peternak')->get();
+        
+        $peternaksQuery = Peternak::orderBy('nama_peternak');
+        if (auth()->user()->isSubPenampung()) {
+            $subId = auth()->user()->peternak->idpeternak;
+            $peternaksQuery->where('id_sub_penampung', $subId)
+                           ->orWhere('idpeternak', $subId);
+        }
+        $peternaks = $peternaksQuery->get();
         $items = KatalogLogistik::orderBy('nama_barang')->get();
         
         // Get unique item names for filter dropdown
@@ -68,6 +89,13 @@ class KasbonController extends Controller
             }
         }
 
+        // Log deletion for Human Error Rate KPI
+        \App\Models\ActivityLog::log(
+            'DELETE_KASBON',
+            'Menghapus potongan/kasbon: ' . $kasbon->nama_item . ' (Rp ' . number_format($kasbon->total_rupiah, 0, ',', '.') . ')',
+            $kasbon
+        );
+
         $kasbon->delete();
 
         return back()->with('success', 'Data kasbon berhasil dihapus!');
@@ -84,7 +112,13 @@ class KasbonController extends Controller
             }
         }
 
-        $peternaks = Peternak::orderBy('nama_peternak')->get();
+        $peternaksQuery = Peternak::orderBy('nama_peternak');
+        if (auth()->user()->isSubPenampung()) {
+            $subId = auth()->user()->peternak->idpeternak;
+            $peternaksQuery->where('id_sub_penampung', $subId)
+                           ->orWhere('idpeternak', $subId);
+        }
+        $peternaks = $peternaksQuery->get();
         $items = KatalogLogistik::orderBy('nama_barang')->get();
 
         return view('kasbon.edit', compact('kasbon', 'peternaks', 'items'));

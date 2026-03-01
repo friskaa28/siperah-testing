@@ -21,6 +21,10 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
+        if (auth()->user()->koperasi_id) {
+            $query->where('koperasi_id', auth()->user()->koperasi_id);
+        }
+
         $perPage = $request->get('per_page', 20);
         $users = $query->paginate($perPage)->withQueryString();
 
@@ -33,7 +37,8 @@ class UserController extends Controller
             'nama' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,pengelola,peternak',
+            'role' => 'required|in:admin,pengelola,peternak,tim_analytics',
+            'koperasi_id' => 'nullable|string',
         ]);
 
         User::create([
@@ -41,6 +46,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'koperasi_id' => $request->koperasi_id,
         ]);
 
         return back()->with('success', 'Pengguna berhasil ditambahkan!');
@@ -53,12 +59,14 @@ class UserController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id . ',iduser',
-            'role' => 'required|in:admin,pengelola,peternak',
+            'role' => 'required|in:admin,pengelola,peternak,tim_analytics',
+            'koperasi_id' => 'nullable|string',
         ]);
 
         $user->nama = $request->nama;
         $user->email = $request->email;
         $user->role = $request->role;
+        $user->koperasi_id = $request->koperasi_id;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);

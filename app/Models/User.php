@@ -64,4 +64,15 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function isAnalytics()
+    {
+        return $this->role === 'tim_analytics';
+    }
+
+    public function isSubPenampung()
+    {
+        return $this->peternak && 
+               in_array($this->peternak->status_mitra, ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
+    }
 }

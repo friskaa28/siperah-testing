@@ -126,6 +126,9 @@ class DashboardController extends BaseController
             $monthlyProduction['data'][] = (float)$monthTotal;
         }
 
+        // Add a flag to view to show this is a Group view if sub-penampung
+        $isGroupView = $user->isSubPenampung();
+
         return view('dashboard.peternak', [
             'totalLiter' => $totalLiter,
             'estimasiGaji' => $estimasiGaji,
@@ -142,6 +145,7 @@ class DashboardController extends BaseController
             'endDateStr' => $endDate->format('Y-m-d'),
             'dailyProduction' => $dailyProduction,
             'monthlyProduction' => $monthlyProduction,
+            'isGroupView' => $isGroupView,
         ]);
     }
 
@@ -177,55 +181,80 @@ class DashboardController extends BaseController
         }
 
         // Year Filter (for charts)
+        // Year Filter (for charts)
         $selectedYear = $request->input('year', now()->year);
         $selectedMonth = $request->input('month'); 
         $availableYears = range(now()->year, now()->year - 4);
 
-        // KPI data
-        $totalPeternak = Peternak::count();
+        // --- SCOPING LOGIC ---
+        $isSub = $user->isSubPenampung();
+        $subId = $isSub ? $user->peternak->idpeternak : null;
         
-        // KPI data - Total Produksi based on selected range (Simple Between)
-        $totalProduksiBulanIni = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
-            ->sum('jumlah_susu_liter');
+        $peternakQuery = Peternak::query();
+        $produksiQuery = ProduksiHarian::query();
+        $kasbonQuery = Kasbon::query();
+        $distribusiQuery = Distribusi::query();
+        $bagiHasilQuery = BagiHasil::query();
 
-        $totalDistribusi = Distribusi::whereBetween('tanggal_kirim', [$startDate, $endDate])->count();
-        $totalBagiHasil = BagiHasil::whereBetween('tanggal', [$startDate, $endDate])->sum('total_pendapatan');
+        if ($isSub) {
+            $peternakQuery->where(function($q) use ($subId) {
+                $q->where('id_sub_penampung', $subId)
+                  ->orWhere('idpeternak', $subId);
+            });
+            $produksiQuery->whereIn('idpeternak', function($q) use ($subId) {
+                $q->select('idpeternak')->from('peternak')->where('id_sub_penampung', $subId)->orWhere('idpeternak', $subId);
+            });
+            $kasbonQuery->whereIn('idpeternak', function($q) use ($subId) {
+                $q->select('idpeternak')->from('peternak')->where('id_sub_penampung', $subId)->orWhere('idpeternak', $subId);
+            });
+            // For distributions andbagi hasil, scoping might be more complex if they aren't directly linked to individual farmers in a way that's easy to query
+            // Skipping Distribusi scoping for now as it's usually factory-level, but BagiHasil should be scoped
+            $bagiHasilQuery->whereHas('produksi', function($q) use ($subId) {
+                $q->where('idpeternak', $subId)->orWhereIn('idpeternak', function($sq) use ($subId) {
+                    $sq->select('idpeternak')->from('peternak')->where('id_sub_penampung', $subId);
+                });
+            });
+        } elseif ($user->koperasi_id) {
+            $peternakQuery->where('koperasi_id', $user->koperasi_id);
+            $produksiQuery->whereHas('peternak', function($q) use ($user) {
+                $q->where('koperasi_id', $user->koperasi_id);
+            });
+            $kasbonQuery->whereHas('peternak', function($q) use ($user) {
+                $q->where('koperasi_id', $user->koperasi_id);
+            });
+            $bagiHasilQuery->whereHas('produksi.peternak', function($q) use ($user) {
+                $q->where('koperasi_id', $user->koperasi_id);
+            });
+        }
+
+        $totalPeternak = $peternakQuery->count();
+        $totalProduksiBulanIni = $produksiQuery->whereBetween('tanggal', [$startDate, $endDate])->sum('jumlah_susu_liter');
+        $totalDistribusi = $distribusiQuery->whereBetween('tanggal_kirim', [$startDate, $endDate])->count();
+        $totalBagiHasil = $bagiHasilQuery->whereBetween('tanggal', [$startDate, $endDate])->sum('total_pendapatan');
 
         // Top 5 peternak
-        // Top 5 Peternak (by Volume Susu in Selected Year)
-        $top5Peternak = Peternak::withSum(['produksi' => function($q) use ($selectedYear) {
+        $top5Peternak = $peternakQuery->withSum(['produksi' => function($q) use ($selectedYear) {
             $q->whereYear('tanggal', $selectedYear);
         }], 'jumlah_susu_liter')
         ->orderByDesc('produksi_sum_jumlah_susu_liter')
         ->take(5)
         ->get();
 
-        // Bagi hasil breakdown (pie chart)
-        $bagiHasilBreakdown = BagiHasil::whereMonth('tanggal', now()->month)
-            ->whereYear('tanggal', now()->year)
-            ->selectRaw('status, COUNT(*) as count, SUM(total_pendapatan) as total')
-            ->groupBy('status')
-            ->get();
+        $monthlyStats = $this->getMonthlyStats($selectedYear, $selectedMonth, $subId);
 
-        // Monthly Stats for Chart (Selected Year and optionally Month)
-        $monthlyStats = $this->getMonthlyStats($selectedYear, $selectedMonth);
+        // Widget Metrics
+        $periodLiter = $totalProduksiBulanIni;
+        $periodKasbon = $kasbonQuery->whereBetween('tanggal', [$startDate, $endDate])->sum('total_rupiah');
+        $totalLogistik = \App\Models\KatalogLogistik::count();
 
-        // Latest Notifications (skip bagi_hasil)
+        // Latest Notifications
         $notifikasi = Notifikasi::where('iduser', $user->iduser)
             ->where('kategori', '!=', 'bagi_hasil')
             ->latest()
             ->limit(5)
             ->get();
 
-        // Active Milk Price
         $currentPrice = HargaSusuHistory::getHargaAktif();
-
-        // Widget Metrics (Simple Between)
-        $periodLiter = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
-            ->sum('jumlah_susu_liter');
-
-        $periodKasbon = Kasbon::whereBetween('tanggal', [$startDate, $endDate])->sum('total_rupiah');
-        $totalLogistik = \App\Models\KatalogLogistik::count();
 
         return view('dashboard.pengelola', [
             'totalPeternak' => $totalPeternak,
@@ -233,7 +262,7 @@ class DashboardController extends BaseController
             'totalDistribusi' => $totalDistribusi,
             'totalBagiHasil' => $totalBagiHasil,
             'top5Peternak' => $top5Peternak,
-            'bagiHasilBreakdown' => $bagiHasilBreakdown,
+            'bagiHasilBreakdown' => collect(), // Placeholder for now
             'monthlyStats' => $monthlyStats,
             'notifikasi' => $notifikasi,
             'currentPrice' => $currentPrice,
@@ -250,7 +279,7 @@ class DashboardController extends BaseController
         ]);
     }
 
-    private function getMonthlyStats($year, $month = null)
+    private function getMonthlyStats($year, $month = null, $subId = null)
     {
         $stats = [];
         
@@ -260,6 +289,12 @@ class DashboardController extends BaseController
             foreach ($years as $y) {
                 $query = ProduksiHarian::whereYear('tanggal', $y)->whereMonth('tanggal', $month);
                 
+                if ($subId) {
+                    $query->whereIn('idpeternak', function($q) use ($subId) {
+                        $q->select('idpeternak')->from('peternak')->where('id_sub_penampung', $subId)->orWhere('idpeternak', $subId);
+                    });
+                }
+
                 $prodTotal = $query->sum('jumlah_susu_liter');
                 $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
                 
@@ -274,6 +309,12 @@ class DashboardController extends BaseController
             for ($m = 1; $m <= 12; $m++) {
                 $query = ProduksiHarian::whereYear('tanggal', $year)->whereMonth('tanggal', $m);
                 
+                if ($subId) {
+                    $query->whereIn('idpeternak', function($q) use ($subId) {
+                        $q->select('idpeternak')->from('peternak')->where('id_sub_penampung', $subId)->orWhere('idpeternak', $subId);
+                    });
+                }
+
                 $prodTotal = $query->sum('jumlah_susu_liter');
                 $activePeternak = $query->distinct('idpeternak')->count('idpeternak');
                 

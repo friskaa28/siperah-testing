@@ -41,6 +41,15 @@ class LaporanController extends Controller
             });
         })
             ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
+            ->when(auth()->user()->isSubPenampung(), function($q) {
+                return $q->where(function($sq) {
+                    $sq->where('peternak.id_sub_penampung', auth()->user()->peternak->idpeternak)
+                       ->orWhere('peternak.idpeternak', auth()->user()->peternak->idpeternak);
+                });
+            })
+            ->when(!auth()->user()->isSubPenampung() && auth()->user()->koperasi_id, function($q) {
+                return $q->where('peternak.koperasi_id', auth()->user()->koperasi_id);
+            })
             ->selectRaw('tanggal, peternak.lokasi as pos, 
                 SUM(jumlah_susu_liter) as total')
             ->groupBy('tanggal', 'peternak.lokasi')
@@ -62,10 +71,23 @@ class LaporanController extends Controller
 
         $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
         
-        $dailyTotals = ProduksiHarian::selectRaw('DAY(tanggal) as day, SUM(jumlah_susu_liter) as total')
+        $dailyTotalsQuery = ProduksiHarian::selectRaw('DAY(tanggal) as day, SUM(jumlah_susu_liter) as total')
             ->whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-            ->groupBy('day')
+            ->whereYear('tanggal', $tahun);
+
+        if (auth()->user()->isSubPenampung()) {
+            $dailyTotalsQuery->whereIn('idpeternak', function($q) {
+                $q->select('idpeternak')->from('peternak')
+                  ->where('id_sub_penampung', auth()->user()->peternak->idpeternak)
+                  ->orWhere('idpeternak', auth()->user()->peternak->idpeternak);
+            });
+        } elseif (auth()->user()->koperasi_id) {
+            $dailyTotalsQuery->whereHas('peternak', function($q) {
+                $q->where('koperasi_id', auth()->user()->koperasi_id);
+            });
+        }
+
+        $dailyTotals = $dailyTotalsQuery->groupBy('day')
             ->pluck('total', 'day')
             ->toArray();
 
@@ -101,6 +123,11 @@ class LaporanController extends Controller
         })
             ->whereHas('peternak', function($q) {
                 $q->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
+                if (auth()->user()->isSubPenampung()) {
+                    $q->where('idpeternak', auth()->user()->peternak->idpeternak);
+                } elseif (auth()->user()->koperasi_id) {
+                    $q->where('koperasi_id', auth()->user()->koperasi_id);
+                }
             })
             ->with('peternak')
             ->selectRaw('idpeternak, 
@@ -146,8 +173,17 @@ class LaporanController extends Controller
         // Table Query: Group by Date ONLY to avoid duplicates
         $pusatQuery = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
             ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
+            ->when(auth()->user()->koperasi_id, function($q) {
+                return $q->where('peternak.koperasi_id', auth()->user()->koperasi_id);
+            })
             ->when($search, function($q) use ($search) {
                 return $q->where('peternak.lokasi', 'like', "%$search%");
+            })
+            ->when(auth()->user()->isSubPenampung(), function($q) {
+                return $q->where(function($sq) {
+                    $sq->where('peternak.id_sub_penampung', auth()->user()->peternak->idpeternak)
+                       ->orWhere('peternak.idpeternak', auth()->user()->peternak->idpeternak);
+                });
             })
             ->selectRaw('tanggal, 
                 SUM(CASE WHEN waktu_setor = "pagi" THEN jumlah_susu_liter ELSE 0 END) as pagi,
@@ -157,10 +193,21 @@ class LaporanController extends Controller
             ->orderBy('tanggal', 'asc');
 
         // Totals Query: Group by Status Mitra for the Summary Box
-        $posSummary = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
-            ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak')
-            ->when($search, function($q) use ($search) {
+        $posSummaryQuery = ProduksiHarian::whereBetween('tanggal', [$startDate, $endDate])
+            ->join('peternak', 'produksi_harian.idpeternak', '=', 'peternak.idpeternak');
+
+        if (auth()->user()->koperasi_id) {
+            $posSummaryQuery->where('peternak.koperasi_id', auth()->user()->koperasi_id);
+        }
+
+        $posSummary = $posSummaryQuery->when($search, function($q) use ($search) {
                 return $q->where('peternak.lokasi', 'like', "%$search%");
+            })
+            ->when(auth()->user()->isSubPenampung(), function($q) {
+                return $q->where(function($sq) {
+                    $sq->where('peternak.id_sub_penampung', auth()->user()->peternak->idpeternak)
+                       ->orWhere('peternak.idpeternak', auth()->user()->peternak->idpeternak);
+                });
             })
             ->selectRaw('peternak.status_mitra, SUM(jumlah_susu_liter) as total')
             ->groupBy('peternak.status_mitra')
@@ -190,6 +237,12 @@ class LaporanController extends Controller
                 } else {
                     $q->whereIn('status_mitra', ['sub_penampung', 'sub_penampung_tr', 'sub_penampung_p']);
                 }
+                if (auth()->user()->isSubPenampung()) {
+                    $q->where('idpeternak', auth()->user()->peternak->idpeternak);
+                }
+                if (auth()->user()->koperasi_id) {
+                    $q->where('koperasi_id', auth()->user()->koperasi_id);
+                }
                 if ($search) {
                     $q->where(function($sq) use ($search) {
                         $sq->where('nama_peternak', 'like', "%$search%")
@@ -216,6 +269,15 @@ class LaporanController extends Controller
 
         // 3. Laporan Harian (Real-time) Data
         $peternaksQuery = Peternak::orderBy('nama_peternak');
+        if (auth()->user()->koperasi_id) {
+            $peternaksQuery->where('koperasi_id', auth()->user()->koperasi_id);
+        }
+        if (auth()->user()->isSubPenampung()) {
+            $peternaksQuery->where(function($q) {
+                $q->where('id_sub_penampung', auth()->user()->peternak->idpeternak)
+                  ->orWhere('idpeternak', auth()->user()->peternak->idpeternak);
+            });
+        }
         if ($tab === 'harian') {
             if ($search) {
                 $peternaksQuery->where(function($q) use ($search) {
@@ -241,10 +303,17 @@ class LaporanController extends Controller
 
         // Extra for Rekap Bulanan Modal in Harian tab
         $daysInMonth = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
-        $dailyTotals = ProduksiHarian::selectRaw('DAY(tanggal) as day, SUM(jumlah_susu_liter) as total')
+        $dailyTotalsQuery = ProduksiHarian::selectRaw('DAY(tanggal) as day, SUM(jumlah_susu_liter) as total')
             ->whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-            ->groupBy('day')
+            ->whereYear('tanggal', $tahun);
+        
+        if (auth()->user()->koperasi_id) {
+            $dailyTotalsQuery->whereHas('peternak', function($q) {
+                $q->where('koperasi_id', auth()->user()->koperasi_id);
+            });
+        }
+
+        $dailyTotals = $dailyTotalsQuery->groupBy('day')
             ->pluck('total', 'day')
             ->toArray();
         $monthlyTotal = array_sum($dailyTotals);

@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Slip Gaji - SIPERAH')
+@section('title', 'Edit Slip Pembayaran - SIPERAH')
 
 @section('content')
 <div class="mb-4">
     <a href="{{ route('gaji.index', ['bulan' => $slip->bulan, 'tahun' => $slip->tahun]) }}" class="text-primary fw-bold" style="text-decoration: none;"><i class="fas fa-arrow-left"></i> Kembali ke Daftar</a>
     <div class="d-flex justify-content-between align-items-center mt-3">
-        <h1 class="h3 mb-0 fw-bold">Pratinjau Slip Gaji - {{ $slip->peternak->nama_peternak }}</h1>
+        <h1 class="h3 mb-0 fw-bold">Pratinjau Slip Pembayaran - {{ $slip->peternak->nama_peternak }}</h1>
         @if(!$slip->isSigned())
             <button type="button" class="btn btn-warning fw-bold" id="btn-edit-toggle">
                 <i class="fas fa-edit"></i> Edit Data
@@ -127,7 +127,7 @@
     <div class="mt-5 d-flex justify-content-between align-items-center p-4 bg-white shadow-sm border" style="border-radius: 12px;">
         <div class="d-flex gap-2">
             <a href="{{ route('gaji.print', $slip->idslip) }}" target="_blank" class="btn btn-outline-primary px-4">
-                <i class="fas fa-print"></i> Cetak Slip Gaji
+                <i class="fas fa-print"></i> Cetak Slip Pembayaran
             </a>
         </div>
         
@@ -153,7 +153,7 @@
             <h4 class="fw-bold mb-0 text-white">Tanda Tangan Digital</h4>
         </div>
         <div class="card-body p-4 text-center">
-            <p class="mb-4">Apakah Anda yakin telah memverifikasi data gaji untuk <strong>{{ $slip->peternak->nama_peternak }}</strong>?</p>
+            <p class="mb-4">Apakah Anda yakin telah memverifikasi data pembayaran untuk <strong>{{ $slip->peternak->nama_peternak }}</strong>?</p>
             <div class="p-3 bg-light rounded mb-4 text-start">
                 <div class="d-flex justify-content-between small mb-1">
                     <span>Periode:</span>

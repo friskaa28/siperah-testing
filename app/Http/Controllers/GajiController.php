@@ -31,23 +31,50 @@ class GajiController extends Controller
         }
 
         $perPage = $request->get('per_page', 10);
-        $slips = SlipPembayaran::with('peternak')
+        $slipsQuery = SlipPembayaran::with('peternak')
             ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
-            ->paginate($perPage)
-            ->withQueryString();
+            ->where('tahun', $tahun);
+
+        if (auth()->user()->isSubPenampung()) {
+            $slipsQuery->whereHas('peternak', function($q) {
+                $q->where('id_sub_penampung', auth()->user()->peternak->idpeternak)
+                  ->orWhere('idpeternak', auth()->user()->peternak->idpeternak);
+            });
+        }
+
+        if (auth()->user()->koperasi_id) {
+            $slipsQuery->whereHas('peternak', function($q) {
+                $q->where('koperasi_id', auth()->user()->koperasi_id);
+            });
+        }
+
+        $slips = $slipsQuery->paginate($perPage)->withQueryString();
 
         return view('gaji.index', compact('slips', 'bulan', 'tahun', 'perPage'));
     }
 
     public function downloadTemplate()
     {
-        return Excel::download(new GajiTemplateExport, 'template_manajemen_gaji.xlsx');
+        return Excel::download(new GajiTemplateExport, 'template_manajemen_pembayaran.xlsx');
     }
 
     private function generateForMonth($bulan, $tahun)
     {
-        $peternaks = Peternak::all();
+        $user = auth()->user();
+        $peternaksQuery = Peternak::query();
+
+        if ($user->isSubPenampung()) {
+            $peternaksQuery->where(function($q) use ($user) {
+                $q->where('id_sub_penampung', $user->peternak->idpeternak)
+                  ->orWhere('idpeternak', $user->peternak->idpeternak);
+            });
+        }
+
+        if ($user->koperasi_id) {
+            $peternaksQuery->where('koperasi_id', $user->koperasi_id);
+        }
+
+        $peternaks = $peternaksQuery->get();
         
         // Defined period: Full Calendar Month (1st to End of Month)
         // Matches "Riwayat Setor Susu" logic
@@ -189,7 +216,7 @@ class GajiController extends Controller
         // Log print activity
         ActivityLog::log(
             'PRINT_SALARY_SLIP',
-            'Mencetak slip gaji untuk ' . $slip->peternak->nama_peternak . ' periode ' . date('F Y', mktime(0, 0, 0, $slip->bulan, 1, $slip->tahun)),
+            'Mencetak slip pembayaran untuk ' . $slip->peternak->nama_peternak . ' periode ' . date('F Y', mktime(0, 0, 0, $slip->bulan, 1, $slip->tahun)),
             $slip
         );
         
@@ -288,7 +315,7 @@ class GajiController extends Controller
                             ],
                             [
                                 'jumlah_susu_liter' => $row['jumlah_susu'],
-                                'catatan' => 'Import via Manajemen Gaji'
+                                'catatan' => 'Import via Manajemen Pembayaran'
                             ]
                         );
                     }
@@ -299,7 +326,7 @@ class GajiController extends Controller
         }
 
         session()->forget('import_preview');
-        return redirect()->route('gaji.index')->with('success', "✅ Berhasil mengimport $importedCount data slip gaji dan mensinkronisasi potongan ke riwayat.");
+        return redirect()->route('gaji.index')->with('success', "✅ Berhasil mengimport $importedCount data slip pembayaran dan mensinkronisasi potongan ke riwayat.");
     }
 
     private function syncDeductionsToKasbon($idPeternak, $potongan, $tanggal, $idslip = null)
@@ -373,11 +400,11 @@ class GajiController extends Controller
 
         ActivityLog::log(
             'SIGN_SALARY_SLIP', 
-            "Admin " . auth()->user()->nama . " menandatangani slip gaji Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
+            "Admin " . auth()->user()->nama . " menandatangani slip pembayaran Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
             $slip
         );
 
-        return back()->with('success', 'Slip gaji berhasil ditandatangani secara digital.');
+        return back()->with('success', 'Slip pembayaran berhasil ditandatangani secara digital.');
     }
 
     public function undoSign($idslip)
@@ -394,7 +421,7 @@ class GajiController extends Controller
         if ($updated) {
             ActivityLog::log(
                 'UNDO_SIGN_SALARY_SLIP', 
-                "Admin " . auth()->user()->nama . " MEMBATALKAN tanda tangan slip gaji Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
+                "Admin " . auth()->user()->nama . " MEMBATALKAN tanda tangan slip pembayaran Mitra: " . $slip->peternak->nama_peternak . " (ID: $slip->idslip)",
                 $slip
             );
             return true;

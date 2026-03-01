@@ -11,18 +11,18 @@
 </div>
 
 <div class="row">
-    <!-- Cek Saldo & Gaji -->
+    <!-- Cek Saldo & Pembayaran -->
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
             <div class="card-body">
                 <div class="text-primary mb-3" style="font-size: 2rem;"><i class="fas fa-wallet"></i></div>
-                <h5 class="fw-bold">Cek Saldo & Gaji</h5>
+                <h5 class="fw-bold">Cek Saldo & Pembayaran</h5>
                 <p class="text-muted small">Cara melihat estimasi pendapatan:</p>
                 <ul class="small ps-3 text-muted">
                     <li>Buka halaman <strong>Dashboard</strong>.</li>
-                    <li>Lihat kartu <strong>Estimasi Gaji Bersih</strong>.</li>
+                    <li>Lihat kartu <strong>Estimasi Pembayaran Bersih</strong>.</li>
                     <li>Angka tersebut adalah estimasi (Liter x Harga) dikurangi Kasbon.</li>
-                    <li>Nilai final akan tercetak di Slip Gaji Bulanan.</li>
+                    <li>Nilai final akan tercetak di Slip Pembayaran Bulanan.</li>
                 </ul>
             </div>
         </div>
@@ -53,7 +53,7 @@
                 <h5 class="fw-bold">E-Statement (Laporan)</h5>
                 <p class="text-muted small">Mendapatkan laporan penghasilan:</p>
                 <ul class="small ps-3 text-muted">
-                    <li>Masuk ke menu <strong>Laporan Pendapatan</strong>.</li>
+                    <li>Masuk ke menu <strong>Laporan Pembayaran</strong>.</li>
                     <li>Lihat ringkasan total liter dan potongan kasbon.</li>
                     <li>Klik tombol <strong>Download PDF</strong> untuk menyimpan bukti.</li>
                     <li>Dokumen dilengkapi QR Code validasi digital.</li>
@@ -80,8 +80,8 @@
         <h5 class="fw-bold mb-4"><i class="fas fa-info-circle"></i> Pertanyaan sering diajukan (FAQ)</h5>
         
         <div class="mb-3">
-            <h6 class="fw-bold">1. Kapan periode gajian dihitung?</h6>
-            <p class="text-muted small">Periode gaji dihitung mulai tanggal <strong>14 bulan lalu</strong> sampai dengan tanggal <strong>13 bulan ini</strong>.</p>
+            <h6 class="fw-bold">1. Kapan periode pembayaran dihitung?</h6>
+            <p class="text-muted small">Periode pembayaran dihitung mulai tanggal <strong>14 bulan lalu</strong> sampai dengan tanggal <strong>13 bulan ini</strong>.</p>
         </div>
         <hr>
         <div class="mb-3">
